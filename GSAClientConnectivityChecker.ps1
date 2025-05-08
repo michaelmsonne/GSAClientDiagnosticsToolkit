@@ -134,11 +134,8 @@ function Write-Log {
 # ---------------------------------------------
 # Function: Test-IsElevated checks for admin rights
 # ---------------------------------------------
-function Test-IsElevated 
-{
-    $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    $principal = New-Object System.Security.Principal.WindowsPrincipal($currentUser)
-    return $principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
+function Test-IsElevated {
+    return ([Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
 <#
