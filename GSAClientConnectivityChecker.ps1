@@ -828,16 +828,16 @@ function Test-ProxyDetection {
 function Test-EntraIDConnectivity {
     param (
         [string[]]$Endpoints = @(
-            "https://login.microsoftonline.com",
-            "https://login.windows.net",
-            "https://login.microsoft.com",
-            "https://logincert.microsoftonline.com",
-            "https://graph.microsoft.com",
-            "https://sts.windows.net",
-            "https://login.live.com",
+            "https://login.microsoftonline.com",         # Microsoft Azure Worldwide
+            "https://login.windows.net",                 # Token provider for Entra ID/Azure AD
+            "https://login.microsoft.com",               # 
+            "https://logincert.microsoftonline.com",     #
+            "https://graph.microsoft.com",               # Microsoft Graph API
+            "https://sts.windows.net",                   # Security Token Service
+            "https://login.live.com",                    # Microsoft Account endpoint 
             "https://aadcdn.msauth.net",                 # CDN for loging prompt rendering              
             "https://aadcdn.msftauthimages.net",         # CDN for loging prompt rendering
-            "https://enterpriseregistration.windows.net",
+            "https://enterpriseregistration.windows.net",# Device Registration endpoint
             "https://device.login.microsoftonline.com",  # Device Auth
             "https://certauth.login.microsoftonline.com" # CBA AuthN
 
