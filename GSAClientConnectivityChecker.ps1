@@ -948,10 +948,10 @@ function Test-DiagnosticUris {
 }
 
 # 
-# Function: Load-GSAEndpoints
+# Function: Get-GSAEndpoints
 # This function loads the JSON content from the registry, extracts channels, edge addresses, and diagnostic URIs.
 #
-function Load-GSAEndpoints {
+function Get-GSAEndpoints {
     param (
         [string]$RegistryValueName = "ForwardingProfile"
     )
@@ -995,10 +995,10 @@ function Load-GSAEndpoints {
 # 
 # Main Script Execution
 # 
-Write-Log "========= GSA Client Connectivity Checker Started ========="
+Write-Log "========= GSA Client Connectivity Checker v. $ScriptVer Started ========="
 
 # Try to load the GSA client configuration from the registry
-$gsaEndpoints = Load-GSAEndpoints -RegistryValueName "ForwardingProfile"
+$gsaEndpoints = Get-GSAEndpoints -RegistryValueName "ForwardingProfile"
 
 if (-Not $gsaEndpoints) { exit }
 
