@@ -99,41 +99,36 @@ function Write-Log {
     $currentIndex = $levels.IndexOf($LogLevel.ToUpper())
     $messageIndex = $levels.IndexOf($Level.ToUpper())
 
-   [System.Threading.Monitor]::Enter($Global:LogLockObject)
-   try 
-   {
-       $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-       $logMessage = "[$timestamp] [$level] $message"
+    [System.Threading.Monitor]::Enter($Global:LogLockObject)
+    try {
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        $logMessage = "[$timestamp] [$level] $message"
 
-       if ($messageIndex -le $currentIndex -or $Level -eq "SUCCESS") 
-       {
-                $color = switch ($Level){
-                    "ERROR"   { "Red" }
-                    "WARNING" { "Yellow" }
-                    "INFO"    { "Gray" }
-                    "DEBUG"   { "Cyan" }
+        if ($messageIndex -le $currentIndex -or $Level -eq "SUCCESS") {
+            $color = switch ($Level) {
+                "ERROR" { "Red" }
+                "WARNING" { "Yellow" }
+                "INFO" { "Gray" }
+                "DEBUG" { "Cyan" }
                 "SUCCESS" { "Green" }
-                }
-                Write-Host "[$timestamp] [$Level] $Message" -ForegroundColor $color
+            }
+            Write-Host "[$timestamp] [$Level] $Message" -ForegroundColor $color
         }
 
-       # Use a file stream to write to the log file to avoid file access conflicts
-       $fileStream = [System.IO.File]::Open($LogFilePath, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
-       $streamWriter = New-Object System.IO.StreamWriter($fileStream)
-       try 
-       {
-           $streamWriter.WriteLine($logMessage)
-       } 
-       finally
-       {
-           $streamWriter.Close()
-           $fileStream.Close()
-       }
-   }   
-   finally 
-   {
-       [System.Threading.Monitor]::Exit($Global:LogLockObject)
-   }
+        # Use a file stream to write to the log file to avoid file access conflicts
+        $fileStream = [System.IO.File]::Open($LogFilePath, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
+        $streamWriter = New-Object System.IO.StreamWriter($fileStream)
+        try {
+            $streamWriter.WriteLine($logMessage)
+        } 
+        finally {
+            $streamWriter.Close()
+            $fileStream.Close()
+        }
+    }   
+    finally {
+        [System.Threading.Monitor]::Exit($Global:LogLockObject)
+    }
 }
 
 # ---------------------------------------------
