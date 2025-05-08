@@ -71,8 +71,13 @@ $Global:GSAFwdProfileRegistryPath = "HKLM:\SOFTWARE\Microsoft\Global Secure Acce
 $LogFilePath = Join-Path -Path $BasePath -ChildPath $LogFileName
 
 # Ensure directory exists
-if (-Not (Test-Path $BasePath)) {
-    New-Item -ItemType Directory -Path $BasePath -Force | Out-Null
+try {
+    if (-Not (Test-Path $BasePath)) {
+        New-Item -ItemType Directory -Path $BasePath -Force | Out-Null
+    }
+} catch {
+    Write-Log -Message "Failed to create directory at path: $BasePath. Error: $_" -Level "ERROR"
+    throw
 }
 
 # global lock Object used for logging thread safety
