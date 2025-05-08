@@ -850,33 +850,28 @@ function Test-EntraIDConnectivity {
 
     $allTestsPassed = $true
 
-    foreach ($url in $Endpoints) 
-    {
-        try 
-               {
-                   Write-Log -Message "Testing connectivity to $url ..." -Level "INFO"
-                   $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec $Timeout
+    foreach ($url in $Endpoints) {
+        try {
+            Write-Log -Message "Testing connectivity to $url ..." -Level "INFO"
+            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec $Timeout
 
-                   if ($response.StatusCode -eq 200) {
-                       Write-Log -Message "Successfully connected to $url" -Level "SUCCESS"                
-                   }                    
-               } 
-               catch [System.Net.WebException] 
-               {
-                   if ($_.Exception.Response -and ($_.Exception.Response.StatusCode -ge 400 -and $_.Exception.Response.StatusCode -lt 500))
-                   {
-                       Write-Log -Message "Successfully connected to $url, however got a 4xx HTTP status, expected for some of the endpoints $($_.Exception.Response.StatusCode)" -Level "WARNING"
-                   } else 
-                   {
-                       Write-Log -Message "Failed to connect to $url - $($_.Exception.Message)" -Level "ERROR"    
-                       $allTestsPassed = $false
-                   }
-               }
-               catch 
-               {
-                    Write-Log -Message "An unexpected error occurred while connecting to $url - $($_.Exception.Message)" -Level "ERROR"
-                    $allTestsPassed = $false
-                }
+            if ($response.StatusCode -eq 200) {
+                Write-Log -Message "Successfully connected to $url" -Level "SUCCESS"                
+            }                    
+        } 
+        catch [System.Net.WebException] {
+            if ($_.Exception.Response -and ($_.Exception.Response.StatusCode -ge 400 -and $_.Exception.Response.StatusCode -lt 500)) {
+                Write-Log -Message "Successfully connected to '$url'. Received HTTP status code: $($_.Exception.Response.StatusCode) ($($_.Exception.Response.StatusDescription)). This is expected for some endpoints." -Level "WARNING"
+            }
+            else {
+                Write-Log -Message "Failed to connect to $url - $($_.Exception.Message)" -Level "ERROR"    
+                $allTestsPassed = $false
+            }
+        }
+        catch {
+            Write-Log -Message "An unexpected error occurred while connecting to $url - $($_.Exception.Message)" -Level "ERROR"
+            $allTestsPassed = $false
+        }
     }
     return $allTestsPassed
 }
