@@ -43,7 +43,7 @@
     .\GSA-Diagnostics.ps1 -LogLevel ERROR
 
 .NOTES
-    Author: GSA CxE Team (Microsoft - tdetzner) - optimized and revised by Michael Morten Sonne
+    Author: GSA CxE Team (Microsoft - tdetzner) - optimized, new features and revised by Michael Morten Sonne
     Date/Version: See $ScriptVer
 
 #>
