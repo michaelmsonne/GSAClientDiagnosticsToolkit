@@ -1027,6 +1027,10 @@ function Get-GSAEndpoints {
 # We will use the GSA client configuration from the registry to get the endpoints to test against.
 #
 
+# Initialize counters for passed and failed tests
+$testsPassed = 0
+$testsFailed = 0
+
 Write-Log "========= GSA Client Connectivity Checker v. $ScriptVer Started ========="
 
 # Try to load the GSA client configuration from the registry
@@ -1057,12 +1061,12 @@ $testParams = [ordered]@{
     "Diagnostics Connectivity" = @{ param1 = $DiagnosticUris }
 }
 
-# Run all tests
-foreach ($testName in $tests.Keys) 
-{
-    Write-Log -Message "===== Executing: $testName =========" -Level "INFO"
-    #$result = & $tests[$testName]  # Invoke function dynamically
+# Hashtable to store test results
+$testResults = @{}
 
+# Run all tests
+foreach ($testName in $tests.Keys) {
+    Write-Log -Message "===== Executing: $testName =========" -Level "INFO"
     $scriptBlock = $tests[$testName]
     $params = $testParams[$testName]
 
@@ -1072,13 +1076,40 @@ foreach ($testName in $tests.Keys)
         $result = & $scriptBlock
     }
 
-    if ($result) 
-    {
+    # Store the result in the hashtable
+    $testResults[$testName] = $result
+
+    if ($result) {
         Write-Log "===== $testName : PASSED =========" "SUCCESS"
-    } else 
-    {
-        Write-Log "===== $testName : FAILED =========" "ERROR"        
+        $testsPassed++
+    } else {
+        Write-Log "===== $testName : FAILED =========" "ERROR"
+        $testsFailed++
     }
 }
 
-Write-Log "========= GSA Client Connectivity check Completed ========="
+# Log final summary
+Write-Log "========= GSA Client Connectivity Check Completed =========" "INFO"
+
+# Create a detailed summary table
+$summaryTable = @()
+foreach ($testName in $testResults.Keys) {
+    $result = if ($testResults[$testName]) { "PASSED" } else { "FAILED" }
+    $summaryTable += [PSCustomObject]@{
+        TestName = $testName
+        Result   = $result
+    }
+}
+
+# Display the summary table without extra blank lines
+Write-Log "Test Results Summary:" "INFO"
+$summaryTable | Format-Table -AutoSize | Out-String -Stream | ForEach-Object { Write-Log $_ "INFO" }
+
+# Log overall results
+Write-Log "Summary: $testsPassed tests passed, $testsFailed tests failed." "INFO"
+
+if ($testsFailed -eq 0) {
+    Write-Log "All tests passed successfully!" "SUCCESS"
+} else {
+    Write-Log "Some tests failed. Please review the logs for details." "ERROR"
+}
