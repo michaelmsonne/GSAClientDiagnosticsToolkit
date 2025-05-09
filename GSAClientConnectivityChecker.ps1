@@ -302,7 +302,7 @@ function Test-UDPPort {
         
         $receiveTask = $udpClient.ReceiveAsync()
         if ($receiveTask.Wait($Timeout)) {
-            $response = $receiveTask.Result
+            $receiveTask.Result | Out-Null
             $udpClient.Close()
             return $true
         } 
