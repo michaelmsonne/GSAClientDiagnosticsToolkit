@@ -487,34 +487,32 @@ function Test-TLSConnection {
     $allTestsPassed = $true
 
     foreach ($fqdn in $fqdnList) {
-        Write-Log "Checking connection to: $fqdn on port $port "
+        Write-Log "Checking connection to: $fqdn on port $port"
 
-        $tcpClient = New-Object System.Net.Sockets.TcpClient
         try {
-            $tcpClient.Connect($fqdn, $port)
+            # Create and connect the TCP client
+            $tcpClient = [System.Net.Sockets.TcpClient]::new($fqdn, $port)
             Write-Log "TCP connection successful to $fqdn" "SUCCESS"
-        } 
-        catch 
-        {
+
+            # Create and authenticate the SSL stream
+            $sslStream = [System.Net.Security.SslStream]::new($tcpClient.GetStream(), $false, { $true })
+            try {
+                $sslStream.AuthenticateAsClient($fqdn)
+                Write-Log "TLS handshake successful with $fqdn" "SUCCESS"
+            } catch {
+                Write-Log "TLS handshake failed with $fqdn : $_" "ERROR"
+                $allTestsPassed = $false
+            } finally {
+                $sslStream.Dispose()
+            }
+        } catch {
             Write-Log "TCP connection failed to $fqdn : $_" "ERROR"
             $allTestsPassed = $false
-            continue
-        }
-
-        $sslStream = New-Object System.Net.Security.SslStream($tcpClient.GetStream(), $false, ({ $true }))
-        try {
-            $sslStream.AuthenticateAsClient($fqdn)
-            Write-Log "TLS handshake successful with $fqdn" "SUCCESS"
-        } 
-        catch {
-            Write-Log "TLS handshake failed with $fqdn : $_" "ERROR"
-            $allTestsPassed = $false
-        } 
-        finally {
-            $sslStream.Dispose()
-            $tcpClient.Close()
+        } finally {
+            if ($tcpClient) { $tcpClient.Close() }
         }
     }
+
     return $allTestsPassed
 }
 
