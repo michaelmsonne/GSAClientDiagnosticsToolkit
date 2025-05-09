@@ -527,31 +527,32 @@ function Test-mTLSConnection {
     )
 
     $allTestsPassed = $true
+    $warningsLogged = $false
     $runningElevated = Test-IsElevated
 
-    if (-not ($runningElevated)) 
-    {
+    if (-not ($runningElevated)) {
         Write-Log "This script is not running elevated" "WARNING"
-        Write-Log "mTLS checks will most likely fail, due to missing permissions on the computers mTLS certificate private key(s)" "WARNING"    
-    }    
+        Write-Log "mTLS checks will most likely fail, due to missing permissions on the computer's mTLS certificate private key(s)" "WARNING"
+        $warningsLogged = $true
+    }
 
     # Retrieve mTLS-capable certificates from the LocalMachine "My" store.
     $mtlsCertificates = Get-mTLSCertificates
 
-    if ($mtlsCertificates.Count -eq 0) 
-    {
+    if ($mtlsCertificates.Count -eq 0) {
         Write-Log "No mTLS-capable certificates were found." "WARNING"
         Write-Log "This could be normal, if the tenant is not yet onboarded to mTLS" "WARNING"
-        $allTestsPassed = $false
-        return $allTestsPassed
-    } 
-    else 
-    {
+        $warningsLogged = $true
+        # Return a result object with warnings
+        return [PSCustomObject]@{
+            Passed   = $true
+            Warnings = 1
+        }
+    } else {
         Write-Log "Found $($mtlsCertificates.Count) mTLS-capable GSA client certificate(s)." "SUCCESS"
     }
 
-    foreach ($fqdn in $fqdnList) 
-    {
+    foreach ($fqdn in $fqdnList) {
         Write-Log "Attempting mTLS connection to: $fqdn on port $port" "INFO"
 
         foreach ($ClientCert in $mtlsCertificates) {
@@ -566,36 +567,37 @@ function Test-mTLSConnection {
             }
 
             $sslStream = New-Object System.Net.Security.SslStream($tcpClient.GetStream(), $false, ({ $true }))
-            try {            
+            try {
                 # Prepare client certificate collection if provided.
                 $clientCerts = New-Object System.Security.Cryptography.X509Certificates.X509CertificateCollection
                 if ($ClientCert) {
                     $clientCerts.Add($ClientCert)
-                }            
+                }
                 # Attempt the mTLS handshake using TLS 1.2
-                $sslStream.AuthenticateAsClient($fqdn, $clientCerts, [System.Security.Authentication.SslProtocols]::Tls12, $false) 
+                $sslStream.AuthenticateAsClient($fqdn, $clientCerts, [System.Security.Authentication.SslProtocols]::Tls12, $false)
                 $ismTLSdone = $sslStream.Ismutuallyauthenticated
                 Write-Log "mTLS handshake succeeded for $fqdn with certificate $($ClientCert.Subject) mTLS: $ismTLSdone" "SUCCESS"
-            }
-            catch 
-            {
-                if (-not ($runningElevated)) 
-                {
-                    # the script is not running elevated, we will skip the error
-                    Write-Log "mTLS handshake failed for $fqdn " "WARNING"   
+            } catch {
+                if (-not ($runningElevated)) {
+                    Write-Log "mTLS handshake failed for $fqdn " "WARNING"
                     Write-Log "Expected due to not running elevated. Run again with elevation" "WARNING"
+                    $warningsLogged = $true
+                } else {
+                    Write-Log "mTLS handshake failed for $fqdn with certificate $($ClientCert.Subject) : $_" "ERROR"
+                    $allTestsPassed = $false
                 }
-                else { Write-Log "mTLS handshake failed for $fqdn with certificate $($ClientCert.Subject) : $_" "ERROR" }
-                $allTestsPassed = $false
-            }
-            finally 
-            {
+            } finally {
                 $sslStream.Dispose()
                 $tcpClient.Close()
             }
         }
     }
-    return $allTestsPassed
+
+    # Return a result object with the test status and warnings
+    return [PSCustomObject]@{
+        Passed   = $allTestsPassed
+        Warnings = if ($warningsLogged) { 1 } else { 0 }
+    }
 }
 
 # 
@@ -1027,9 +1029,10 @@ function Get-GSAEndpoints {
 # We will use the GSA client configuration from the registry to get the endpoints to test against.
 #
 
-# Initialize counters for passed and failed tests
+# Initialize counters for passed, failed, and warning tests
 $testsPassed = 0
 $testsFailed = 0
+$testsWithWarnings = 0
 
 Write-Log "========= GSA Client Connectivity Checker v. $ScriptVer Started ========="
 
@@ -1079,10 +1082,15 @@ foreach ($testName in $tests.Keys) {
     # Store the result in the hashtable
     $testResults[$testName] = $result
 
-    if ($result) {
+    if ($result -is [PSCustomObject] -and $result.Warnings -gt 0) {
+        Write-Log "===== $testName : WARNINGS =========" "WARNING"
+        $testsWithWarnings++
+    }
+
+    if ($result -eq $true) {
         Write-Log "===== $testName : PASSED =========" "SUCCESS"
         $testsPassed++
-    } else {
+    } elseif ($result -eq $false) {
         Write-Log "===== $testName : FAILED =========" "ERROR"
         $testsFailed++
     }
@@ -1094,10 +1102,12 @@ Write-Log "========= GSA Client Connectivity Check Completed =========" "INFO"
 # Create a detailed summary table
 $summaryTable = @()
 foreach ($testName in $testResults.Keys) {
-    $result = if ($testResults[$testName]) { "PASSED" } else { "FAILED" }
+    $result = if ($testResults[$testName] -eq $true) { "PASSED" } elseif ($testResults[$testName] -eq $false) { "FAILED" } else { "WARNINGS" }
+    $warnings = if ($testResults[$testName] -is [PSCustomObject] -and $testResults[$testName].Warnings) { $testResults[$testName].Warnings } else { 0 }
     $summaryTable += [PSCustomObject]@{
         TestName = $testName
         Result   = $result
+        Warnings = $warnings
     }
 }
 
@@ -1106,10 +1116,12 @@ Write-Log "Test Results Summary:" "INFO"
 $summaryTable | Format-Table -AutoSize | Out-String -Stream | ForEach-Object { Write-Log $_ "INFO" }
 
 # Log overall results
-Write-Log "Summary: $testsPassed tests passed, $testsFailed tests failed." "INFO"
+Write-Log "Summary: $testsPassed tests passed, $testsFailed tests failed, $testsWithWarnings tests with warnings." "INFO"
 
-if ($testsFailed -eq 0) {
+if ($testsFailed -eq 0 -and $testsWithWarnings -eq 0) {
     Write-Log "All tests passed successfully!" "SUCCESS"
+} elseif ($testsFailed -eq 0) {
+    Write-Log "All tests passed, but some tests generated warnings. Please review the logs for details." "WARNING"
 } else {
     Write-Log "Some tests failed. Please review the logs for details." "ERROR"
 }
