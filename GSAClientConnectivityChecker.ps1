@@ -36,6 +36,8 @@
 .PARAMETER LogLevel
     Specifies the verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG
 
+    If etc. set to DEBUG, all messages will be logged including certificate details for endpoints. (usefull for etc. debugging TLS inspection issues)
+
 .EXAMPLE
     .\GSA-Diagnostics.ps1 -LogLevel DEBUG
 
