@@ -543,7 +543,9 @@ function Test-mTLSConnection {
         Write-Log "No mTLS-capable certificates were found." "WARNING"
         Write-Log "This could be normal, if the tenant is not yet onboarded to mTLS" "WARNING"
         $warningsLogged = $true
-        # Return a result object with warnings
+
+        # Skip the test since no certificates are available
+        Write-Log "Skipping mTLS connection attempts due to lack of mTLS-capable certificates." "INFO"
         return [PSCustomObject]@{
             Passed   = $true
             Warnings = 1
@@ -593,9 +595,14 @@ function Test-mTLSConnection {
         }
     }
 
-    # Return a result object with the test status and warnings
+    # Determine the final result
+    if (-not $allTestsPassed) {
+        Write-Log "One or more mTLS connection attempts failed." "WARNING"
+        $warningsLogged = $true
+    }
+
     return [PSCustomObject]@{
-        Passed   = $allTestsPassed
+        Passed   = $allTestsPassed -and (-not $warningsLogged)
         Warnings = if ($warningsLogged) { 1 } else { 0 }
     }
 }
@@ -754,101 +761,96 @@ function Test-ProxyDetection {
 
     # Initialize result object.
     $result = [PSCustomObject]@{
-        ProxyFound  		       = $false  
+        ProxyFound                 = $false
         SystemProxyConfigured      = $false
         ProxyAddress               = $null
         TransparentProxyDetected   = $false
         AuthenticatingProxyDetected= $false
+        Passed                     = $true
+        Warnings                   = 0
     }
 
     #
     # Check System Proxy Configuration
     #
-    try 
-    {
-        # BUGBUG: the below code only works on ENU OS versions
+    try {
         $netshOutput = netsh winhttp show proxy 2>&1
         if ($netshOutput -match "Direct access") {
             $result.SystemProxyConfigured = $false
-            Write-Log -Message "System proxy is not configured (Direct access mode)." -Level "Info"
-        }
-        else {
+            Write-Log -Message "System proxy is not configured (Direct access mode)." -Level "INFO"
+        } else {
             $result.SystemProxyConfigured = $true
-            Write-Log -Message "System proxy is configured." -Level "Info"
+            Write-Log -Message "System proxy is configured." -Level "INFO"
             if ($netshOutput -match "Proxy Server\s*:\s*(.+)") {
                 $result.ProxyAddress = $matches[1].Trim()
                 Write-Log -Message "Detected system proxy address: $($result.ProxyAddress)" -Level "WARNING"
                 $result.ProxyFound = $true
+                $result.Warnings++
             }
         }
-    } 
-    catch {
-        Write-Log -Message "Error retrieving system proxy settings: $_" -Level "Error"
+    } catch {
+        Write-Log -Message "Error retrieving system proxy settings: $_" -Level "ERROR"
+        $result.Passed = $false
     }
 
-    # 
-    # Check for gprc proxy settings
-    # 
-    if (Test-grpcProxy) 
-    {
-        Write-Log -Message "grpc_proxy variables is set." -Level "WARNING"
-    } else 
-    {
+    #
+    # Check for grpc proxy settings
+    #
+    if (Test-grpcProxy) {
+        Write-Log -Message "grpc_proxy variables are set." -Level "WARNING"
+        $result.Warnings++
+    } else {
         Write-Log -Message "NO grpc_proxy environment variables are set." -Level "INFO"
     }
 
     #
-    # additional test for WebRequest proxy
-    # 
+    # Additional test for WebRequest proxy
+    #
     $proxy = Test-SystemWebProxy -TargetUrl 'http://www.microsoft.com'
-    if ($proxy) 
-    {
+    if ($proxy) {
         Write-Log -Message "SystemWebProxy: Found proxy: $proxy" -Level "WARNING"
         $result.ProxyFound = $true
-    } 
-    else 
-    {
+        $result.Warnings++
+    } else {
         Write-Log -Message "SystemWebProxy: Direct connection will be used." -Level "INFO"
     }
 
-    # 
+    #
     # Transparent Proxy Detection (HTTP)
-    # 
+    #
     try {
         $responseHttp = Invoke-WebRequest -Uri $TestUrlHttp -UseBasicParsing -TimeoutSec $TimeoutSec
-        Write-Log -Message "HTTP test request to $TestUrlHttp succeeded." -Level Info
+        Write-Log -Message "HTTP test request to $TestUrlHttp succeeded." -Level "INFO"
 
-        # Check for common proxy headers.
         if ($responseHttp.Headers["Via"] -or $responseHttp.Headers["X-Forwarded-For"]) {
             $result.TransparentProxyDetected = $true
-            Write-Log -Message "Transparent proxy detected via HTTP header(s): $responseHttp.Headers" -Level Warning
+            Write-Log -Message "Transparent proxy detected via HTTP header(s): $responseHttp.Headers" -Level "WARNING"
             $result.ProxyFound = $true
+            $result.Warnings++
         }
-    } 
-    catch {
-        Write-Log -Message "HTTP test error: $_" -Level Error
+    } catch {
+        Write-Log -Message "HTTP test error: $_" -Level "ERROR"
+        $result.Passed = $false
     }
 
-    # 
+    #
     # Authenticating Proxy Detection (HTTPS)
-    # 
-    try 
-    {
-        # Try an HTTPS request without credentials. 
-        # If an authenticating proxy is in the path, you may receive a 407.
+    #
+    try {
         Invoke-WebRequest -Uri $TestUrlHttps -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop | Out-Null
-        Write-Log -Message "HTTPS test request to $TestUrlHttps succeeded." -Level Info
-    } 
-    catch 
-    {
+        Write-Log -Message "HTTPS test request to $TestUrlHttps succeeded." -Level "INFO"
+    } catch {
         if ($_.Exception.Response -and $_.Exception.Response.StatusCode -eq 407) {
             $result.AuthenticatingProxyDetected = $true
-            Write-Log -Message "Authenticating proxy detected (HTTP 407 response)." -Level Warning
+            Write-Log -Message "Authenticating proxy detected (HTTP 407 response)." -Level "WARNING"
             $result.ProxyFound = $true
+            $result.Warnings++
         } else {
-            Write-Log -Message "HTTPS test error: $_" -Level Error
+            Write-Log -Message "HTTPS test error: $_" -Level "ERROR"
+            $result.Passed = $false
         }
     }
+
     return $result
 }
 
@@ -1034,6 +1036,9 @@ $testsPassed = 0
 $testsFailed = 0
 $testsWithWarnings = 0
 
+# Initialize the hashtable to store test results
+$testResults = @{}
+
 Write-Log "========= GSA Client Connectivity Checker v. $ScriptVer Started ========="
 
 # Try to load the GSA client configuration from the registry
@@ -1045,7 +1050,7 @@ if (-Not $gsaEndpoints) { exit }
 $gsaMainEndpointAddrs = $gsaEndpoints.MainEndpoints
 $DiagnosticUris = $gsaEndpoints.DiagnosticUris
 
-# Define a hashtable of tests
+# Define a hashtable of tests (explicitly ordered)
 $tests = [ordered]@{
     "Basic Internet connectivity" = { Test-InternetConnectivity }
     "Proxy Detection"             = { Test-ProxyDetection }
@@ -1053,10 +1058,10 @@ $tests = [ordered]@{
     "Entra ID Connectivity"       = { Test-EntraIDConnectivity }
     "TLS Connectivity"            = { param($param1) Test-TLSConnection -fqdnList $param1 }
     "mTLS Connectivity"           = { param($param1) Test-mTLSConnection -fqdnList $param1 }
-    "Diagnostics Connectivity"    = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }    
+    "Diagnostics Connectivity"    = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
 }
 
-# table to hold the Parameters for each test, that need Parameters
+# Table to hold the parameters for each test that needs parameters
 $testParams = [ordered]@{
     "DNS Resolution"   = @{ param1 = $gsaMainEndpointAddrs }
     "TLS Connectivity" = @{ param1 = $gsaMainEndpointAddrs }
@@ -1064,10 +1069,7 @@ $testParams = [ordered]@{
     "Diagnostics Connectivity" = @{ param1 = $DiagnosticUris }
 }
 
-# Hashtable to store test results
-$testResults = @{}
-
-# Run all tests
+# Run all tests in the defined order
 foreach ($testName in $tests.Keys) {
     Write-Log -Message "===== Executing: $testName =========" -Level "INFO"
     $scriptBlock = $tests[$testName]
@@ -1082,17 +1084,28 @@ foreach ($testName in $tests.Keys) {
     # Store the result in the hashtable
     $testResults[$testName] = $result
 
-    if ($result -is [PSCustomObject] -and $result.Warnings -gt 0) {
-        Write-Log "===== $testName : WARNINGS =========" "WARNING"
-        $testsWithWarnings++
-    }
-
-    if ($result -eq $true) {
-        Write-Log "===== $testName : PASSED =========" "SUCCESS"
-        $testsPassed++
-    } elseif ($result -eq $false) {
-        Write-Log "===== $testName : FAILED =========" "ERROR"
-        $testsFailed++
+    # Check if the result is a PSCustomObject with warnings
+    if ($result -is [PSCustomObject]) {
+        if ($result.Warnings -gt 0) {
+            Write-Log "===== $testName : WARNINGS =========" "WARNING"
+            $testsWithWarnings++
+        }
+        if ($result.Passed -eq $true) {
+            Write-Log "===== $testName : PASSED =========" "SUCCESS"
+            $testsPassed++
+        } elseif ($result.Passed -eq $false) {
+            Write-Log "===== $testName : FAILED =========" "ERROR"
+            $testsFailed++
+        }
+    } else {
+        # Handle non-object results (true/false)
+        if ($result -eq $true) {
+            Write-Log "===== $testName : PASSED =========" "SUCCESS"
+            $testsPassed++
+        } elseif ($result -eq $false) {
+            Write-Log "===== $testName : FAILED =========" "ERROR"
+            $testsFailed++
+        }
     }
 }
 
@@ -1102,8 +1115,16 @@ Write-Log "========= GSA Client Connectivity Check Completed =========" "INFO"
 # Create a detailed summary table
 $summaryTable = @()
 foreach ($testName in $testResults.Keys) {
-    $result = if ($testResults[$testName] -eq $true) { "PASSED" } elseif ($testResults[$testName] -eq $false) { "FAILED" } else { "WARNINGS" }
-    $warnings = if ($testResults[$testName] -is [PSCustomObject] -and $testResults[$testName].Warnings) { $testResults[$testName].Warnings } else { 0 }
+    $result = if ($testResults[$testName] -is [PSCustomObject]) {
+        if ($testResults[$testName].Passed -eq $true) { "PASSED" } else { "FAILED" }
+    } else {
+        if ($testResults[$testName] -eq $true) { "PASSED" } else { "FAILED" }
+    }
+    $warnings = if ($testResults[$testName] -is [PSCustomObject] -and $testResults[$testName].Warnings) {
+        $testResults[$testName].Warnings
+    } else {
+        0
+    }
     $summaryTable += [PSCustomObject]@{
         TestName = $testName
         Result   = $result
