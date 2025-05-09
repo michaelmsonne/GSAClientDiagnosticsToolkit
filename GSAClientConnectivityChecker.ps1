@@ -197,11 +197,14 @@ function Get-GSAMainEndpoints {
 
     $channelEndpoints = @()
 
+    # Iterate through each channel in the JSON content
     foreach ($channel in $jsonContent.policy.channels) {
         $edges = @()
+        # Check if the channel has edges settings
         $channelName = $channel.name
         $diagnosticUri = $channel.diagnosticUri
 
+        # Check if the channel has edges settings and extract edge addresses
         if ($channel.edgesSettings.primaryEdges) {
             foreach ($edge in $channel.edgesSettings.primaryEdges) {
                 $edges += $edge.edgeAddress
@@ -227,7 +230,6 @@ function Get-GSAMainEndpoints {
     return $channelEndpoints
 }
 
-
 # 
 # Function: Save Edge Addresses to File
 # 
@@ -238,10 +240,33 @@ function Save-EdgeAddresses {
     )
 
     try {
+        if (-not $fqdnList -or $fqdnList.Count -eq 0) {
+            Write-Log "No FQDNs provided to save." "ERROR"
+            return
+        }
+
+        if (-not $filePath) {
+            Write-Log "File path is not specified." "ERROR"
+            return
+        }
+
+        # Ensure the directory for the file path exists
+        $directory = Split-Path -Path $filePath -Parent
+        if (-not (Test-Path $directory)) {
+            try {
+                New-Item -ItemType Directory -Path $directory -Force | Out-Null
+                Write-Log "Created directory: $directory" "INFO"
+            } catch {
+                Write-Log "Failed to create directory: $directory. Error: $_" "ERROR"
+                return
+            }
+        }
+
+        # Save the FQDN list to the file
         $fqdnList | Out-File -Encoding utf8 $filePath -Force
         Write-Log "Edge addresses saved to: $filePath" "SUCCESS"
     } catch {
-        Write-Log "Failed to save edge addresses: $_" "ERROR"
+        Write-Log "Failed to save edge addresses to $filePath. Error: $_" "ERROR"
     }
 }
 
