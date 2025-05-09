@@ -330,13 +330,15 @@ function Test-InternetConnectivity {
         [string[]]$DnsServers = @("1.1.1.1", "8.8.8.8", "9.9.9.9")
     )
 
+    # Set default state for tests
     $allTestsPassed = $true
 
     # Check for active network interfaces with default routes
     $defaultRoutes = Get-NetRoute -DestinationPrefix "0.0.0.0/0" | Where-Object { $_.NextHop -ne "::" }
     if ($defaultRoutes) {
         Write-Log "Active network interfaces with default routes detected." "INFO"
-    } else {
+    }
+    else {
         Write-Log "No active network interfaces with default routes found." "ERROR"
         $allTestsPassed = $false
     }
@@ -347,8 +349,7 @@ function Test-InternetConnectivity {
         if ($testResult) {
             Write-Log "Website $site is reachable." "INFO"
         } 
-        else 
-        {
+        else {
             Write-Log "Website $site is not reachable." "ERROR"
             $allTestsPassed = $false
         }
@@ -362,8 +363,7 @@ function Test-InternetConnectivity {
         if ($udpTestResult) {
             Write-Log "DNS server $dns is reachable on UDP port 53." "INFO"
         } 
-        else 
-        {
+        else {
             Write-Log "DNS server $dns is not reachable on UDP port 53." "ERROR"
             $allTestsPassed = $false
         }
