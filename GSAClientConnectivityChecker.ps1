@@ -441,14 +441,13 @@ function Test-DnsResolution {
 
     $allTestsPassed = $true
 
-    foreach ($fqdn in $fqdnList) 
-    {
+    foreach ($fqdn in $fqdnList) {
         Write-Log "Checking DNS resolution for: $fqdn" "INFO"
 
-        try 
-        {
+        try {
             # Resolve DNS for all record types
             $records = Resolve-DnsName -Name $fqdn -NoHostsFile -ErrorAction Stop
+
             # Extract A and AAAA records (IP addresses)
             $ipAddresses = $records | Where-Object { $_.QueryType -eq "A" -or $_.QueryType -eq "AAAA" } | 
                            Select-Object -ExpandProperty IPAddress -Unique
@@ -461,13 +460,11 @@ function Test-DnsResolution {
             # Retrieve the CNAME chain (if any)
             $cnameChain = Get-DnsChain -fqdn $fqdn
             if ($cnameChain.Count -gt 0) {
-                Write-Log "CNAME chain for $fqdn : $fqdn -> $($cnameChain -join ' -> ')" "INFO"
+                Write-Log "CNAME chain for $fqdn (Depth: $($cnameChain.Count)): $fqdn -> $($cnameChain -join ' -> ')" "INFO"
             } else {
                 Write-Log "No CNAME records found for $fqdn." "INFO"
             }
-        } 
-        catch 
-        { 
+        } catch {
             Write-Log "DNS resolution for $fqdn failed: $_" "ERROR"
             $allTestsPassed = $false
         }
