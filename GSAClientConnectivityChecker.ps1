@@ -834,7 +834,7 @@ function Test-ProxyDetection {
     {
         # Try an HTTPS request without credentials. 
         # If an authenticating proxy is in the path, you may receive a 407.
-        $responseHttps = Invoke-WebRequest -Uri $TestUrlHttps -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop
+        Invoke-WebRequest -Uri $TestUrlHttps -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop | Out-Null
         Write-Log -Message "HTTPS test request to $TestUrlHttps succeeded." -Level Info
     } 
     catch 
@@ -1023,11 +1023,16 @@ function Get-GSAEndpoints {
 # 
 # Main Script Execution
 # 
+# Here we call the functions to perform the tests and log the results.
+# We will use the GSA client configuration from the registry to get the endpoints to test against.
+#
+
 Write-Log "========= GSA Client Connectivity Checker v. $ScriptVer Started ========="
 
 # Try to load the GSA client configuration from the registry
 $gsaEndpoints = Get-GSAEndpoints -RegistryValueName "ForwardingProfile"
 
+# Check if we have endpoints to test against else exit
 if (-Not $gsaEndpoints) { exit }
 
 $gsaMainEndpointAddrs = $gsaEndpoints.MainEndpoints
