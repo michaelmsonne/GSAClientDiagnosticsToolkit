@@ -33,7 +33,6 @@
         13. Test Entra ID connectivity   
         15. Test DiagnosticUri connectivity
 
-
 .PARAMETER LogLevel
     Specifies the verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG
 
@@ -44,7 +43,7 @@
     .\GSA-Diagnostics.ps1 -LogLevel ERROR
 
 .NOTES
-    Author: GSA CxE Team (Microsoft - tdetzner)
+    Author: GSA CxE Team (Microsoft - tdetzner) - optimized and revised by Michael Morten Sonne
     Date/Version: See $ScriptVer
 
 #>
@@ -170,7 +169,12 @@ function Get-JsonFromRegistry {
     )
 
     try {
+        # Read the JSON string from the registry
         $jsonString = Get-ItemPropertyValue -Path $Global:GSAFwdProfileRegistryPath -Name $ValueName -ErrorAction Stop
+        if (-Not $jsonString) {
+            Write-Log -Message "No JSON data found at registry path: $Global:GSAFwdProfileRegistryPath" -Level Error
+            return $null
+        }
         $jsonContent = $jsonString | ConvertFrom-Json
         Write-Log -Message "Successfully read JSON data from registry path: $Global:GSAFwdProfileRegistryPath" -Level Info
         return $jsonContent
@@ -193,8 +197,7 @@ function Get-GSAMainEndpoints {
 
     $channelEndpoints = @()
 
-    foreach ($channel in $jsonContent.policy.channels) 
-    {
+    foreach ($channel in $jsonContent.policy.channels) {
         $edges = @()
         $channelName = $channel.name
         $diagnosticUri = $channel.diagnosticUri
