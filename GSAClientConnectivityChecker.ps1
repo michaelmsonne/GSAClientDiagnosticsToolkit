@@ -1076,4 +1076,4 @@ foreach ($testName in $tests.Keys)
     }
 }
 
-Write-Log "========= GSA Connectivity check Completed ========="
+Write-Log "========= GSA Client Connectivity check Completed ========="
