@@ -484,7 +484,7 @@ function Test-TLSConnection {
     $allTestsPassed = $true
 
     foreach ($fqdn in $fqdnList) {
-        Write-Log "Checking connection to: $fqdn on port $port"
+        Write-Log "Checking connection to: $fqdn on port $port" "INFO"
 
         try {
             # Create and connect the TCP client
@@ -496,6 +496,22 @@ function Test-TLSConnection {
             try {
                 $sslStream.AuthenticateAsClient($fqdn)
                 Write-Log "TLS handshake successful with $fqdn" "SUCCESS"
+
+                # Log certificate details if in DEBUG mode
+                if ($LogLevel -eq "DEBUG") {
+                    $remoteCertificate = $sslStream.RemoteCertificate
+                    if ($remoteCertificate) {
+                        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 $remoteCertificate
+                        Write-Log "TLS Certificate Details for $fqdn :" "DEBUG"
+                        Write-Log "  Subject: $($cert.Subject)" "DEBUG"
+                        Write-Log "  Issuer: $($cert.Issuer)" "DEBUG"
+                        Write-Log "  Valid From: $($cert.NotBefore)" "DEBUG"
+                        Write-Log "  Valid Until: $($cert.NotAfter)" "DEBUG"
+                        Write-Log "  Thumbprint: $($cert.Thumbprint)" "DEBUG"
+                    } else {
+                        Write-Log "No TLS certificate information available for $fqdn." "DEBUG"
+                    }
+                }
             } catch {
                 Write-Log "TLS handshake failed with $fqdn : $_" "ERROR"
                 $allTestsPassed = $false
@@ -869,7 +885,6 @@ function Test-EntraIDConnectivity {
             "https://enterpriseregistration.windows.net",# Device Registration endpoint
             "https://device.login.microsoftonline.com",  # Device Auth
             "https://certauth.login.microsoftonline.com" # CBA AuthN
-
         ),
         [int]$Timeout = 15
     )
@@ -879,18 +894,45 @@ function Test-EntraIDConnectivity {
     foreach ($url in $Endpoints) {
         try {
             Write-Log -Message "Testing connectivity to $url ..." -Level "INFO"
-            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec $Timeout
 
+            # Create a TCP connection to extract certificate details
+            $uri = [System.Uri]::new($url)
+            $tcpClient = [System.Net.Sockets.TcpClient]::new($uri.Host, 443)
+            $sslStream = [System.Net.Security.SslStream]::new($tcpClient.GetStream(), $false, { $true })
+            try {
+                $sslStream.AuthenticateAsClient($uri.Host)
+
+                # Log certificate details if in DEBUG mode
+                if ($LogLevel -eq "DEBUG") {
+                    $remoteCertificate = $sslStream.RemoteCertificate
+                    if ($remoteCertificate) {
+                        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 $remoteCertificate
+                        Write-Log "TLS Certificate Details for $url :" "DEBUG"
+                        Write-Log "  Subject: $($cert.Subject)" "DEBUG"
+                        Write-Log "  Issuer: $($cert.Issuer)" "DEBUG"
+                        Write-Log "  Valid From: $($cert.NotBefore)" "DEBUG"
+                        Write-Log "  Valid Until: $($cert.NotAfter)" "DEBUG"
+                        Write-Log "  Thumbprint: $($cert.Thumbprint)" "DEBUG"
+                    } else {
+                        Write-Log "No TLS certificate information available for $url." "DEBUG"
+                    }
+                }
+            } finally {
+                $sslStream.Dispose()
+                $tcpClient.Close()
+            }
+
+            # Perform the HTTP request
+            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec $Timeout
             if ($response.StatusCode -eq 200) {
-                Write-Log -Message "Successfully connected to $url" -Level "SUCCESS"                
-            }                    
+                Write-Log -Message "Successfully connected to $url" -Level "SUCCESS"
+            }
         } 
         catch [System.Net.WebException] {
             if ($_.Exception.Response -and ($_.Exception.Response.StatusCode -ge 400 -and $_.Exception.Response.StatusCode -lt 500)) {
                 Write-Log -Message "Successfully connected to '$url'. Received HTTP status code: $($_.Exception.Response.StatusCode) ($($_.Exception.Response.StatusDescription)). This is expected for some endpoints." -Level "WARNING"
-            }
-            else {
-                Write-Log -Message "Failed to connect to $url - $($_.Exception.Message)" -Level "ERROR"    
+            } else {
+                Write-Log -Message "Failed to connect to $url - $($_.Exception.Message)" -Level "ERROR"
                 $allTestsPassed = $false
             }
         }
