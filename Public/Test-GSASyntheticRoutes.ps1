@@ -5,7 +5,7 @@
 # these prefixes appear as host or /32 routes in the Windows routing table.
 #
 function Test-GSASyntheticRoutes {
-<#
+    <#
 .SYNOPSIS
     Checks for GSA synthetic IP routes (6.6.x.x) in the Windows routing table.
 .DESCRIPTION
@@ -26,7 +26,8 @@ function Test-GSASyntheticRoutes {
 
     try {
         $gsaRoutes = Get-NetRoute -ErrorAction Stop | Where-Object { $_.DestinationPrefix -like "6.6.*" }
-    } catch {
+    }
+    catch {
         Write-Log "Failed to query routing table: $_" "ERROR"
         return $false
     }
@@ -37,7 +38,8 @@ function Test-GSASyntheticRoutes {
             Write-Log "  $($route.DestinationPrefix) via $($route.NextHop) (interface: $($route.InterfaceAlias))" "DEBUG"
         }
         return $true
-    } else {
+    }
+    else {
         Write-Log "No GSA synthetic IP routes (6.6.x.x) found. The tunnel may not be active yet - this is expected if no Private/M365/Internet traffic has flowed since the client started." "WARNING"
         return [PSCustomObject]@{
             Passed   = $true

@@ -1,5 +1,5 @@
 function Save-EdgeAddresses {
-<#
+    <#
 .SYNOPSIS
     Saves a list of FQDNs/edge addresses to a file.
 .PARAMETER fqdnList

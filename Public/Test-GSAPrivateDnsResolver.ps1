@@ -5,7 +5,7 @@
 # response (even NXDOMAIN) proves the tunnel is up and Private Access DNS forwarding is working.
 #
 function Test-GSAPrivateDnsResolver {
-<#
+    <#
 .SYNOPSIS
     Verifies the GSA-internal DNS resolver (6.6.255.254) is reachable through the Private Access tunnel.
 .DESCRIPTION
@@ -29,13 +29,15 @@ function Test-GSAPrivateDnsResolver {
         [void](Resolve-DnsName -Name "connectivity.check.gsa.internal" -Server 6.6.255.254 -TcpOnly -ErrorAction Stop)
         Write-Log "GSA Private DNS resolver (6.6.255.254) responded - Private Access tunnel is active." "SUCCESS"
         return $true
-    } catch {
+    }
+    catch {
         $errorMsg = $_.Exception.Message
         # DNS error codes like NXDOMAIN / SERVFAIL still mean the server responded
         if ($errorMsg -match "DNS name does not exist|NXDOMAIN|server failure|SERVFAIL|query refused") {
             Write-Log "GSA Private DNS resolver (6.6.255.254) responded (DNS error expected for test name) - tunnel is active." "SUCCESS"
             return $true
-        } else {
+        }
+        else {
             # Timeout or connection refused means the tunnel is not up
             Write-Log "GSA Private DNS resolver (6.6.255.254) is unreachable: $errorMsg. Ensure Private Access is enabled and the GSA tunnel services are running." "ERROR"
             return $false

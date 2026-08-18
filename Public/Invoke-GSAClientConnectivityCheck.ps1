@@ -1,5 +1,5 @@
 function Invoke-GSAClientConnectivityCheck {
-<#
+    <#
 .SYNOPSIS
     Runs all GSA Client connectivity, proxy, health probe, and mTLS checks.
 
@@ -38,13 +38,13 @@ function Invoke-GSAClientConnectivityCheck {
     [CmdletBinding()]
     param (
         [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
-        [string]$LogLevel    = "INFO",
-        [string]$BasePath    = (Get-Location),
+        [string]$LogLevel = "INFO",
+        [string]$BasePath = (Get-Location),
         [string]$LogFileName = "GSAClientConnectivityChecker.log"
     )
 
     # Initialize module-level logging state
-    $script:LogLevel    = $LogLevel
+    $script:LogLevel = $LogLevel
     $script:LogFilePath = Join-Path -Path $BasePath -ChildPath $LogFileName
 
     try {
@@ -57,10 +57,10 @@ function Invoke-GSAClientConnectivityCheck {
         throw
     }
 
-    $testsPassed       = 0
-    $testsFailed       = 0
+    $testsPassed = 0
+    $testsFailed = 0
     $testsWithWarnings = 0
-    $testResults       = @{}
+    $testResults = @{}
 
     Write-Log "========= GSA Client Connectivity Checker v. $script:ModuleVer Started ========="
 
@@ -68,26 +68,26 @@ function Invoke-GSAClientConnectivityCheck {
     if (-Not $gsaEndpoints) { return }
 
     $gsaMainEndpointAddrs = $gsaEndpoints.MainEndpoints
-    $DiagnosticUris       = $gsaEndpoints.DiagnosticUris
+    $DiagnosticUris = $gsaEndpoints.DiagnosticUris
 
     $tests = [ordered]@{
-        "GSA Service Status"              = { Test-GSAServiceStatus }
-        "Device Entra Status"             = { Test-DeviceEntraStatus }
-        "GSA Primary Refresh Token"       = { Test-GSAPrimaryRefreshToken }
-        "GSA Forwarding Profile Registry" = { Test-GSAForwardingProfileRegistry }
+        "GSA Service Status"               = { Test-GSAServiceStatus }
+        "Device Entra Status"              = { Test-DeviceEntraStatus }
+        "GSA Primary Refresh Token"        = { Test-GSAPrimaryRefreshToken }
+        "GSA Forwarding Profile Registry"  = { Test-GSAForwardingProfileRegistry }
         "GSA Forwarding Profile Timestamp" = { Test-GSAForwardingProfileTimestamp }
-        "Basic Internet connectivity"     = { Test-InternetConnectivity }
-        "Proxy Detection"                 = { Test-ProxyDetection }
-        "GSA Secure DNS Status"          = { Test-GSASecureDnsStatus }
-        "GSA IPv6 Status"                = { Test-GSAIPv6Status }
-        "DNS Resolution"                  = { param($param1) Test-DnsResolution -fqdnList $param1 }
-        "Entra ID Connectivity"           = { Test-EntraIDConnectivity }
-        "TLS Connectivity"               = { param($param1) Test-TLSConnection -fqdnList $param1 }
-        "mTLS Connectivity"              = { param($param1) Test-mTLSConnection -fqdnList $param1 }
-        "Diagnostics Connectivity"       = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
-        "GSA Synthetic Routes"           = { Test-GSASyntheticRoutes }
-        "GSA Private DNS Resolver"       = { Test-GSAPrivateDnsResolver }
-        "GSA Event Log"                  = { Test-GSAEventLog }
+        "Basic Internet connectivity"      = { Test-InternetConnectivity }
+        "Proxy Detection"                  = { Test-ProxyDetection }
+        "GSA Secure DNS Status"            = { Test-GSASecureDnsStatus }
+        "GSA IPv6 Status"                  = { Test-GSAIPv6Status }
+        "DNS Resolution"                   = { param($param1) Test-DnsResolution -fqdnList $param1 }
+        "Entra ID Connectivity"            = { Test-EntraIDConnectivity }
+        "TLS Connectivity"                 = { param($param1) Test-TLSConnection -fqdnList $param1 }
+        "mTLS Connectivity"                = { param($param1) Test-mTLSConnection -fqdnList $param1 }
+        "Diagnostics Connectivity"         = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
+        "GSA Synthetic Routes"             = { Test-GSASyntheticRoutes }
+        "GSA Private DNS Resolver"         = { Test-GSAPrivateDnsResolver }
+        "GSA Event Log"                    = { Test-GSAEventLog }
     }
 
     $testParams = [ordered]@{
@@ -100,7 +100,7 @@ function Invoke-GSAClientConnectivityCheck {
     foreach ($testName in $tests.Keys) {
         Write-Log -Message "===== Executing: $testName =========" -Level "INFO"
         $scriptBlock = $tests[$testName]
-        $params      = $testParams[$testName]
+        $params = $testParams[$testName]
 
         $result = if ($params) { & $scriptBlock @params } else { & $scriptBlock }
         # If a test function leaked extra pipeline output, extract the PSCustomObject
@@ -117,15 +117,18 @@ function Invoke-GSAClientConnectivityCheck {
             if ($result.Passed -eq $true) {
                 Write-Log "===== $testName : PASSED =========" "SUCCESS"
                 $testsPassed++
-            } elseif ($result.Passed -eq $false) {
+            }
+            elseif ($result.Passed -eq $false) {
                 Write-Log "===== $testName : FAILED =========" "ERROR"
                 $testsFailed++
             }
-        } else {
+        }
+        else {
             if ($result -eq $true) {
                 Write-Log "===== $testName : PASSED =========" "SUCCESS"
                 $testsPassed++
-            } elseif ($result -eq $false) {
+            }
+            elseif ($result -eq $false) {
                 Write-Log "===== $testName : FAILED =========" "ERROR"
                 $testsFailed++
             }
@@ -138,12 +141,14 @@ function Invoke-GSAClientConnectivityCheck {
     foreach ($testName in $testResults.Keys) {
         $result = if ($testResults[$testName] -is [PSCustomObject]) {
             if ($testResults[$testName].Passed -eq $true) { "PASSED" } else { "FAILED" }
-        } else {
+        }
+        else {
             if ($testResults[$testName] -eq $true) { "PASSED" } else { "FAILED" }
         }
         $warnings = if ($testResults[$testName] -is [PSCustomObject] -and $testResults[$testName].Warnings) {
             $testResults[$testName].Warnings
-        } else { 0 }
+        }
+        else { 0 }
 
         $summaryTable += [PSCustomObject]@{
             TestName = $testName
@@ -159,9 +164,11 @@ function Invoke-GSAClientConnectivityCheck {
 
     if ($testsFailed -eq 0 -and $testsWithWarnings -eq 0) {
         Write-Log "All tests passed successfully!" "SUCCESS"
-    } elseif ($testsFailed -eq 0) {
+    }
+    elseif ($testsFailed -eq 0) {
         Write-Log "All tests passed, but some tests generated warnings. Please review the logs for details." "WARNING"
-    } else {
+    }
+    else {
         Write-Log "Some tests failed. Please review the logs for details." "ERROR"
     }
 }

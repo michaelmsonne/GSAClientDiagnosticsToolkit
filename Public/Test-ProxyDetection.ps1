@@ -1,5 +1,5 @@
 function Test-ProxyDetection {
-<#
+    <#
 .SYNOPSIS
     Detects outbound proxy presence via system config, transparent proxy headers, and HTTP 407 responses.
 .PARAMETER TestUrlHttp
@@ -11,9 +11,9 @@ function Test-ProxyDetection {
 #>
     [CmdletBinding()]
     param (
-        [string]$TestUrlHttp  = "http://www.msftconnecttest.com/connecttest.txt",
+        [string]$TestUrlHttp = "http://www.msftconnecttest.com/connecttest.txt",
         [string]$TestUrlHttps = "https://www.microsoft.com",
-        [int]$TimeoutSec      = 10,
+        [int]$TimeoutSec = 10,
         [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
         [string]$LogLevel
     )
@@ -36,7 +36,8 @@ function Test-ProxyDetection {
         if ($netshOutput -match "Direct access") {
             $result.SystemProxyConfigured = $false
             Write-Log -Message "System proxy is not configured (Direct access mode)." -Level "INFO"
-        } else {
+        }
+        else {
             $result.SystemProxyConfigured = $true
             Write-Log -Message "System proxy is configured." -Level "INFO"
             if ($netshOutput -match "Proxy Server\s*:\s*(.+)") {
@@ -56,7 +57,8 @@ function Test-ProxyDetection {
     if (Test-grpcProxy) {
         Write-Log -Message "grpc_proxy variables are set." -Level "WARNING"
         $result.Warnings++
-    } else {
+    }
+    else {
         Write-Log -Message "NO grpc_proxy environment variables are set." -Level "INFO"
     }
 
@@ -66,7 +68,8 @@ function Test-ProxyDetection {
         Write-Log -Message "SystemWebProxy: Found proxy: $proxy" -Level "WARNING"
         $result.ProxyFound = $true
         $result.Warnings++
-    } else {
+    }
+    else {
         Write-Log -Message "SystemWebProxy: Direct connection will be used." -Level "INFO"
     }
 
@@ -98,7 +101,8 @@ function Test-ProxyDetection {
             Write-Log -Message "Authenticating proxy detected (HTTP 407 response)." -Level "WARNING"
             $result.ProxyFound = $true
             $result.Warnings++
-        } else {
+        }
+        else {
             Write-Log -Message "HTTPS test error: $_" -Level "ERROR"
             $result.Passed = $false
         }

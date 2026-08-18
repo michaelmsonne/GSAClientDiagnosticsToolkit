@@ -3,7 +3,7 @@
 # Verifies the GSA ForwardingProfile registry key exists, is non-empty, and is parseable JSON.
 #
 function Test-GSAForwardingProfileRegistry {
-<#
+    <#
 .SYNOPSIS
     Verifies the GSA ForwardingProfile registry entry exists, is populated, and is valid JSON.
 .DESCRIPTION
@@ -20,8 +20,8 @@ function Test-GSAForwardingProfileRegistry {
 
     if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
     $allTestsPassed = $true
-    $registryPath   = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
-    $valueName      = "ForwardingProfile"
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
+    $valueName = "ForwardingProfile"
 
     # Check the registry key exists
     Write-Log "Checking ForwardingProfile registry key..." "INFO"
@@ -45,7 +45,8 @@ function Test-GSAForwardingProfileRegistry {
     Write-Log "Validating ForwardingProfile JSON..." "INFO"
     try {
         $json = $profileValue | ConvertFrom-Json
-    } catch {
+    }
+    catch {
         Write-Log "ForwardingProfile JSON is corrupt or unparseable: $_. Restart 'GlobalSecureAccessPolicyRetrieverService' to refresh the profile." "ERROR"
         return $false
     }
@@ -55,7 +56,8 @@ function Test-GSAForwardingProfileRegistry {
     if (-Not $channels -or $channels.Count -eq 0) {
         Write-Log "ForwardingProfile JSON contains no channels. Ensure at least one traffic forwarding profile (M365 / Private / Internet) is enabled in Entra portal." "WARNING"
         $allTestsPassed = $false
-    } else {
+    }
+    else {
         Write-Log "ForwardingProfile JSON is valid. Configured channel(s): $($channels.name -join ', ')." "SUCCESS"
         if ($script:LogLevel -eq "DEBUG") {
             if ($json.policy.tenantId) { Write-Log "  TenantId: $($json.policy.tenantId)" "DEBUG" }

@@ -1,5 +1,5 @@
 function Test-TLSConnection {
-<#
+    <#
 .SYNOPSIS
     Tests TLS connectivity to a list of FQDNs on the specified port.
 .PARAMETER fqdnList
@@ -44,7 +44,8 @@ function Test-TLSConnection {
                         Write-Log "  Valid From: $($cert.NotBefore)" "DEBUG"
                         Write-Log "  Valid Until: $($cert.NotAfter)" "DEBUG"
                         Write-Log "  Thumbprint: $($cert.Thumbprint)" "DEBUG"
-                    } else {
+                    }
+                    else {
                         Write-Log "No TLS certificate information available for $fqdn." "DEBUG"
                     }
                 }

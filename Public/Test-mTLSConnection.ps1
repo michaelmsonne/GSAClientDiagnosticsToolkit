@@ -1,5 +1,5 @@
 function Test-mTLSConnection {
-<#
+    <#
 .SYNOPSIS
     Tests mTLS connectivity to a list of FQDNs using GSA client certificates.
 .PARAMETER fqdnList
@@ -17,8 +17,8 @@ function Test-mTLSConnection {
 
     if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
 
-    $allTestsPassed  = $true
-    $warningsLogged  = $false
+    $allTestsPassed = $true
+    $warningsLogged = $false
     $runningElevated = Test-IsElevated
 
     if (-not $runningElevated) {
@@ -39,7 +39,8 @@ function Test-mTLSConnection {
             Passed   = $true
             Warnings = 1
         }
-    } else {
+    }
+    else {
         Write-Log "Found $($mtlsCertificates.Count) mTLS-capable GSA client certificate(s)." "SUCCESS"
     }
 
@@ -73,7 +74,8 @@ function Test-mTLSConnection {
                     Write-Log "mTLS handshake failed for $fqdn " "WARNING"
                     Write-Log "Expected due to not running elevated. Run again with elevation" "WARNING"
                     $warningsLogged = $true
-                } else {
+                }
+                else {
                     Write-Log "mTLS handshake failed for $fqdn with certificate $($ClientCert.Subject) : $_" "ERROR"
                     $allTestsPassed = $false
                 }

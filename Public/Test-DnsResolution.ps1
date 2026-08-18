@@ -1,5 +1,5 @@
 function Test-DnsResolution {
-<#
+    <#
 .SYNOPSIS
     Tests DNS resolution for a list of FQDNs and logs CNAME chains.
 .PARAMETER fqdnList
@@ -25,11 +25,12 @@ function Test-DnsResolution {
 
             # Extract A and AAAA records (IP addresses)
             $ipAddresses = $records | Where-Object { $_.QueryType -eq "A" -or $_.QueryType -eq "AAAA" } |
-                           Select-Object -ExpandProperty IPAddress -Unique
+            Select-Object -ExpandProperty IPAddress -Unique
 
             if ($ipAddresses) {
                 Write-Log "DNS resolution for $fqdn returned IP addresses: $($ipAddresses -join ', ')" "SUCCESS"
-            } else {
+            }
+            else {
                 Write-Log "DNS resolution for $fqdn did not return any A/AAAA records." "WARNING"
             }
 
@@ -41,7 +42,8 @@ function Test-DnsResolution {
                 foreach ($hop in $cnameChain) {
                     Write-Log "  -> $hop" "INFO"
                 }
-            } else {
+            }
+            else {
                 Write-Log "No CNAME records found for $fqdn." "INFO"
             }
         }

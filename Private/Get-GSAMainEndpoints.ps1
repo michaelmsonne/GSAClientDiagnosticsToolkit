@@ -13,9 +13,9 @@ function Get-GSAMainEndpoints {
 
     # Iterate through each channel in the JSON content
     foreach ($channel in $jsonContent.policy.channels) {
-        $edges         = @()
+        $edges = @()
         # Check if the channel has edges settings
-        $channelName   = $channel.name
+        $channelName = $channel.name
         $diagnosticUri = $channel.diagnosticUri
 
         # Check if the channel has edges settings and extract edge addresses

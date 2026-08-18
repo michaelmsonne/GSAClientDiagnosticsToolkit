@@ -1,5 +1,5 @@
 function Test-EntraIDConnectivity {
-<#
+    <#
 .SYNOPSIS
     Tests TLS/HTTPS connectivity to core Entra ID endpoints.
 .PARAMETER Endpoints
@@ -36,14 +36,14 @@ function Test-EntraIDConnectivity {
         try {
             Write-Log -Message "Testing connectivity to $url ..." -Level "INFO"
 
-            $uri       = [System.Uri]::new($url)
+            $uri = [System.Uri]::new($url)
             $tcpClient = [System.Net.Sockets.TcpClient]::new($uri.Host, 443)
             $sslStream = [System.Net.Security.SslStream]::new($tcpClient.GetStream(), $false, { $true })
             try {
                 $sslStream.AuthenticateAsClient($uri.Host)
 
                 # Log certificate details if in DEBUG mode
-            if ($script:LogLevel -eq "DEBUG") {
+                if ($script:LogLevel -eq "DEBUG") {
                     $remoteCertificate = $sslStream.RemoteCertificate
                     if ($remoteCertificate) {
                         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 $remoteCertificate
@@ -53,7 +53,8 @@ function Test-EntraIDConnectivity {
                         Write-Log "  Valid From: $($cert.NotBefore)" "DEBUG"
                         Write-Log "  Valid Until: $($cert.NotAfter)" "DEBUG"
                         Write-Log "  Thumbprint: $($cert.Thumbprint)" "DEBUG"
-                    } else {
+                    }
+                    else {
                         Write-Log "No TLS certificate information available for $url." "DEBUG"
                     }
                 }
@@ -71,7 +72,8 @@ function Test-EntraIDConnectivity {
         catch [System.Net.WebException] {
             if ($_.Exception.Response -and ($_.Exception.Response.StatusCode -ge 400 -and $_.Exception.Response.StatusCode -lt 500)) {
                 Write-Log -Message "Successfully connected to '$url'. Received HTTP status code: $($_.Exception.Response.StatusCode) ($($_.Exception.Response.StatusDescription)). This is expected for some endpoints." -Level "WARNING"
-            } else {
+            }
+            else {
                 Write-Log -Message "Failed to connect to $url - $($_.Exception.Message)" -Level "ERROR"
                 $allTestsPassed = $false
             }

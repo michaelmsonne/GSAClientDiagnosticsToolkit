@@ -9,7 +9,7 @@ function Test-SystemWebProxy {
 
     try {
         # Create a Uri object from the target URL
-        $uri      = New-Object System.Uri($TargetUrl)
+        $uri = New-Object System.Uri($TargetUrl)
         # Get the system's default proxy instance
         $webProxy = [System.Net.WebRequest]::GetSystemWebProxy()
         # Get the proxy URI for the target URL
@@ -19,7 +19,8 @@ function Test-SystemWebProxy {
         if ($proxyUri -ne $uri) {
             Write-Log -Message "Proxy detected for $TargetUrl : $proxyUri" -Level "WARNING"
             return $proxyUri
-        } else {
+        }
+        else {
             return $null
         }
     }

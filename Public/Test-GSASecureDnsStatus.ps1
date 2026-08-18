@@ -5,7 +5,7 @@
 # rules cannot be matched and traffic is not tunneled.
 #
 function Test-GSASecureDnsStatus {
-<#
+    <#
 .SYNOPSIS
     Verifies that Secure DNS (DNS-over-HTTPS) is disabled in Microsoft Edge and Google Chrome.
 .DESCRIPTION
@@ -26,7 +26,7 @@ function Test-GSASecureDnsStatus {
 
     $browsers = @(
         @{ Name = 'Microsoft Edge'; Paths = @('HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'HKCU:\SOFTWARE\Policies\Microsoft\Edge') }
-        @{ Name = 'Google Chrome';  Paths = @('HKLM:\SOFTWARE\Policies\Google\Chrome',  'HKCU:\SOFTWARE\Policies\Google\Chrome') }
+        @{ Name = 'Google Chrome'; Paths = @('HKLM:\SOFTWARE\Policies\Google\Chrome', 'HKCU:\SOFTWARE\Policies\Google\Chrome') }
     )
 
     Write-Log "Checking Secure DNS (DoH) policy settings - GSA requires DoH to be disabled..." "INFO"

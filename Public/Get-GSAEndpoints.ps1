@@ -1,5 +1,5 @@
 function Get-GSAEndpoints {
-<#
+    <#
 .SYNOPSIS
     Loads the GSA ForwardingProfile from the registry and returns endpoint and diagnostic URI lists.
 .PARAMETER RegistryValueName
@@ -11,7 +11,7 @@ function Get-GSAEndpoints {
 
     # Load the JSON content from the registry
     $jsonContent = Get-JsonFromRegistry -ValueName $RegistryValueName
-    [string[]]$DiagnosticUris       = @()
+    [string[]]$DiagnosticUris = @()
     [string[]]$gsaMainEndpointAddrs = @()
 
     # Check if we can load the configuration
@@ -43,7 +43,7 @@ function Get-GSAEndpoints {
 
     # Check if we have endpoints to test against
     if ($gsaMainEndpointAddrs.Count -eq 0) { Write-Log "No edge addresses found." "ERROR"; return $null }
-    if ($DiagnosticUris.Count -eq 0)        { Write-Log "No DiagnosticUris found." "ERROR"; return $null }
+    if ($DiagnosticUris.Count -eq 0) { Write-Log "No DiagnosticUris found." "ERROR"; return $null }
 
     return [PSCustomObject]@{
         MainEndpoints  = $gsaMainEndpointAddrs

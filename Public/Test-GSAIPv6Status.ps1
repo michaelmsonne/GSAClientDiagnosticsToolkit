@@ -5,7 +5,7 @@
 # bypass the GSA tunnel and are sent directly.
 #
 function Test-GSAIPv6Status {
-<#
+    <#
 .SYNOPSIS
     Checks whether IPv6 is enabled on active physical network adapters.
 .DESCRIPTION
@@ -41,13 +41,14 @@ function Test-GSAIPv6Status {
                 Write-Log "IPv6 is ENABLED on adapter '$($adapter.Name)'. Disable it to prevent IPv6 traffic from bypassing the GSA tunnel." "WARNING"
                 if ($script:LogLevel -eq "DEBUG") {
                     $v6addrs = Get-NetIPAddress -InterfaceAlias $adapter.Name -AddressFamily IPv6 -ErrorAction SilentlyContinue |
-                               Where-Object { $_.IPAddress -ne '::1' }
+                    Where-Object { $_.IPAddress -ne '::1' }
                     foreach ($addr in $v6addrs) {
                         Write-Log "  IPv6 on '$($adapter.Name)': $($addr.IPAddress)/$($addr.PrefixLength)" "DEBUG"
                     }
                 }
                 $warningsFound = $true
-            } else {
+            }
+            else {
                 Write-Log "IPv6 is disabled on adapter '$($adapter.Name)'." "INFO"
             }
         }
@@ -57,7 +58,8 @@ function Test-GSAIPv6Status {
             return $true
         }
         return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
-    } catch {
+    }
+    catch {
         Write-Log "Failed to check IPv6 adapter bindings: $_" "ERROR"
         return $false
     }

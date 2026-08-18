@@ -4,7 +4,7 @@
 # 
 function Get-mTLSCertificates {
     param (
-        [string]$StoreName     = "My",
+        [string]$StoreName = "My",
         [string]$StoreLocation = "LocalMachine"
     )
 
@@ -19,7 +19,7 @@ function Get-mTLSCertificates {
         foreach ($cert in $certs) {
             try {
                 # Get all EKU extensions for the certificate
-                $ekuExtensions   = $cert.Extensions | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension] }
+                $ekuExtensions = $cert.Extensions | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension] }
                 $clientAuthFound = $false
 
                 foreach ($extension in $ekuExtensions) {

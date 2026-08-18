@@ -5,7 +5,7 @@
 # changes in the portal can take up to one hour to reach the client.
 #
 function Test-GSAForwardingProfileTimestamp {
-<#
+    <#
 .SYNOPSIS
     Checks when the GSA ForwardingProfile was last retrieved from Microsoft Graph.
 .DESCRIPTION
@@ -21,9 +21,9 @@ function Test-GSAForwardingProfileTimestamp {
     )
 
     if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
-    $registryPath  = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
-    $valueName     = "ForwardingProfileTimestamp"
-    $warnAgeHours  = 2
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
+    $valueName = "ForwardingProfileTimestamp"
+    $warnAgeHours = 2
 
     Write-Log "Checking ForwardingProfileTimestamp registry value..." "INFO"
     $timestampValue = Get-ItemPropertyValue -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue
@@ -34,19 +34,21 @@ function Test-GSAForwardingProfileTimestamp {
     }
 
     try {
-        $profileTime  = [datetime]::Parse($timestampValue, [System.Globalization.CultureInfo]::InvariantCulture,
-                            [System.Globalization.DateTimeStyles]::RoundtripKind)
-        $age          = (Get-Date).ToUniversalTime() - $profileTime.ToUniversalTime()
+        $profileTime = [datetime]::Parse($timestampValue, [System.Globalization.CultureInfo]::InvariantCulture,
+            [System.Globalization.DateTimeStyles]::RoundtripKind)
+        $age = (Get-Date).ToUniversalTime() - $profileTime.ToUniversalTime()
         $ageFormatted = "$([int]$age.TotalHours)h $($age.Minutes)m"
 
         if ($age.TotalHours -le $warnAgeHours) {
             Write-Log "ForwardingProfile was last retrieved $ageFormatted ago (UTC: $($profileTime.ToString('u'))) - profile is current." "SUCCESS"
             return $true
-        } else {
+        }
+        else {
             Write-Log "ForwardingProfile was last retrieved $ageFormatted ago (UTC: $($profileTime.ToString('u'))) - profile may be stale. To force a refresh: delete the ForwardingProfileTimestamp registry key and restart GlobalSecureAccessForwardingProfileService." "WARNING"
             return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
         }
-    } catch {
+    }
+    catch {
         Write-Log "ForwardingProfileTimestamp value '$timestampValue' could not be parsed as a date: $_" "WARNING"
         return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
     }

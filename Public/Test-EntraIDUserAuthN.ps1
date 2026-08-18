@@ -1,5 +1,5 @@
 function Test-EntraIDUserAuthN {
-<#
+    <#
 .SYNOPSIS
     Attempts interactive authentication to Entra ID using MSAL. Requires the MSAL.PS module.
 #>
@@ -9,7 +9,8 @@ function Test-EntraIDUserAuthN {
 
         if ($token.AccessToken) {
             Write-Log -Message "Authentication successful. Token retrieved." -Level "INFO"
-        } else {
+        }
+        else {
             Write-Log -Message "Authentication failed. No token received." -Level "ERROR"
         }
     }

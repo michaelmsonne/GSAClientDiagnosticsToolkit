@@ -1,5 +1,5 @@
 function Test-DiagnosticUris {
-<#
+    <#
 .SYNOPSIS
     Tests reachability of GSA DiagnosticUris and reports round-trip time.
 .PARAMETER DiagnosticUris
@@ -24,17 +24,19 @@ function Test-DiagnosticUris {
     foreach ($uri in $DiagnosticUris) {
         try {
             $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-            $response  = Invoke-WebRequest -Uri $uri -UseBasicParsing -TimeoutSec 10
+            $response = Invoke-WebRequest -Uri $uri -UseBasicParsing -TimeoutSec 10
             $stopwatch.Stop()
             $rtt = [math]::Round($stopwatch.Elapsed.TotalMilliseconds, 2)
 
             if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
                 if ($rtt -gt 200) {
                     Write-Log "DiagnosticUrl test $uri succeeded. RTT: $rtt ms (High RTT)" "WARNING"
-                } else {
+                }
+                else {
                     Write-Log "DiagnosticUrl test $uri succeeded. RTT: $rtt ms" "SUCCESS"
                 }
-            } else {
+            }
+            else {
                 Write-Log "DiagnosticUrl test $uri returned status code $($response.StatusCode). RTT: $rtt ms" "WARNING"
                 $allPassed = $false
             }
