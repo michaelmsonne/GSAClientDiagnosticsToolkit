@@ -20,9 +20,7 @@ function Test-GSAEventLog {
     # Discover the GSA event log name — Channel field from exported XML: 'Microsoft-Windows-Global Secure Access Client-Operational'
     $candidateNames = @(
         "Microsoft-Windows-Global Secure Access Client-Operational",
-        "Microsoft-Windows-Global Secure Access Client-Kernel",
-        "Microsoft-Global Secure Access Client/Operational",
-        "Microsoft-Windows-GlobalSecureAccess-Client/Operational"
+        "Microsoft-Windows-Global Secure Access Client-Kernel"
     )
     $logName = $candidateNames | Where-Object {
         Get-WinEvent -ListLog $_ -ErrorAction SilentlyContinue
