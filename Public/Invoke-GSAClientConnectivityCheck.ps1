@@ -71,13 +71,23 @@ function Invoke-GSAClientConnectivityCheck {
     $DiagnosticUris       = $gsaEndpoints.DiagnosticUris
 
     $tests = [ordered]@{
-        "Basic Internet connectivity" = { Test-InternetConnectivity }
-        "Proxy Detection"             = { Test-ProxyDetection }
-        "DNS Resolution"              = { param($param1) Test-DnsResolution -fqdnList $param1 }
-        "Entra ID Connectivity"       = { Test-EntraIDConnectivity }
-        "TLS Connectivity"            = { param($param1) Test-TLSConnection -fqdnList $param1 }
-        "mTLS Connectivity"           = { param($param1) Test-mTLSConnection -fqdnList $param1 }
-        "Diagnostics Connectivity"    = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
+        "GSA Service Status"              = { Test-GSAServiceStatus }
+        "Device Entra Status"             = { Test-DeviceEntraStatus }
+        "GSA Primary Refresh Token"       = { Test-GSAPrimaryRefreshToken }
+        "GSA Forwarding Profile Registry" = { Test-GSAForwardingProfileRegistry }
+        "GSA Forwarding Profile Timestamp" = { Test-GSAForwardingProfileTimestamp }
+        "Basic Internet connectivity"     = { Test-InternetConnectivity }
+        "Proxy Detection"                 = { Test-ProxyDetection }
+        "GSA Secure DNS Status"          = { Test-GSASecureDnsStatus }
+        "GSA IPv6 Status"                = { Test-GSAIPv6Status }
+        "DNS Resolution"                  = { param($param1) Test-DnsResolution -fqdnList $param1 }
+        "Entra ID Connectivity"           = { Test-EntraIDConnectivity }
+        "TLS Connectivity"               = { param($param1) Test-TLSConnection -fqdnList $param1 }
+        "mTLS Connectivity"              = { param($param1) Test-mTLSConnection -fqdnList $param1 }
+        "Diagnostics Connectivity"       = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
+        "GSA Synthetic Routes"           = { Test-GSASyntheticRoutes }
+        "GSA Private DNS Resolver"       = { Test-GSAPrivateDnsResolver }
+        "GSA Event Log"                  = { Test-GSAEventLog }
     }
 
     $testParams = [ordered]@{
