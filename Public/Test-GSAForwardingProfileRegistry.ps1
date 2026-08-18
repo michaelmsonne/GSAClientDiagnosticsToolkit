@@ -58,7 +58,7 @@ function Test-GSAForwardingProfileRegistry {
     } else {
         Write-Log "ForwardingProfile JSON is valid. Configured channel(s): $($channels.name -join ', ')." "SUCCESS"
         if ($script:LogLevel -eq "DEBUG") {
-            if ($json.tenantId) { Write-Log "  TenantId: $($json.tenantId)" "DEBUG" }
+            if ($json.policy.tenantId) { Write-Log "  TenantId: $($json.policy.tenantId)" "DEBUG" }
             foreach ($ch in $channels) {
                 $edges = @($ch.edgesSettings.primaryEdges) + @($ch.edgesSettings.secondaryEdges)
                 Write-Log "  Channel '$($ch.name)': $($edges.Count) edge(s), DiagnosticUri: $($ch.diagnosticUri)" "DEBUG"
