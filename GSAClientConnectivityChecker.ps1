@@ -997,7 +997,7 @@ function Test-GSAPrivateDnsResolver {
 
     try {
         # Any response (including NXDOMAIN) confirms the resolver is reachable through the tunnel
-        $result = Resolve-DnsName -Name "connectivity.check.gsa.internal" -Server 6.6.255.254 -TcpOnly -ErrorAction Stop
+        Resolve-DnsName -Name "connectivity.check.gsa.internal" -Server 6.6.255.254 -TcpOnly -ErrorAction Stop | Out-Null
         Write-Log "GSA Private DNS resolver (6.6.255.254) responded - Private Access tunnel is active." "SUCCESS"
         return $true
     } catch {
