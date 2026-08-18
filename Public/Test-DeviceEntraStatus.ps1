@@ -42,7 +42,7 @@ function Test-DeviceEntraStatus {
     $reg = Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Global Secure Access Client' -ErrorAction SilentlyContinue
     if ($reg.IsPrivateAccessDisabledByUser -eq 1) {
         Write-Log "Private Access is disabled by user setting (IsPrivateAccessDisabledByUser = 1). Set the value to 0 in HKCU\Software\Microsoft\Global Secure Access Client to re-enable." "WARNING"
-        # Treat as warning only — user may intentionally have it off; do not fail the test
+        # Treat as warning only - user may intentionally have it off; do not fail the test
     } else {
         Write-Log "Private Access is enabled (IsPrivateAccessDisabledByUser is not set or is 0)." "SUCCESS"
     }

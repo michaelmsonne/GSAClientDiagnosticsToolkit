@@ -34,7 +34,7 @@ function Get-mTLSCertificates {
                 }
 
                 if ($clientAuthFound -and $cert.Subject -match "tenant.gsa.client") {
-                    # we found a capable mTLS certificate — only add certs with tenant.gsa.client in the subject
+                    # we found a capable mTLS certificate - only add certs with tenant.gsa.client in the subject
                     $mtlsCerts += $cert
                     Write-Log "Certificate accepted for mTLS: Subject=$($cert.Subject), Thumbprint=$($cert.Thumbprint) and with the GSA specific Subject name" "SUCCESS"
                 }

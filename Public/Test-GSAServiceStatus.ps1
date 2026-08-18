@@ -38,7 +38,7 @@ function Test-GSAServiceStatus {
         }
     }
 
-    # Forwarding Profile Service — either the old or new service name may be present depending on client version
+    # Forwarding Profile Service - either the old or new service name may be present depending on client version
     Write-Log "Checking Forwarding Profile Service..." "INFO"
     $fpSvc  = Get-Service -Name 'GlobalSecureAccessPolicyRetrieverService'  -ErrorAction SilentlyContinue
     $fpSvc2 = Get-Service -Name 'GlobalSecureAccessForwardingProfileService' -ErrorAction SilentlyContinue
