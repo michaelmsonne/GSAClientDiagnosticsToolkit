@@ -12,12 +12,12 @@ function Test-GSAEventLog {
     Reads up to 200 events from 'Microsoft-Global Secure Access Client/Operational'
     and reports any Level 1 (Critical) or Level 2 (Error) entries recorded in the last hour.
     If errors are found they are logged as warnings with EventId and truncated message.
-    The test does not fail on log errors — it is diagnostic-only.
+    The test does not fail on log errors - it is diagnostic-only.
 #>
     $lookbackHours = 1
     $maxEvents     = 200
 
-    # Discover the GSA event log name — Channel field from exported XML: 'Microsoft-Windows-Global Secure Access Client-Operational'
+    # Discover the GSA event log name - Channel field from exported XML: 'Microsoft-Windows-Global Secure Access Client-Operational'
     $candidateNames = @(
         "Microsoft-Windows-Global Secure Access Client-Operational",
         "Microsoft-Windows-Global Secure Access Client-Kernel"
@@ -31,14 +31,14 @@ function Test-GSAEventLog {
         return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
     }
 
-    # Known event IDs with semantic category — from operational log enumeration
+    # Known event IDs with semantic category - from operational log enumeration
     $knownEvents = @{
         # Connection handling and errors
         141 = @{ Category = 'Connection';      Description = 'Edge connection FAILED (GRPC could not be established)' }
         212 = @{ Category = 'Connection';      Description = 'Flow closed by server (private resource unreachable)' }
         230 = @{ Category = 'Connection';      Description = 'Private Access channel disabled' }
         631 = @{ Category = 'Connection';      Description = 'Disconnected from ALL channels' }
-        632 = @{ Category = 'Connection';      Description = 'Partially connected — some channels are down' }
+        632 = @{ Category = 'Connection';      Description = 'Partially connected - some channels are down' }
         638 = @{ Category = 'Connection';      Description = 'Device not connected to the network' }
         # Authentication handling
         503 = @{ Category = 'Authentication';  Description = 'User authenticated successfully' }
