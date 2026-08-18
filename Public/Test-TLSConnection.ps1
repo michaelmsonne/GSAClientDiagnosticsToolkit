@@ -1,0 +1,62 @@
+function Test-TLSConnection {
+<#
+.SYNOPSIS
+    Tests TLS connectivity to a list of FQDNs on the specified port.
+.PARAMETER fqdnList
+    List of FQDNs to test.
+.PARAMETER port
+    TCP port to connect on (default: 443).
+#>
+    param (
+        [string[]]$fqdnList,
+        [int]$port = 443
+    )
+
+    $allTestsPassed = $true
+
+    foreach ($fqdn in $fqdnList) {
+        Write-Log "Checking connection to: $fqdn on port $port" "INFO"
+
+        try {
+            $tcpClient = [System.Net.Sockets.TcpClient]::new($fqdn, $port)
+            Write-Log "TCP connection successful to $fqdn" "SUCCESS"
+
+            $sslStream = [System.Net.Security.SslStream]::new($tcpClient.GetStream(), $false, { $true })
+            try {
+                $sslStream.AuthenticateAsClient($fqdn)
+                Write-Log "TLS handshake successful with $fqdn" "SUCCESS"
+
+                if ($script:LogLevel -eq "DEBUG") {
+                    $remoteCertificate = $sslStream.RemoteCertificate
+                    if ($remoteCertificate) {
+                        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 $remoteCertificate
+                        Write-Log "TLS Certificate Details for $fqdn :" "DEBUG"
+                        Write-Log "  Subject: $($cert.Subject)" "DEBUG"
+                        Write-Log "  Issuer: $($cert.Issuer)" "DEBUG"
+                        Write-Log "  Valid From: $($cert.NotBefore)" "DEBUG"
+                        Write-Log "  Valid Until: $($cert.NotAfter)" "DEBUG"
+                        Write-Log "  Thumbprint: $($cert.Thumbprint)" "DEBUG"
+                    } else {
+                        Write-Log "No TLS certificate information available for $fqdn." "DEBUG"
+                    }
+                }
+            }
+            catch {
+                Write-Log "TLS handshake failed with $fqdn : $_" "ERROR"
+                $allTestsPassed = $false
+            }
+            finally {
+                $sslStream.Dispose()
+            }
+        }
+        catch {
+            Write-Log "TCP connection failed to $fqdn : $_" "ERROR"
+            $allTestsPassed = $false
+        }
+        finally {
+            if ($tcpClient) { $tcpClient.Close() }
+        }
+    }
+
+    return $allTestsPassed
+}
