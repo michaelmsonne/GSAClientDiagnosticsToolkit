@@ -420,10 +420,13 @@ function Get-DnsChain {
     # Look for CNAME records in the result.
     $cnameRecords = $records | Where-Object { $_.QueryType -eq "CNAME" }
     foreach ($record in $cnameRecords) {
+        $target = $record.NameHost
+        # Skip self-referential CNAMEs (injected by GSA synthetic DNS) and already-visited targets
+        if ([string]::IsNullOrEmpty($target) -or $target -eq $fqdn -or $visited.ContainsKey($target)) { continue }
         # Append the CNAME target.
-        $chain += $record.Name
+        $chain += $target
         # Recursively check for additional CNAMEs.
-        $childChain = Get-DnsChain -fqdn $record.Name -depth ($depth + 1) -visited $visited
+        $childChain = Get-DnsChain -fqdn $target -depth ($depth + 1) -visited $visited
         if ($childChain) {
             $chain += $childChain
         }
@@ -462,7 +465,11 @@ function Test-DnsResolution {
             # Retrieve the CNAME chain (if any)
             $cnameChain = Get-DnsChain -fqdn $fqdn
             if ($cnameChain.Count -gt 0) {
-                Write-Log "CNAME chain for $fqdn (Depth: $($cnameChain.Count)): $fqdn -> $($cnameChain -join ' -> ')" "INFO"
+                Write-Log "CNAME chain for $fqdn ($($cnameChain.Count) hop(s)):" "INFO"
+                Write-Log "  $fqdn" "INFO"
+                foreach ($hop in $cnameChain) {
+                    Write-Log "  -> $hop" "INFO"
+                }
             } else {
                 Write-Log "No CNAME records found for $fqdn." "INFO"
             }
@@ -587,9 +594,7 @@ function Test-mTLSConnection {
             try {
                 # Prepare client certificate collection if provided.
                 $clientCerts = New-Object System.Security.Cryptography.X509Certificates.X509CertificateCollection
-                if ($ClientCert) {
-                    $clientCerts.Add($ClientCert)
-                }
+                if ($ClientCert) { [void]$clientCerts.Add($ClientCert) }
                 # Attempt the mTLS handshake using TLS 1.2
                 $sslStream.AuthenticateAsClient($fqdn, $clientCerts, [System.Security.Authentication.SslProtocols]::Tls12, $false)
                 $ismTLSdone = $sslStream.Ismutuallyauthenticated
@@ -617,7 +622,7 @@ function Test-mTLSConnection {
     }
 
     return [PSCustomObject]@{
-        Passed   = $allTestsPassed -and (-not $warningsLogged)
+        Passed   = $allTestsPassed
         Warnings = if ($warningsLogged) { 1 } else { 0 }
     }
 }
@@ -678,6 +683,425 @@ function Get-mTLSCertificates {
     finally {
         $store.Close()
     }
+}
+
+#
+# Function: Test-GSAPrimaryRefreshToken
+# Checks whether a Primary Refresh Token (PRT) is present (AzureAdPrt: YES).
+# Without PRT the GSA client cannot authenticate with Entra ID.
+#
+function Test-GSAPrimaryRefreshToken {
+    Write-Log "Checking Primary Refresh Token (PRT) status via dsregcmd..." "INFO"
+    try {
+        $dsregOutput = dsregcmd /status 2>&1
+        $prtPresent  = ($dsregOutput | Select-String -Pattern 'AzureAdPrt' -SimpleMatch) -match 'YES'
+        if ($prtPresent) {
+            Write-Log "Primary Refresh Token (AzureAdPrt) is present - device can authenticate with Entra ID." "SUCCESS"
+            if ($LogLevel -eq "DEBUG") {
+                $prtTime = $dsregOutput | Select-String -Pattern '^\s*AzureAdPrtUpdateTime\s*:' | Select-Object -First 1
+                if ($prtTime) { Write-Log "  AzureAdPrtUpdateTime : $(($prtTime.ToString() -split ':', 2)[1].Trim())" "DEBUG" }
+            }
+            return $true
+        } else {
+            Write-Log "Primary Refresh Token (AzureAdPrt) is NOT present. The GSA client cannot authenticate. Ensure the device is Entra Joined, has network connectivity to login.microsoftonline.com, and no Conditional Access policy is blocking sign-in." "ERROR"
+            return $false
+        }
+    } catch {
+        Write-Log "Failed to check PRT status via dsregcmd: $_" "ERROR"
+        return $false
+    }
+}
+
+#
+# Function: Test-GSAForwardingProfileTimestamp
+# Checks the ForwardingProfileTimestamp registry value age to detect stale profiles.
+#
+function Test-GSAForwardingProfileTimestamp {
+    $registryPath = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
+    $valueName    = "ForwardingProfileTimestamp"
+    $warnAgeHours = 2
+
+    Write-Log "Checking ForwardingProfileTimestamp registry value..." "INFO"
+    $timestampValue = Get-ItemPropertyValue -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue
+
+    if ([string]::IsNullOrEmpty($timestampValue)) {
+        Write-Log "ForwardingProfileTimestamp is missing - the forwarding profile has never been downloaded. Ensure network connectivity to graph.microsoft.com and that the user is assigned to a forwarding profile in Entra portal." "WARNING"
+        return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
+    }
+
+    try {
+        $profileTime  = [datetime]::Parse($timestampValue, [System.Globalization.CultureInfo]::InvariantCulture,
+                            [System.Globalization.DateTimeStyles]::RoundtripKind)
+        $age          = (Get-Date).ToUniversalTime() - $profileTime.ToUniversalTime()
+        $ageFormatted = "$([int]$age.TotalHours)h $($age.Minutes)m"
+
+        if ($age.TotalHours -le $warnAgeHours) {
+            Write-Log "ForwardingProfile was last retrieved $ageFormatted ago (UTC: $($profileTime.ToString('u'))) - profile is current." "SUCCESS"
+            return $true
+        } else {
+            Write-Log "ForwardingProfile was last retrieved $ageFormatted ago (UTC: $($profileTime.ToString('u'))) - profile may be stale. To force a refresh: delete the ForwardingProfileTimestamp registry key and restart GlobalSecureAccessForwardingProfileService." "WARNING"
+            return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
+        }
+    } catch {
+        Write-Log "ForwardingProfileTimestamp value '$timestampValue' could not be parsed as a date: $_" "WARNING"
+        return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
+    }
+}
+
+#
+# Function: Test-GSASecureDnsStatus
+# Checks whether DoH is disabled in Chrome/Edge; active DoH prevents GSA from acquiring FQDN traffic.
+#
+function Test-GSASecureDnsStatus {
+    $allPassed = $true
+    $browsers  = @(
+        @{ Name = 'Microsoft Edge'; Paths = @('HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'HKCU:\SOFTWARE\Policies\Microsoft\Edge') }
+        @{ Name = 'Google Chrome';  Paths = @('HKLM:\SOFTWARE\Policies\Google\Chrome',  'HKCU:\SOFTWARE\Policies\Google\Chrome') }
+    )
+
+    Write-Log "Checking Secure DNS (DoH) policy settings - GSA requires DoH to be disabled..." "INFO"
+    foreach ($browser in $browsers) {
+        $dohFound = $false
+        foreach ($path in $browser.Paths) {
+            $dohMode = (Get-ItemProperty -Path $path -ErrorAction SilentlyContinue).DnsOverHttpsMode
+            if ($dohMode -and $dohMode -ne "off") {
+                Write-Log "$($browser.Name): Secure DNS is enabled (DnsOverHttpsMode = '$dohMode' at $path). GSA cannot acquire FQDN-based traffic when DoH is active. Set DnsOverHttpsMode to 'off' via Group Policy." "WARNING"
+                $dohFound = $true
+                break
+            }
+        }
+        if (-not $dohFound) {
+            Write-Log "$($browser.Name): Secure DNS (DoH) is not enforced or is set to 'off'." "SUCCESS"
+        }
+    }
+    return $allPassed
+}
+
+#
+# Function: Test-GSAIPv6Status
+# Checks whether IPv6 is enabled on active physical adapters; GSA does not support IPv6 traffic.
+#
+function Test-GSAIPv6Status {
+    $warningsFound = $false
+    Write-Log "Checking IPv6 binding on active physical network adapters - GSA does not support IPv6..." "INFO"
+    try {
+        $adapters = Get-NetAdapter -ErrorAction Stop | Where-Object { $_.Status -eq 'Up' -and $_.Virtual -eq $false }
+        if (-not $adapters) {
+            Write-Log "No active physical network adapters found." "WARNING"
+            return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
+        }
+        foreach ($adapter in $adapters) {
+            $binding = Get-NetAdapterBinding -Name $adapter.Name -ComponentID ms_tcpip6 -ErrorAction SilentlyContinue
+            if ($binding.Enabled) {
+                Write-Log "IPv6 is ENABLED on adapter '$($adapter.Name)'. Disable it to prevent IPv6 traffic from bypassing the GSA tunnel." "WARNING"
+                if ($LogLevel -eq "DEBUG") {
+                    $v6addrs = Get-NetIPAddress -InterfaceAlias $adapter.Name -AddressFamily IPv6 -ErrorAction SilentlyContinue |
+                               Where-Object { $_.IPAddress -ne '::1' }
+                    foreach ($addr in $v6addrs) {
+                        Write-Log "  IPv6 on '$($adapter.Name)': $($addr.IPAddress)/$($addr.PrefixLength)" "DEBUG"
+                    }
+                }
+                $warningsFound = $true
+            } else {
+                Write-Log "IPv6 is disabled on adapter '$($adapter.Name)'." "INFO"
+            }
+        }
+        if (-not $warningsFound) {
+            Write-Log "IPv6 is disabled on all active physical adapters." "SUCCESS"
+            return $true
+        }
+        return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
+    } catch {
+        Write-Log "Failed to check IPv6 adapter bindings: $_" "ERROR"
+        return $false
+    }
+}
+
+#
+# Function: Test-GSAEventLog
+# Reads the GSA Windows Event Log for Critical/Error events in the last hour.
+#
+function Test-GSAEventLog {
+    $lookbackHours = 1
+    $maxEvents     = 200
+
+    # Discover the GSA event log name - Channel field from exported XML: 'Microsoft-Windows-Global Secure Access Client-Operational'
+    $candidateNames = @(
+        "Microsoft-Windows-Global Secure Access Client-Operational",
+        "Microsoft-Windows-Global Secure Access Client-Kernel",
+        "Microsoft-Global Secure Access Client/Operational",
+        "Microsoft-Windows-GlobalSecureAccess-Client/Operational"
+    )
+    $logName = $candidateNames | Where-Object {
+        Get-WinEvent -ListLog $_ -ErrorAction SilentlyContinue
+    } | Select-Object -First 1
+
+    if (-not $logName) {
+        Write-Log "GSA event log not found on this system. The log channel has not been registered yet (this is normal on new installs or if no events have occurred)." "WARNING"
+        return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
+    }
+
+    # Known event IDs with semantic category - from operational log enumeration
+    $knownEvents = @{
+        141 = @{ Category = 'Connection';      Description = 'Edge connection FAILED (GRPC could not be established)' }
+        212 = @{ Category = 'Connection';      Description = 'Flow closed by server (private resource unreachable)' }
+        230 = @{ Category = 'Connection';      Description = 'Private Access channel disabled' }
+        631 = @{ Category = 'Connection';      Description = 'Disconnected from ALL channels' }
+        632 = @{ Category = 'Connection';      Description = 'Partially connected - some channels are down' }
+        638 = @{ Category = 'Connection';      Description = 'Device not connected to the network' }
+        503 = @{ Category = 'Authentication';  Description = 'User authenticated successfully' }
+    }
+
+    Write-Log "Scanning GSA event log '$logName' for Critical/Error/Warning events in the last $lookbackHours hour(s)..." "INFO"
+    try {
+        $since  = (Get-Date).AddHours(-$lookbackHours)
+        $all    = Get-WinEvent -LogName $logName -MaxEvents $maxEvents -ErrorAction Stop
+        $errors = $all | Where-Object { $_.TimeCreated -ge $since -and $_.Level -le 3 }
+
+        if (-not $errors -or $errors.Count -eq 0) {
+            Write-Log "No Critical/Error/Warning events found in the GSA event log in the last $lookbackHours hour(s)." "SUCCESS"
+            if ($LogLevel -eq "DEBUG") {
+                $recentAll = $all | Where-Object { $_.TimeCreated -ge $since } | Select-Object -First 20
+                if ($recentAll) {
+                    Write-Log "  Recent events (all levels, last $lookbackHours hour):" "DEBUG"
+                    foreach ($ev in $recentAll) {
+                        $msg = ($ev.Message -replace '\s+', ' ').Trim()
+                        if ($msg.Length -gt 150) { $msg = $msg.Substring(0, 147) + '...' }
+                        $cat = if ($knownEvents.ContainsKey($ev.Id)) { $knownEvents[$ev.Id].Category } else { '' }
+                        $catLabel = if ($cat) { "[$cat] " } else { '' }
+                        Write-Log "  [$($ev.TimeCreated.ToString('HH:mm:ss'))] L$($ev.Level) EventId $($ev.Id) ${catLabel}: $msg" "DEBUG"
+                    }
+                }
+            }
+            return $true
+        }
+
+        Write-Log "Found $($errors.Count) Critical/Error/Warning event(s) in the GSA event log (last $lookbackHours hour):" "WARNING"
+        foreach ($ev in ($errors | Select-Object -First 10)) {
+            $known    = $knownEvents[$ev.Id]
+            $catLabel = if ($known) { "[$($known.Category)] " } else { '' }
+            $desc     = if ($known) { " ($($known.Description))" } else { '' }
+            $msg      = ($ev.Message -replace '\s+', ' ').Trim()
+            if ($msg.Length -gt 150) { $msg = $msg.Substring(0, 147) + '...' }
+            Write-Log "  [$($ev.TimeCreated.ToString('HH:mm:ss'))] ${catLabel}EventId $($ev.Id)$desc" "WARNING"
+            Write-Log "    $msg" "WARNING"
+        }
+        if ($errors.Count -gt 10) {
+            Write-Log "  ... and $($errors.Count - 10) more event(s). Open Event Viewer for full details." "WARNING"
+        }
+        return [PSCustomObject]@{ Passed = $true; Warnings = $errors.Count }
+    } catch {
+        if ($_.Exception.Message -match "No events were found|not found") {
+            Write-Log "No events in the GSA event log for the last $lookbackHours hour(s)." "SUCCESS"
+            return $true
+        }
+        Write-Log "Could not read GSA event log '$logName': $_" "WARNING"
+        return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
+    }
+}
+
+#
+# Function: Test-GSAForwardingProfileRegistry
+# Verifies the GSA ForwardingProfile registry key exists, is non-empty, and is parseable JSON.
+# Based on testGSAClientProfile() from GSATool by mzmaili (https://github.com/mzmaili/GSATool)
+#
+function Test-GSAForwardingProfileRegistry {
+    $allTestsPassed = $true
+    $registryPath   = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
+    $valueName      = "ForwardingProfile"
+
+    # Check the registry key exists
+    Write-Log "Checking ForwardingProfile registry key..." "INFO"
+    $regProfile = Get-ItemProperty -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue
+    if (-Not $regProfile) {
+        Write-Log "ForwardingProfile registry key does not exist. Ensure the forwarding profile is enabled and the user is assigned in Entra portal under Global Secure Access > Connect > Traffic forwarding." "ERROR"
+        return $false
+    }
+    Write-Log "ForwardingProfile registry key exists." "SUCCESS"
+
+    # Check the value is not empty
+    Write-Log "Checking ForwardingProfile registry value is not empty..." "INFO"
+    $profileValue = Get-ItemPropertyValue -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue
+    if ([string]::IsNullOrEmpty($profileValue)) {
+        Write-Log "ForwardingProfile registry value is empty. Restart 'GlobalSecureAccessPolicyRetrieverService' (or 'GlobalSecureAccessForwardingProfileService') to re-retrieve the profile configuration." "ERROR"
+        return $false
+    }
+    Write-Log "ForwardingProfile registry value is populated." "SUCCESS"
+
+    # Validate the JSON is parseable
+    Write-Log "Validating ForwardingProfile JSON..." "INFO"
+    try {
+        $json = $profileValue | ConvertFrom-Json
+    } catch {
+        Write-Log "ForwardingProfile JSON is corrupt or unparseable: $_. Restart 'GlobalSecureAccessPolicyRetrieverService' to refresh the profile." "ERROR"
+        return $false
+    }
+
+    # Report which channels are configured
+    $channels = $json.policy.channels
+    if (-Not $channels -or $channels.Count -eq 0) {
+        Write-Log "ForwardingProfile JSON contains no channels. Ensure at least one traffic forwarding profile (M365 / Private / Internet) is enabled in Entra portal." "WARNING"
+        $allTestsPassed = $false
+    } else {
+        Write-Log "ForwardingProfile JSON is valid. Configured channel(s): $($channels.name -join ', ')." "SUCCESS"
+        if ($LogLevel -eq "DEBUG") {
+            if ($json.tenantId) { Write-Log "  TenantId: $($json.tenantId)" "DEBUG" }
+            foreach ($ch in $channels) {
+                $edges = @($ch.edgesSettings.primaryEdges) + @($ch.edgesSettings.secondaryEdges)
+                Write-Log "  Channel '$($ch.name)': $($edges.Count) edge(s), DiagnosticUri: $($ch.diagnosticUri)" "DEBUG"
+                foreach ($e in $edges) { Write-Log "    Edge: $($e.edgeAddress)" "DEBUG" }
+            }
+        }
+    }
+
+    return $allTestsPassed
+}
+
+#
+# Function: Test-GSASyntheticRoutes
+# Checks whether GSA synthetic IP routes (6.6.x.x) are present in the routing table.
+# Inspired by GSATool's synthetic IP tunnel verification by mzmaili (https://github.com/mzmaili/GSATool)
+#
+function Test-GSASyntheticRoutes {
+    Write-Log "Checking for GSA synthetic IP routes (6.6.x.x) in the routing table..." "INFO"
+
+    try {
+        $gsaRoutes = Get-NetRoute -ErrorAction Stop | Where-Object { $_.DestinationPrefix -like "6.6.*" }
+    } catch {
+        Write-Log "Failed to query routing table: $_" "ERROR"
+        return $false
+    }
+
+    if ($gsaRoutes -and $gsaRoutes.Count -gt 0) {
+        Write-Log "Found $($gsaRoutes.Count) GSA synthetic route(s) - tunnel is active and routing traffic." "SUCCESS"
+        foreach ($route in $gsaRoutes) {
+            Write-Log "  $($route.DestinationPrefix) via $($route.NextHop) (interface: $($route.InterfaceAlias))" "DEBUG"
+        }
+        return $true
+    } else {
+        Write-Log "No GSA synthetic IP routes (6.6.x.x) found. The tunnel may not be active yet - this is expected if no Private/M365/Internet traffic has flowed since the client started." "WARNING"
+        return [PSCustomObject]@{
+            Passed   = $true
+            Warnings = 1
+        }
+    }
+}
+
+#
+# Function: Test-GSAPrivateDnsResolver
+# Queries the GSA-internal DNS resolver at 6.6.255.254 to confirm Private Access tunnel is active.
+# Inspired by Resolve-DnsName -Server 6.6.255.254 in GSATool by mzmaili (https://github.com/mzmaili/GSATool)
+#
+function Test-GSAPrivateDnsResolver {
+    Write-Log "Querying GSA Private DNS resolver (6.6.255.254) via TCP..." "INFO"
+
+    try {
+        # Any response (including NXDOMAIN) confirms the resolver is reachable through the tunnel
+        $result = Resolve-DnsName -Name "connectivity.check.gsa.internal" -Server 6.6.255.254 -TcpOnly -ErrorAction Stop
+        Write-Log "GSA Private DNS resolver (6.6.255.254) responded - Private Access tunnel is active." "SUCCESS"
+        return $true
+    } catch {
+        $errorMsg = $_.Exception.Message
+        # DNS error codes like NXDOMAIN / SERVFAIL still mean the server responded
+        if ($errorMsg -match "DNS name does not exist|NXDOMAIN|server failure|SERVFAIL|query refused") {
+            Write-Log "GSA Private DNS resolver (6.6.255.254) responded (DNS error expected for test name) - tunnel is active." "SUCCESS"
+            return $true
+        } else {
+            Write-Log "GSA Private DNS resolver (6.6.255.254) is unreachable: $errorMsg. Ensure Private Access is enabled and the GSA tunnel services are running." "ERROR"
+            return $false
+        }
+    }
+}
+
+#
+# Function: Test-GSAServiceStatus
+# Checks that all required Global Secure Access Windows services are running.
+# Based on checks from GSATool by mzmaili (https://github.com/mzmaili/GSATool)
+#
+function Test-GSAServiceStatus {
+    $allTestsPassed = $true
+
+    # Fixed-name services that must each be Running
+    $services = @(
+        @{ Name = 'GlobalSecureAccessTunnelingService';     DisplayName = 'Tunneling Service' }
+        @{ Name = 'GlobalSecureAccessClientManagerService'; DisplayName = 'Client Manager Service' }
+        @{ Name = 'GlobalSecureAccessEngineService';        DisplayName = 'Engine Service' }
+        @{ Name = 'GlobalSecureAccessDriver';               DisplayName = 'Driver Service' }
+    )
+
+    foreach ($svc in $services) {
+        Write-Log "Checking $($svc.DisplayName) ($($svc.Name))..." "INFO"
+        $svcObj = Get-Service -Name $svc.Name -ErrorAction SilentlyContinue
+        if ($svcObj.Status -eq 'Running') {
+            Write-Log "$($svc.DisplayName) is running." "SUCCESS"
+            if ($LogLevel -eq "DEBUG") {
+                Write-Log "  StartType: $($svcObj.StartType)" "DEBUG"
+            }
+        } else {
+            Write-Log "$($svc.DisplayName) ($($svc.Name)) is not running (Status: $($svcObj.Status)). Ensure the service is started." "ERROR"
+            $allTestsPassed = $false
+        }
+    }
+
+    # Forwarding Profile Service - either the old or new service name may be present depending on client version
+    Write-Log "Checking Forwarding Profile Service..." "INFO"
+    $fpSvc  = Get-Service -Name 'GlobalSecureAccessPolicyRetrieverService'  -ErrorAction SilentlyContinue
+    $fpSvc2 = Get-Service -Name 'GlobalSecureAccessForwardingProfileService' -ErrorAction SilentlyContinue
+    if ($fpSvc.Status -eq 'Running' -or $fpSvc2.Status -eq 'Running') {
+        Write-Log "Forwarding Profile Service is running." "SUCCESS"
+        if ($LogLevel -eq "DEBUG") {
+            $running = if ($fpSvc.Status -eq 'Running') { $fpSvc } else { $fpSvc2 }
+            Write-Log "  Name: $($running.Name), StartType: $($running.StartType)" "DEBUG"
+        }
+    } else {
+        Write-Log "Forwarding Profile Service is not running. Ensure GlobalSecureAccessForwardingProfileService (or GlobalSecureAccessPolicyRetrieverService) is started." "ERROR"
+        $allTestsPassed = $false
+    }
+
+    return $allTestsPassed
+}
+
+#
+# Function: Test-DeviceEntraStatus
+# Checks that the device is Entra Joined and that Private Access is not user-disabled.
+# Based on checks from GSATool by mzmaili (https://github.com/mzmaili/GSATool)
+#
+function Test-DeviceEntraStatus {
+    $allTestsPassed = $true
+
+    # Check Entra ID join status via dsregcmd
+    Write-Log "Checking if device is connected to Microsoft Entra ID..." "INFO"
+    try {
+        $dsregOutput = dsregcmd /status 2>&1
+        $entraJoined = ($dsregOutput | Select-String -Pattern 'AzureADJoined' -SimpleMatch) -match 'YES'
+
+        if ($entraJoined) {
+            Write-Log "Device '$($env:COMPUTERNAME)' is connected to Microsoft Entra ID." "SUCCESS"
+            if ($LogLevel -eq "DEBUG") {
+                foreach ($field in @('DomainJoined', 'TenantId', 'TenantDisplayName', 'AzureAdPrtUpdateTime')) {
+                    $line = $dsregOutput | Select-String -Pattern "^\s*$field\s*:" | Select-Object -First 1
+                    if ($line) { Write-Log "  $field : $(($line.ToString() -split ':', 2)[1].Trim())" "DEBUG" }
+                }
+            }
+        } else {
+            Write-Log "Device '$($env:COMPUTERNAME)' is NOT connected to Microsoft Entra ID. Ensure the device is Entra Joined or Hybrid Entra Joined." "ERROR"
+            $allTestsPassed = $false
+        }
+    } catch {
+        Write-Log "Failed to determine Entra ID join status via dsregcmd: $_" "ERROR"
+        $allTestsPassed = $false
+    }
+
+    # Check if user has locally disabled Private Access
+    Write-Log "Checking Private Access user-disable registry flag..." "INFO"
+    $reg = Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Global Secure Access Client' -ErrorAction SilentlyContinue
+    if ($reg.IsPrivateAccessDisabledByUser -eq 1) {
+        Write-Log "Private Access is disabled by user setting (IsPrivateAccessDisabledByUser = 1). Set the value to 0 in HKCU\Software\Microsoft\Global Secure Access Client to re-enable." "WARNING"
+    } else {
+        Write-Log "Private Access is enabled (IsPrivateAccessDisabledByUser is not set or is 0)." "SUCCESS"
+    }
+
+    return $allTestsPassed
 }
 
 #
@@ -1093,13 +1517,23 @@ $DiagnosticUris = $gsaEndpoints.DiagnosticUris
 
 # Define a hashtable of tests (explicitly ordered)
 $tests = [ordered]@{
-    "Basic Internet connectivity" = { Test-InternetConnectivity }
-    "Proxy Detection"             = { Test-ProxyDetection }
-    "DNS Resolution"              = { param($param1) Test-DnsResolution -fqdnList $param1 }
-    "Entra ID Connectivity"       = { Test-EntraIDConnectivity }
-    "TLS Connectivity"            = { param($param1) Test-TLSConnection -fqdnList $param1 }
-    "mTLS Connectivity"           = { param($param1) Test-mTLSConnection -fqdnList $param1 }
-    "Diagnostics Connectivity"    = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
+    "GSA Service Status"               = { Test-GSAServiceStatus }
+    "Device Entra Status"              = { Test-DeviceEntraStatus }
+    "GSA Primary Refresh Token"        = { Test-GSAPrimaryRefreshToken }
+    "GSA Forwarding Profile Registry"  = { Test-GSAForwardingProfileRegistry }
+    "GSA Forwarding Profile Timestamp" = { Test-GSAForwardingProfileTimestamp }
+    "Basic Internet connectivity"      = { Test-InternetConnectivity }
+    "Proxy Detection"                  = { Test-ProxyDetection }
+    "GSA Secure DNS Status"           = { Test-GSASecureDnsStatus }
+    "GSA IPv6 Status"                 = { Test-GSAIPv6Status }
+    "DNS Resolution"                   = { param($param1) Test-DnsResolution -fqdnList $param1 }
+    "Entra ID Connectivity"            = { Test-EntraIDConnectivity }
+    "TLS Connectivity"                = { param($param1) Test-TLSConnection -fqdnList $param1 }
+    "mTLS Connectivity"               = { param($param1) Test-mTLSConnection -fqdnList $param1 }
+    "Diagnostics Connectivity"        = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
+    "GSA Synthetic Routes"            = { Test-GSASyntheticRoutes }
+    "GSA Private DNS Resolver"        = { Test-GSAPrivateDnsResolver }
+    "GSA Event Log"                   = { Test-GSAEventLog }
 }
 
 # Table to hold the parameters for each test that needs parameters
@@ -1120,6 +1554,10 @@ foreach ($testName in $tests.Keys) {
         $result = & $scriptBlock @params
     } else {
         $result = & $scriptBlock
+    }
+    # If a test function leaked extra pipeline output, extract the PSCustomObject
+    if ($result -is [array]) {
+        $result = $result | Where-Object { $_ -is [PSCustomObject] } | Select-Object -Last 1
     }
 
     # Store the result in the hashtable
