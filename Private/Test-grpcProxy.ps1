@@ -1,6 +1,12 @@
+#
+# Function: Test-grpcProxy
+# checks if the grpc_proxy environment variable is set
+#
 function Test-grpcProxy {
     try {
+        # Read the grpc_proxy environment variable from the machine (system) context
         $machineGrpcProxy = [System.Environment]::GetEnvironmentVariable("grpc_proxy", "Machine")
+        # Read the grpc_proxy environment variable from the user context
         $userGrpcProxy    = [System.Environment]::GetEnvironmentVariable("grpc_proxy", "User")
 
         if ($machineGrpcProxy) {
@@ -15,6 +21,7 @@ function Test-grpcProxy {
             Write-Log -Message "User-level grpc_proxy variable is not set." -Level "INFO"
         }
 
+        # Return true if both variables are set; otherwise, false
         return ($machineGrpcProxy -and $userGrpcProxy)
     }
     catch {

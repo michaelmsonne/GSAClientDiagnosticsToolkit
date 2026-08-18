@@ -15,8 +15,10 @@ function Test-InternetConnectivity {
         [int]$TimeoutMs       = 5000
     )
 
+    # Set default state for tests
     $allTestsPassed = $true
 
+    # Check for active network interfaces with default routes
     $defaultRoutes = Get-NetRoute -DestinationPrefix "0.0.0.0/0" | Where-Object { $_.NextHop -ne "::" }
     if ($defaultRoutes) {
         Write-Log "Active network interfaces with default routes detected." "INFO"
@@ -25,6 +27,7 @@ function Test-InternetConnectivity {
         $allTestsPassed = $false
     }
 
+    # Test reachability of specified websites
     foreach ($site in $Websites) {
         $testResult = Test-NetConnection -ComputerName $site -InformationLevel Quiet
         if ($testResult) {
@@ -35,7 +38,9 @@ function Test-InternetConnectivity {
         }
     }
 
+    # Test reachability of specified DNS servers over TCP and UDP
     foreach ($dns in $DnsServers) {
+        # UDP Check
         $udpTestResult = Test-UDPPort -IPAddress $dns -Timeout $TimeoutMs
         if ($udpTestResult) {
             Write-Log "DNS server $dns is reachable on UDP port 53." "INFO"

@@ -37,7 +37,8 @@ function Test-EntraIDConnectivity {
             try {
                 $sslStream.AuthenticateAsClient($uri.Host)
 
-                if ($script:LogLevel -eq "DEBUG") {
+                # Log certificate details if in DEBUG mode
+            if ($script:LogLevel -eq "DEBUG") {
                     $remoteCertificate = $sslStream.RemoteCertificate
                     if ($remoteCertificate) {
                         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 $remoteCertificate

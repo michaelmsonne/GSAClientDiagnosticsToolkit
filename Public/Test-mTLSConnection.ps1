@@ -22,11 +22,13 @@ function Test-mTLSConnection {
         $warningsLogged = $true
     }
 
+    # Retrieve mTLS-capable certificates from the LocalMachine "My" store.
     $mtlsCertificates = Get-mTLSCertificates
 
     if ($mtlsCertificates.Count -eq 0) {
         Write-Log "No mTLS-capable certificates were found." "WARNING"
         Write-Log "This could be normal, if the tenant is not yet onboarded to mTLS" "WARNING"
+        # Skip the test since no certificates are available
         Write-Log "Skipping mTLS connection attempts due to lack of mTLS-capable certificates." "INFO"
         return [PSCustomObject]@{
             Passed   = $true
@@ -53,9 +55,10 @@ function Test-mTLSConnection {
 
             $sslStream = New-Object System.Net.Security.SslStream($tcpClient.GetStream(), $false, ({ $true }))
             try {
+                # Prepare client certificate collection if provided.
                 $clientCerts = New-Object System.Security.Cryptography.X509Certificates.X509CertificateCollection
                 if ($ClientCert) { [void]$clientCerts.Add($ClientCert) }
-
+                # Attempt the mTLS handshake using TLS 1.2
                 $sslStream.AuthenticateAsClient($fqdn, $clientCerts, [System.Security.Authentication.SslProtocols]::Tls12, $false)
                 $ismTLSdone = $sslStream.Ismutuallyauthenticated
                 Write-Log "mTLS handshake succeeded for $fqdn with certificate $($ClientCert.Subject) mTLS: $ismTLSdone" "SUCCESS"
@@ -77,6 +80,7 @@ function Test-mTLSConnection {
         }
     }
 
+    # Determine the final result
     if (-not $allTestsPassed) {
         Write-Log "One or more mTLS connection attempts failed." "WARNING"
         $warningsLogged = $true

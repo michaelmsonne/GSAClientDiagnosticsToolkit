@@ -18,14 +18,17 @@ function Test-TLSConnection {
         Write-Log "Checking connection to: $fqdn on port $port" "INFO"
 
         try {
+            # Create and connect the TCP client
             $tcpClient = [System.Net.Sockets.TcpClient]::new($fqdn, $port)
             Write-Log "TCP connection successful to $fqdn" "SUCCESS"
 
+            # Create and authenticate the SSL stream
             $sslStream = [System.Net.Security.SslStream]::new($tcpClient.GetStream(), $false, { $true })
             try {
                 $sslStream.AuthenticateAsClient($fqdn)
                 Write-Log "TLS handshake successful with $fqdn" "SUCCESS"
 
+                # Log certificate details if in DEBUG mode
                 if ($script:LogLevel -eq "DEBUG") {
                     $remoteCertificate = $sslStream.RemoteCertificate
                     if ($remoteCertificate) {

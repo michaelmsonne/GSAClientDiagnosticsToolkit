@@ -15,8 +15,10 @@ function Test-DnsResolution {
         Write-Log "Checking DNS resolution for: $fqdn" "INFO"
 
         try {
+            # Resolve DNS for all record types
             $records = Resolve-DnsName -Name $fqdn -NoHostsFile -ErrorAction Stop
 
+            # Extract A and AAAA records (IP addresses)
             $ipAddresses = $records | Where-Object { $_.QueryType -eq "A" -or $_.QueryType -eq "AAAA" } |
                            Select-Object -ExpandProperty IPAddress -Unique
 
@@ -26,6 +28,7 @@ function Test-DnsResolution {
                 Write-Log "DNS resolution for $fqdn did not return any A/AAAA records." "WARNING"
             }
 
+            # Retrieve the CNAME chain (if any)
             $cnameChain = Get-DnsChain -fqdn $fqdn
             if ($cnameChain.Count -gt 0) {
                 Write-Log "CNAME chain for $fqdn (Depth: $($cnameChain.Count)): $fqdn -> $($cnameChain -join ' -> ')" "INFO"

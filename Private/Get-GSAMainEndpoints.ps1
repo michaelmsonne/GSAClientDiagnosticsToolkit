@@ -1,3 +1,6 @@
+# 
+# Function: Extract Edge Addresses from JSON
+# 
 function Get-GSAMainEndpoints {
     param ([object]$jsonContent)
 
@@ -8,11 +11,14 @@ function Get-GSAMainEndpoints {
 
     $channelEndpoints = @()
 
+    # Iterate through each channel in the JSON content
     foreach ($channel in $jsonContent.policy.channels) {
         $edges         = @()
+        # Check if the channel has edges settings
         $channelName   = $channel.name
         $diagnosticUri = $channel.diagnosticUri
 
+        # Check if the channel has edges settings and extract edge addresses
         if ($channel.edgesSettings.primaryEdges) {
             foreach ($edge in $channel.edgesSettings.primaryEdges) {
                 $edges += $edge.edgeAddress
@@ -25,6 +31,7 @@ function Get-GSAMainEndpoints {
             }
         }
 
+        # Create an object for each channel
         $channelEndpoints += [PSCustomObject]@{
             ChannelName   = $channelName
             EdgeAddresses = $edges

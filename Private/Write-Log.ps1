@@ -1,3 +1,11 @@
+# 
+# Function: Logging with Console Output (thread safe)
+# 
+# This function will log messages to the console and a log file.
+# It uses a global lock object to ensure thread safety.
+# Input parameters:
+# - Message: The message to log.
+# - Level: The log level (ERROR, WARNING, INFO, DEBUG, SUCCESS). Default is INFO.
 function Write-Log {
     param (
         [string]$Message,
