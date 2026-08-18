@@ -9,11 +9,16 @@ function Test-InternetConnectivity {
 .PARAMETER TimeoutMs
     UDP receive timeout in milliseconds.
 #>
+    [CmdletBinding()]
     param (
         [string[]]$Websites   = @("www.google.com", "www.microsoft.com"),
         [string[]]$DnsServers = @("1.1.1.1", "8.8.8.8", "9.9.9.9"),
-        [int]$TimeoutMs       = 5000
+        [int]$TimeoutMs       = 5000,
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
     )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
 
     # Set default state for tests
     $allTestsPassed = $true

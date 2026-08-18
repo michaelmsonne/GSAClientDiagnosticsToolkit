@@ -5,9 +5,14 @@ function Test-DiagnosticUris {
 .PARAMETER DiagnosticUris
     List of diagnostic URIs to test.
 #>
+    [CmdletBinding()]
     param (
-        [string[]]$DiagnosticUris
+        [string[]]$DiagnosticUris,
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
     )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
 
     if (-not $DiagnosticUris -or $DiagnosticUris.Count -eq 0) {
         Write-Log "No DiagnosticUris to test." "WARNING"

@@ -7,10 +7,15 @@ function Test-TLSConnection {
 .PARAMETER port
     TCP port to connect on (default: 443).
 #>
+    [CmdletBinding()]
     param (
         [string[]]$fqdnList,
-        [int]$port = 443
+        [int]$port = 443,
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
     )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
 
     $allTestsPassed = $true
 

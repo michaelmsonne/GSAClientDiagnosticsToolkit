@@ -14,6 +14,14 @@ function Test-GSAEventLog {
     If errors are found they are logged as warnings with EventId and truncated message.
     The test does not fail on log errors - it is diagnostic-only.
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     $lookbackHours = 1
     $maxEvents     = 200
 

@@ -12,6 +12,14 @@ function Test-DeviceEntraStatus {
     2. Reads HKCU\Software\Microsoft\Global Secure Access Client\IsPrivateAccessDisabledByUser
        and warns if Private Access has been switched off by the user.
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     $allTestsPassed = $true
 
     # Check Entra ID join status via dsregcmd

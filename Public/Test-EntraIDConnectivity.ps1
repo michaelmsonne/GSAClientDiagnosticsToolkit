@@ -7,6 +7,7 @@ function Test-EntraIDConnectivity {
 .PARAMETER Timeout
     HTTP request timeout in seconds.
 #>
+    [CmdletBinding()]
     param (
         [string[]]$Endpoints = @(
             "https://login.microsoftonline.com",         # Microsoft Azure Worldwide
@@ -22,8 +23,12 @@ function Test-EntraIDConnectivity {
             "https://device.login.microsoftonline.com",  # Device Auth
             "https://certauth.login.microsoftonline.com" # CBA AuthN
         ),
-        [int]$Timeout = 15
+        [int]$Timeout = 15,
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
     )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
 
     $allTestsPassed = $true
 

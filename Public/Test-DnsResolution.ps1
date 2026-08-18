@@ -5,9 +5,14 @@ function Test-DnsResolution {
 .PARAMETER fqdnList
     List of FQDNs to resolve.
 #>
+    [CmdletBinding()]
     param (
-        [string[]]$fqdnList
+        [string[]]$fqdnList,
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
     )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
 
     $allTestsPassed = $true
 

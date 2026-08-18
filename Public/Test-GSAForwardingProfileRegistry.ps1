@@ -12,7 +12,13 @@ function Test-GSAForwardingProfileRegistry {
         2. The value is not empty
         3. The JSON is parseable and contains at least one channel
     Provides specific recommended actions for each failure point.
-#>
+#>    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
     $allTestsPassed = $true
     $registryPath   = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
     $valueName      = "ForwardingProfile"

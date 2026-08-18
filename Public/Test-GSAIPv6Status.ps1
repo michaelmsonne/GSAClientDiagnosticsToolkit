@@ -14,6 +14,14 @@ function Test-GSAIPv6Status {
     Disable IPv6 (ms_tcpip6 binding) on physical adapters to ensure all traffic
     is routed through GSA. Virtual adapters (e.g., loopback, Hyper-V) are skipped.
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     $warningsFound = $false
 
     Write-Log "Checking IPv6 binding on active physical network adapters - GSA does not support IPv6..." "INFO"

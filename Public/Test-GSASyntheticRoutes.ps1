@@ -14,6 +14,14 @@ function Test-GSASyntheticRoutes {
     indicates the tunnel may not be active or no tunneled traffic has flowed yet.
     This is a WARNING-only test (not a hard failure) since routes only appear dynamically.
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     Write-Log "Checking for GSA synthetic IP routes (6.6.x.x) in the routing table..." "INFO"
 
     try {

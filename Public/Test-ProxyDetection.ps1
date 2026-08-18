@@ -9,11 +9,16 @@ function Test-ProxyDetection {
 .PARAMETER TimeoutSec
     Request timeout in seconds.
 #>
+    [CmdletBinding()]
     param (
         [string]$TestUrlHttp  = "http://www.msftconnecttest.com/connecttest.txt",
         [string]$TestUrlHttps = "https://www.microsoft.com",
-        [int]$TimeoutSec      = 10
+        [int]$TimeoutSec      = 10,
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
     )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
 
     $result = [PSCustomObject]@{
         ProxyFound                  = $false

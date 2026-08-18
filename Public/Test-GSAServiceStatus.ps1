@@ -14,6 +14,14 @@ function Test-GSAServiceStatus {
         - GlobalSecureAccessDriver                (Driver)
         - GlobalSecureAccessPolicyRetrieverService / GlobalSecureAccessForwardingProfileService (Forwarding Profile)
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     $allTestsPassed = $true
 
     # Fixed-name services that must each be Running

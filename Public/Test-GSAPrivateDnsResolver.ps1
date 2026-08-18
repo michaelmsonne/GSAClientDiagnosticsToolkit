@@ -14,6 +14,14 @@ function Test-GSAPrivateDnsResolver {
     is up and DNS forwarding is functioning. A timeout or connection failure means the tunnel
     is not active or Private Access is not enabled.
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     Write-Log "Querying GSA Private DNS resolver (6.6.255.254) via TCP..." "INFO"
 
     try {

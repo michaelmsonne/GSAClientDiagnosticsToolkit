@@ -13,6 +13,14 @@ function Test-GSAPrimaryRefreshToken {
     Common causes: no network to Entra ID endpoints, Conditional Access blocking sign-in,
     or device health issues.
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     Write-Log "Checking Primary Refresh Token (PRT) status via dsregcmd..." "INFO"
 
     try {

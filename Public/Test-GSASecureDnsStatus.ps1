@@ -14,6 +14,14 @@ function Test-GSASecureDnsStatus {
     so traffic is not tunneled. Checks HKLM and HKCU policy registry keys for both browsers.
     Disable DoH via Group Policy (DnsOverHttpsMode = off) or in browser settings.
 #>
+    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
     $allPassed = $true
 
     $browsers = @(

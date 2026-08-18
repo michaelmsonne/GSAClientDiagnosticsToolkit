@@ -14,7 +14,13 @@ function Test-GSAForwardingProfileTimestamp {
     downloaded. A value older than 2 hours is flagged as a warning since profile changes
     can take up to 1 hour to propagate; older than that suggests a retrieval failure.
     Fix: delete ForwardingProfileTimestamp and restart GlobalSecureAccessForwardingProfileService.
-#>
+#>    [CmdletBinding()]
+    param (
+        [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
+        [string]$LogLevel
+    )
+
+    if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
     $registryPath  = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
     $valueName     = "ForwardingProfileTimestamp"
     $warnAgeHours  = 2
