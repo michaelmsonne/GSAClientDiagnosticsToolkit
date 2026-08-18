@@ -21,6 +21,10 @@ function Test-GSAPrimaryRefreshToken {
 
         if ($prtPresent) {
             Write-Log "Primary Refresh Token (AzureAdPrt) is present - device can authenticate with Entra ID." "SUCCESS"
+            if ($script:LogLevel -eq "DEBUG") {
+                $prtTime = $dsregOutput | Select-String -Pattern '^\s*AzureAdPrtUpdateTime\s*:' | Select-Object -First 1
+                if ($prtTime) { Write-Log "  AzureAdPrtUpdateTime : $(($prtTime.ToString() -split ':', 2)[1].Trim())" "DEBUG" }
+            }
             return $true
         } else {
             Write-Log "Primary Refresh Token (AzureAdPrt) is NOT present. The GSA client cannot authenticate. Ensure the device is Entra Joined, has network connectivity to login.microsoftonline.com, and no Conditional Access policy is blocking sign-in." "ERROR"

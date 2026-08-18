@@ -32,10 +32,13 @@ function Get-DnsChain {
     # Look for CNAME records in the result.
     $cnameRecords = $records | Where-Object { $_.QueryType -eq "CNAME" }
     foreach ($record in $cnameRecords) {
+        $target = $record.NameHost
+        # Skip self-referential CNAMEs (injected by GSA synthetic DNS) and already-visited targets
+        if ([string]::IsNullOrEmpty($target) -or $target -eq $fqdn -or $visited.ContainsKey($target)) { continue }
         # Append the CNAME target.
-        $chain += $record.Name
+        $chain += $target
         # Recursively check for additional CNAMEs.
-        $childChain = Get-DnsChain -fqdn $record.Name -depth ($depth + 1) -visited $visited
+        $childChain = Get-DnsChain -fqdn $target -depth ($depth + 1) -visited $visited
         if ($childChain) { $chain += $childChain }
     }
     return $chain

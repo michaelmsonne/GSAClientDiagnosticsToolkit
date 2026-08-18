@@ -22,6 +22,12 @@ function Test-DeviceEntraStatus {
 
         if ($entraJoined) {
             Write-Log "Device '$($env:COMPUTERNAME)' is connected to Microsoft Entra ID." "SUCCESS"
+            if ($script:LogLevel -eq "DEBUG") {
+                foreach ($field in @('DomainJoined', 'TenantId', 'TenantDisplayName', 'AzureAdPrtUpdateTime')) {
+                    $line = $dsregOutput | Select-String -Pattern "^\s*$field\s*:" | Select-Object -First 1
+                    if ($line) { Write-Log "  $field : $(($line.ToString() -split ':', 2)[1].Trim())" "DEBUG" }
+                }
+            }
         } else {
             Write-Log "Device '$($env:COMPUTERNAME)' is NOT connected to Microsoft Entra ID. Ensure the device is Entra Joined or Hybrid Entra Joined." "ERROR"
             $allTestsPassed = $false

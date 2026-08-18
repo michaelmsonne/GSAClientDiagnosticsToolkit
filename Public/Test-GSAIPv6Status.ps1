@@ -31,6 +31,13 @@ function Test-GSAIPv6Status {
             $binding = Get-NetAdapterBinding -Name $adapter.Name -ComponentID ms_tcpip6 -ErrorAction SilentlyContinue
             if ($binding.Enabled) {
                 Write-Log "IPv6 is ENABLED on adapter '$($adapter.Name)'. Disable it to prevent IPv6 traffic from bypassing the GSA tunnel." "WARNING"
+                if ($script:LogLevel -eq "DEBUG") {
+                    $v6addrs = Get-NetIPAddress -InterfaceAlias $adapter.Name -AddressFamily IPv6 -ErrorAction SilentlyContinue |
+                               Where-Object { $_.IPAddress -ne '::1' }
+                    foreach ($addr in $v6addrs) {
+                        Write-Log "  IPv6 on '$($adapter.Name)': $($addr.IPAddress)/$($addr.PrefixLength)" "DEBUG"
+                    }
+                }
                 $warningsFound = $true
             } else {
                 Write-Log "IPv6 is disabled on adapter '$($adapter.Name)'." "INFO"

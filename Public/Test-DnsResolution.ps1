@@ -31,7 +31,11 @@ function Test-DnsResolution {
             # Retrieve the CNAME chain (if any)
             $cnameChain = Get-DnsChain -fqdn $fqdn
             if ($cnameChain.Count -gt 0) {
-                Write-Log "CNAME chain for $fqdn (Depth: $($cnameChain.Count)): $fqdn -> $($cnameChain -join ' -> ')" "INFO"
+                Write-Log "CNAME chain for $fqdn ($($cnameChain.Count) hop(s)):" "INFO"
+                Write-Log "  $fqdn" "INFO"
+                foreach ($hop in $cnameChain) {
+                    Write-Log "  -> $hop" "INFO"
+                }
             } else {
                 Write-Log "No CNAME records found for $fqdn." "INFO"
             }
