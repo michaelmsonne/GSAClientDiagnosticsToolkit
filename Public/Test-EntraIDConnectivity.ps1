@@ -11,8 +11,8 @@ function Test-EntraIDConnectivity {
         [string[]]$Endpoints = @(
             "https://login.microsoftonline.com",         # Microsoft Azure Worldwide
             "https://login.windows.net",                 # Token provider for Entra ID/Azure AD
-            "https://login.microsoft.com",               # 
-            "https://logincert.microsoftonline.com",     #
+            "https://login.microsoft.com",               # Microsoft Authentication endpoint
+            "https://logincert.microsoftonline.com",     # Microsoft Authentication endpoint for CBA (Certificate Based Authentication)
             "https://graph.microsoft.com",               # Microsoft Graph API
             "https://sts.windows.net",                   # Security Token Service
             "https://login.live.com",                    # Microsoft Account endpoint 
