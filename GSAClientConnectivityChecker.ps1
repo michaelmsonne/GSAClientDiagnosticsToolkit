@@ -903,7 +903,6 @@ function Test-GSAEventLog {
 #
 # Function: Test-GSAForwardingProfileRegistry
 # Verifies the GSA ForwardingProfile registry key exists, is non-empty, and is parseable JSON.
-# Based on testGSAClientProfile() from GSATool by mzmaili (https://github.com/mzmaili/GSATool)
 #
 function Test-GSAForwardingProfileRegistry {
     $allTestsPassed = $true
@@ -960,7 +959,6 @@ function Test-GSAForwardingProfileRegistry {
 #
 # Function: Test-GSASyntheticRoutes
 # Checks whether GSA synthetic IP routes (6.6.x.x) are present in the routing table.
-# Inspired by GSATool's synthetic IP tunnel verification by mzmaili (https://github.com/mzmaili/GSATool)
 #
 function Test-GSASyntheticRoutes {
     Write-Log "Checking for GSA synthetic IP routes (6.6.x.x) in the routing table..." "INFO"
@@ -990,7 +988,6 @@ function Test-GSASyntheticRoutes {
 #
 # Function: Test-GSAPrivateDnsResolver
 # Queries the GSA-internal DNS resolver at 6.6.255.254 to confirm Private Access tunnel is active.
-# Inspired by Resolve-DnsName -Server 6.6.255.254 in GSATool by mzmaili (https://github.com/mzmaili/GSATool)
 #
 function Test-GSAPrivateDnsResolver {
     Write-Log "Querying GSA Private DNS resolver (6.6.255.254) via TCP..." "INFO"
@@ -1016,7 +1013,6 @@ function Test-GSAPrivateDnsResolver {
 #
 # Function: Test-GSAServiceStatus
 # Checks that all required Global Secure Access Windows services are running.
-# Based on checks from GSATool by mzmaili (https://github.com/mzmaili/GSATool)
 #
 function Test-GSAServiceStatus {
     $allTestsPassed = $true
@@ -1064,7 +1060,6 @@ function Test-GSAServiceStatus {
 #
 # Function: Test-DeviceEntraStatus
 # Checks that the device is Entra Joined and that Private Access is not user-disabled.
-# Based on checks from GSATool by mzmaili (https://github.com/mzmaili/GSATool)
 #
 function Test-DeviceEntraStatus {
     $allTestsPassed = $true
