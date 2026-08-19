@@ -102,7 +102,9 @@ function Invoke-GSAClientConnectivityCheck {
         $scriptBlock = $tests[$testName]
         $params = $testParams[$testName]
 
+        $script:_testResult = $null
         $result = if ($params) { & $scriptBlock @params } else { & $scriptBlock }
+        if ($null -eq $result -and $null -ne $script:_testResult) { $result = $script:_testResult }
         # If a test function leaked extra pipeline output, extract the PSCustomObject
         if ($result -is [array]) {
             $result = $result | Where-Object { $_ -is [PSCustomObject] } | Select-Object -Last 1
