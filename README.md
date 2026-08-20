@@ -16,7 +16,7 @@
 A PowerShell module that runs connectivity, proxy, health probe, and mTLS diagnostic checks for the **Microsoft Global Secure Access (GSA) Client**.
 
 > [!IMPORTANT]
-> Requires **PowerShell 5.1 or later**. Most checks must be run on a machine with the **Global Secure Access (GSA) Client** installed.
+> Requires **PowerShell 5.1 or later**. Some checks must be run on a machine with the **Global Secure Access (GSA) Client** installed.
 
 ---
 
@@ -159,6 +159,28 @@ Invoke-GSAClientConnectivityCheck [-LogLevel <string>] [-BasePath <string>] [-Lo
 | `BasePath` | Current directory | Directory where the log file is written |
 | `LogFileName` | `GSAClientConnectivityChecker.log` | Name of the log file |
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 18:00:00] [INFO] ========= GSA Client Connectivity Checker v. 1.0.0 Started =========
+[2026-08-20 18:00:00] [INFO] Device Name : CONTOSO-LAPTOP01
+[2026-08-20 18:00:00] [INFO] User Account: user@contoso.com
+[2026-08-20 18:00:01] [INFO] ===== Executing: GSA Service Status =========
+[2026-08-20 18:00:01] [SUCCESS] ===== GSA Service Status : PASSED =========
+[2026-08-20 18:00:01] [INFO] ===== Executing: Device Entra Status =========
+[2026-08-20 18:00:02] [SUCCESS] ===== Device Entra Status : PASSED =========
+...
+[2026-08-20 18:00:12] [INFO] ========= GSA Client Connectivity Check Completed =========
+[2026-08-20 18:00:12] [INFO] Summary: 17 tests passed, 0 tests failed, 0 tests with warnings.
+[2026-08-20 18:00:12] [SUCCESS] All tests passed successfully!
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Invoke-GSAClientConnectivityCheck - full diagnostic run](docs/images/screenshot-full-check.png)
+
 ---
 
 ### `Get-GSAEndpoints`
@@ -169,6 +191,19 @@ Loads the GSA ForwardingProfile JSON from the registry and returns the list of e
 Get-GSAEndpoints [-RegistryValueName <string>]
 ```
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 18:01:00] [INFO] Successfully read JSON data from registry path: HKLM:\SOFTWARE\Microsoft\Global Secure Access Client
+[2026-08-20 18:01:00] [INFO] Extracted 3 channel entries with endpoint data.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Get-GSAEndpoints - example output](docs/images/screenshot-get-gsa-endpoints.png)
+
 ---
 
 ### `Save-EdgeAddresses`
@@ -178,6 +213,18 @@ Saves a list of edge address FQDNs to a file.
 ```powershell
 Save-EdgeAddresses -fqdnList <string[]> -filePath <string>
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 18:02:00] [SUCCESS] Edge addresses saved to: C:\Temp\edges.txt
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Save-EdgeAddresses - example output](docs/images/screenshot-save-edge-addresses.png)
 
 ---
 
@@ -191,6 +238,28 @@ Test-GSAServiceStatus [-LogLevel <string>]
 
 Services checked: `GlobalSecureAccessTunnelingService`, `GlobalSecureAccessClientManagerService`, `GlobalSecureAccessEngineService`, `GlobalSecureAccessDriver`, and the forwarding profile service.
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:52:52] [SUCCESS] Global Secure Access Client installation found at: C:\Program Files\Global Secure Access Client
+[2026-08-20 16:52:52] [INFO] Checking Tunneling Service (GlobalSecureAccessTunnelingService)...
+[2026-08-20 16:52:52] [SUCCESS] Tunneling Service is running.
+[2026-08-20 16:52:52] [INFO] Checking Client Manager Service (GlobalSecureAccessClientManagerService)...
+[2026-08-20 16:52:52] [SUCCESS] Client Manager Service is running.
+[2026-08-20 16:52:52] [INFO] Checking Engine Service (GlobalSecureAccessEngineService)...
+[2026-08-20 16:52:52] [SUCCESS] Engine Service is running.
+[2026-08-20 16:52:52] [INFO] Checking Driver Service (GlobalSecureAccessDriver)...
+[2026-08-20 16:52:52] [SUCCESS] Driver Service is running.
+[2026-08-20 16:52:52] [INFO] Checking Forwarding Profile Service...
+[2026-08-20 16:52:52] [SUCCESS] Forwarding Profile Service is running.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAServiceStatus - example output](docs/images/screenshot-gsa-service-status.png)
+
 ---
 
 ### `Test-DeviceEntraStatus`
@@ -200,6 +269,21 @@ Checks whether the device is Entra ID joined or registered.
 ```powershell
 Test-DeviceEntraStatus [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:52:52] [INFO] Checking if device is connected to Microsoft Entra ID...
+[2026-08-20 16:52:52] [SUCCESS] Device 'CONTOSO-LAPTOP01' is connected to Microsoft Entra ID.
+[2026-08-20 16:52:52] [INFO] Checking Private Access user-disable registry flag...
+[2026-08-20 16:52:52] [SUCCESS] Private Access is enabled (IsPrivateAccessDisabledByUser is not set or is 0).
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-DeviceEntraStatus - example output](docs/images/screenshot-device-entra-status.png)
 
 ---
 
@@ -211,6 +295,19 @@ Verifies that a valid Primary Refresh Token (PRT) is present on the device.
 Test-GSAPrimaryRefreshToken [-LogLevel <string>]
 ```
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:53:00] [INFO] Checking Primary Refresh Token (PRT) status via dsregcmd...
+[2026-08-20 16:53:00] [SUCCESS] Primary Refresh Token (AzureAdPrt) is present - device can authenticate with Entra ID.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAPrimaryRefreshToken - example output](docs/images/screenshot-gsa-primary-refresh-token.png)
+
 ---
 
 ### `Test-GSAForwardingProfileRegistry`
@@ -221,6 +318,23 @@ Validates that the GSA forwarding profile exists and is readable from the regist
 Test-GSAForwardingProfileRegistry [-LogLevel <string>]
 ```
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:54:00] [INFO] Checking ForwardingProfile registry key...
+[2026-08-20 16:54:00] [SUCCESS] ForwardingProfile registry key exists.
+[2026-08-20 16:54:00] [INFO] Checking ForwardingProfile registry value is not empty...
+[2026-08-20 16:54:00] [SUCCESS] ForwardingProfile registry value is populated.
+[2026-08-20 16:54:00] [INFO] Validating ForwardingProfile JSON...
+[2026-08-20 16:54:00] [SUCCESS] ForwardingProfile JSON is valid. Configured channel(s): m365, private, internet.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAForwardingProfileRegistry - example output](docs/images/screenshot-gsa-forwarding-profile-registry.png)
+
 ---
 
 ### `Test-GSAForwardingProfileTimestamp`
@@ -230,6 +344,19 @@ Checks the timestamp of the forwarding profile to detect stale configuration.
 ```powershell
 Test-GSAForwardingProfileTimestamp [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:55:00] [INFO] Checking ForwardingProfileTimestamp registry value...
+[2026-08-20 16:55:00] [SUCCESS] ForwardingProfile was last retrieved 0h 12m ago (UTC: 2026-08-20 14:43:00Z) - profile is current.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAForwardingProfileTimestamp - example output](docs/images/screenshot-gsa-forwarding-profile-timestamp.png)
 
 ---
 
@@ -247,6 +374,23 @@ Test-InternetConnectivity [-Websites <string[]>] [-DnsServers <string[]>] [-Time
 | `DnsServers` | `1.1.1.1`, `8.8.8.8`, `9.9.9.9` | DNS servers to test for reachability over UDP port 53 |
 | `TimeoutMs` | `5000` | UDP receive timeout in milliseconds |
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:56:00] [INFO] Active network interfaces with default routes detected.
+[2026-08-20 16:56:00] [INFO] Website www.google.com is reachable.
+[2026-08-20 16:56:00] [INFO] Website www.microsoft.com is reachable.
+[2026-08-20 16:56:01] [INFO] DNS server 1.1.1.1 is reachable on UDP port 53.
+[2026-08-20 16:56:01] [INFO] DNS server 8.8.8.8 is reachable on UDP port 53.
+[2026-08-20 16:56:01] [INFO] DNS server 9.9.9.9 is reachable on UDP port 53.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-InternetConnectivity - example output](docs/images/screenshot-internet-connectivity.png)
+
 ---
 
 ### `Test-ProxyDetection`
@@ -256,6 +400,22 @@ Detects outbound proxy configuration via system settings, transparent proxy HTTP
 ```powershell
 Test-ProxyDetection [-TestUrlHttp <string>] [-TestUrlHttps <string>] [-TimeoutSec <int>] [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:57:00] [INFO] System proxy is not configured (Direct access mode).
+[2026-08-20 16:57:00] [INFO] NO grpc_proxy environment variables are set.
+[2026-08-20 16:57:00] [INFO] SystemWebProxy: Direct connection will be used.
+[2026-08-20 16:57:01] [INFO] HTTP test request to http://www.msftconnecttest.com/connecttest.txt succeeded.
+[2026-08-20 16:57:01] [INFO] HTTPS test request to https://www.microsoft.com succeeded.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-ProxyDetection - example output](docs/images/screenshot-proxy-detection.png)
 
 ---
 
@@ -267,6 +427,20 @@ Checks whether the GSA Secure DNS feature is enabled and active.
 Test-GSASecureDnsStatus [-LogLevel <string>]
 ```
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:58:00] [INFO] Checking Secure DNS (DoH) policy settings - GSA requires DoH to be disabled...
+[2026-08-20 16:58:00] [SUCCESS] Microsoft Edge: Secure DNS (DoH) is not enforced or is set to 'off'.
+[2026-08-20 16:58:00] [SUCCESS] Google Chrome: Secure DNS (DoH) is not enforced or is set to 'off'.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSASecureDnsStatus - example output](docs/images/screenshot-gsa-secure-dns-status.png)
+
 ---
 
 ### `Test-GSAIPv6Status`
@@ -276,6 +450,20 @@ Reports the IPv6 status on the GSA tunnel adapter.
 ```powershell
 Test-GSAIPv6Status [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:59:00] [INFO] Checking IPv6 binding on active physical network adapters - GSA does not support IPv6...
+[2026-08-20 16:59:00] [INFO] IPv6 is disabled on adapter 'Ethernet'.
+[2026-08-20 16:59:00] [SUCCESS] IPv6 is disabled on all active physical adapters.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAIPv6Status - example output](docs/images/screenshot-gsa-ipv6-status.png)
 
 ---
 
@@ -287,6 +475,21 @@ Resolves each FQDN in the provided list and logs the results.
 Test-DnsResolution -fqdnList <string[]> [-LogLevel <string>]
 ```
 
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-DnsResolution -fqdnList fileserver.contoso.com
+[2026-08-20 17:00:00] [INFO] Checking DNS resolution for: fileserver.contoso.com
+[2026-08-20 17:00:00] [SUCCESS] DNS resolution for fileserver.contoso.com returned IP addresses: 10.0.0.42
+[2026-08-20 17:00:00] [INFO] No CNAME records found for fileserver.contoso.com.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-DnsResolution - example output](docs/images/screenshot-dns-resolution.png)
+
 ---
 
 ### `Test-TLSConnection`
@@ -296,6 +499,21 @@ Tests TLS (HTTPS) connectivity to each FQDN on port 443 and logs certificate det
 ```powershell
 Test-TLSConnection -fqdnList <string[]> [-port <int>] [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-TLSConnection -fqdnList edge1.mec.gsaservice.net
+[2026-08-20 17:01:00] [INFO] Checking connection to: edge1.mec.gsaservice.net on port 443
+[2026-08-20 17:01:00] [SUCCESS] TCP connection successful to edge1.mec.gsaservice.net
+[2026-08-20 17:01:00] [SUCCESS] TLS handshake successful with edge1.mec.gsaservice.net
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-TLSConnection - example output](docs/images/screenshot-tls-connection.png)
 
 ---
 
@@ -308,6 +526,22 @@ Tests mTLS connectivity using GSA client certificates from the LocalMachine cert
 ```powershell
 Test-mTLSConnection -fqdnList <string[]> [-port <int>] [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-mTLSConnection -fqdnList edge1.mec.gsaservice.net
+[2026-08-20 17:02:00] [SUCCESS] Found 1 mTLS-capable GSA client certificate(s).
+[2026-08-20 17:02:00] [INFO] Attempting mTLS connection to: edge1.mec.gsaservice.net on port 443
+[2026-08-20 17:02:00] [SUCCESS] TCP connection successful to edge1.mec.gsaservice.net
+[2026-08-20 17:02:00] [SUCCESS] mTLS handshake succeeded for edge1.mec.gsaservice.net with certificate CN=0415ab43-xxxx-xxxx-xxxx-4b40639385e4.tenant.gsa.client mTLS: True
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-mTLSConnection - example output](docs/images/screenshot-mtls-connection.png)
 
 ---
 
@@ -323,6 +557,19 @@ Test-GSAAuthCertificate [-PassThru] [-LogLevel <string>]
 |---|---|---|
 | `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 17:10:02] [INFO] Checking for a GSA mTLS authentication certificate (subject ending in 'gsa.client')...
+[2026-08-20 17:10:02] [SUCCESS] Certificate 'CN=0415ab43-xxxx-xxxx-xxxx-4b40639385e4.tenant.gsa.client' (Thumbprint: 169AC0E6CFF0E1F96B444955F781308CF7285FA4) is present and valid until 08/20/2027 17:10:02.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAAuthCertificate - example output](docs/images/screenshot-auth-certificate.png)
+
 ---
 
 ### `Export-GSAAuthCertificate`
@@ -330,13 +577,27 @@ Test-GSAAuthCertificate [-PassThru] [-LogLevel <string>]
 Exports (backs up) the GSA mTLS authentication certificate(s) - as a password-protected `.pfx` with the private key when exportable, otherwise a public-key-only `.cer` - without modifying or deleting anything. Read-only/non-destructive; use it to back up the certificate independently, or it's called automatically by `Repair-GSAAuthCertificate` before any deletion.
 
 ```powershell
-Export-GSAAuthCertificate [-BackupPath <string>] [-PassThru] [-LogLevel <string>]
+Export-GSAAuthCertificate [-BackupPath <string>] [-PassThru] [-LogLevel <string>] [-WhatIf] [-Confirm]
 ```
 
 | Parameter | Default | Description |
 |---|---|---|
 | `BackupPath` | Current directory | Directory to export the certificate backup(s) to |
 | `PassThru` | Off | Return the exported file path(s) instead of just logging them |
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Export-GSAAuthCertificate -BackupPath C:\Temp\GSACertBackup
+[2026-08-20 17:03:00] [INFO] Found GSA authentication certificate 'CN=0415ab43-xxxx-xxxx-xxxx-4b40639385e4.tenant.gsa.client' (Thumbprint: 169AC0E6CFF0E1F96B444955F781308CF7285FA4).
+[2026-08-20 17:03:05] [SUCCESS] Exported certificate (with private key) to: C:\Temp\GSACertBackup\169AC0E6CFF0E1F96B444955F781308CF7285FA4.pfx
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Export-GSAAuthCertificate - example output](docs/images/screenshot-export-auth-certificate.png)
 
 ---
 
@@ -357,6 +618,24 @@ Repair-GSAAuthCertificate [-BackupPath <string>] [-RestartEngineService] [-PassT
 | `RestartEngineService` | Off | Restart `GlobalSecureAccessEngineService` afterwards so a new certificate is provisioned immediately |
 | `PassThru` | Off | Return the `$true`/`$false` result instead of just logging it |
 
+<details>
+<summary>Sample output (-WhatIf)</summary>
+
+```text
+PS> Repair-GSAAuthCertificate -WhatIf
+[2026-08-20 17:52:52] [INFO] Backing up the certificate(s) before making any changes...
+[2026-08-20 17:52:52] [INFO] Found GSA authentication certificate 'CN=0415ab43-xxxx-xxxx-xxxx-4b40639385e4.tenant.gsa.client' (Thumbprint: 169AC0E6CFF0E1F96B444955F781308CF7285FA4).
+What if: Performing the operation "Export to ...169AC0E6CFF0E1F96B444955F781308CF7285FA4.pfx" on target "169AC0E6CFF0E1F96B444955F781308CF7285FA4 (with private key)".
+[2026-08-20 17:52:52] [ERROR] Skipping deletion of '169AC0E6CFF0E1F96B444955F781308CF7285FA4' because a backup could not be created.
+What if: Performing the operation "Remove registry value" on target "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client\CertCommonName".
+[2026-08-20 17:52:52] [WARNING] Recommended action: Restart the 'GlobalSecureAccessEngineService' service (or re-run with -RestartEngineService) so a new certificate is provisioned.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Repair-GSAAuthCertificate - example output](docs/images/screenshot-repair-auth-certificate.png)
+
 ---
 
 ### `Test-EntraIDConnectivity`
@@ -372,6 +651,21 @@ Test-EntraIDConnectivity [-Endpoints <string[]>] [-Timeout <int>] [-LogLevel <st
 | `Endpoints` | Core Entra ID/Graph/device-registration URLs | Entra ID endpoint URLs to test |
 | `Timeout` | `15` | HTTP request timeout in seconds |
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 17:04:00] [INFO] Testing connectivity to https://login.microsoftonline.com ...
+[2026-08-20 17:04:00] [SUCCESS] Successfully connected to https://login.microsoftonline.com
+[2026-08-20 17:04:00] [INFO] Testing connectivity to https://graph.microsoft.com ...
+[2026-08-20 17:04:00] [SUCCESS] Successfully connected to https://graph.microsoft.com
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-EntraIDConnectivity - example output](docs/images/screenshot-entra-id-connectivity.png)
+
 ---
 
 ### `Test-EntraIDUserAuthN`
@@ -383,6 +677,19 @@ Install-Module MSAL.PS
 Test-EntraIDUserAuthN
 ```
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 17:05:00] [INFO] Attempting authentication to Entra ID
+[2026-08-20 17:05:04] [INFO] Authentication successful. Token retrieved.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-EntraIDUserAuthN - example output](docs/images/screenshot-entra-id-user-authn.png)
+
 ---
 
 ### `Test-DiagnosticUris`
@@ -392,6 +699,19 @@ Tests connectivity to the GSA per-channel diagnostic URIs extracted from the for
 ```powershell
 Test-DiagnosticUris -DiagnosticUris <string[]> [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-DiagnosticUris -DiagnosticUris https://edgediagnostic.globalsecureaccess.microsoft.com/m365
+[2026-08-20 17:06:00] [SUCCESS] DiagnosticUrl test https://edgediagnostic.globalsecureaccess.microsoft.com/m365 succeeded. RTT: 42.13 ms
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-DiagnosticUris - example output](docs/images/screenshot-diagnostic-uris.png)
 
 ---
 
@@ -403,6 +723,19 @@ Verifies that expected synthetic routes injected by the GSA tunnel are present i
 Test-GSASyntheticRoutes [-LogLevel <string>]
 ```
 
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 17:07:00] [INFO] Checking for GSA synthetic IP routes (6.6.x.x) in the routing table...
+[2026-08-20 17:07:00] [SUCCESS] Found 2 GSA synthetic route(s) - tunnel is active and routing traffic.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSASyntheticRoutes - example output](docs/images/screenshot-gsa-synthetic-routes.png)
+
 ---
 
 ### `Test-GSAPrivateDnsResolver`
@@ -412,6 +745,19 @@ Tests whether the GSA Private DNS Resolver is active and responding.
 ```powershell
 Test-GSAPrivateDnsResolver [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 17:08:00] [INFO] Querying GSA Private DNS resolver (6.6.255.254) via TCP...
+[2026-08-20 17:08:00] [SUCCESS] GSA Private DNS resolver (6.6.255.254) responded - Private Access tunnel is active.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAPrivateDnsResolver - example output](docs/images/screenshot-gsa-private-dns-resolver.png)
 
 ---
 
@@ -431,6 +777,30 @@ Test-GSAPrivateAccessRule -FQDNorIP <string> -Port <int> -Protocol <TCP|UDP> [-R
 | `RegistryValueName` | `ForwardingProfile` | Registry value containing the GSA JSON policy |
 | `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
 
+<details>
+<summary>Sample output (pass and fail)</summary>
+
+```text
+PS> Test-GSAPrivateAccessRule -FQDNorIP homevault.home.sonnes.cloud -Port 445 -Protocol TCP
+[2026-08-20 15:45:53] [INFO] Checking Private Access rules in the local forwarding profile for homevault.home.sonnes.cloud:445/TCP...
+[2026-08-20 15:45:53] [INFO] Successfully read JSON data from registry path: HKLM:\SOFTWARE\Microsoft\Global Secure Access Client
+[2026-08-20 15:45:53] [SUCCESS] 'homevault.home.sonnes.cloud' is covered by rule 'c418cabb-18c0-45bc-9202-8848ad37c0ac' (App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702).
+[2026-08-20 15:45:53] [SUCCESS] Port 445 is configured for the matching Private Access application.
+[2026-08-20 15:45:53] [SUCCESS] Test passed: 'homevault.home.sonnes.cloud' on port 445/TCP is allowed by the local Private Access forwarding profile (Rule ID: c418cabb-18c0-45bc-9202-8848ad37c0ac, App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702).
+
+PS> Test-GSAPrivateAccessRule -FQDNorIP homevault.home.sonnes.cloud -Port 444 -Protocol TCP
+[2026-08-20 15:46:09] [INFO] Checking Private Access rules in the local forwarding profile for homevault.home.sonnes.cloud:444/TCP...
+[2026-08-20 15:46:09] [INFO] Successfully read JSON data from registry path: HKLM:\SOFTWARE\Microsoft\Global Secure Access Client
+[2026-08-20 15:46:09] [SUCCESS] 'homevault.home.sonnes.cloud' is covered by rule '4e7c99e2-1a17-4529-b7d6-5f74295b90b7' (App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702).
+[2026-08-20 15:46:09] [ERROR] Port 444 is NOT configured for the matching Private Access application (App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702).
+[2026-08-20 15:46:09] [WARNING] Recommended action: Add port 444 to the application segment for App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAPrivateAccessRule - example output](docs/images/screenshot-private-access-rule.png)
+
 ---
 
 ### `Test-GSAPrivateAccessTunnel`
@@ -440,6 +810,22 @@ Opens a live TCP connection to the target FQDN/IP and port to verify traffic is 
 ```powershell
 Test-GSAPrivateAccessTunnel -FQDNorIP <string> -Port <int> -Protocol <TCP|UDP> [-PassThru] [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-GSAPrivateAccessTunnel -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
+[2026-08-20 17:09:00] [INFO] Checking Private Access tunnel connectivity to fileserver.contoso.com:445...
+[2026-08-20 17:09:00] [SUCCESS] Tunnel connection established. Synthetic address: 6.6.0.12
+[2026-08-20 17:09:00] [SUCCESS] Internal address for fileserver.contoso.com resolved via GSA Private DNS: 10.0.0.42
+[2026-08-20 17:09:00] [SUCCESS] Test passed: tunnel to fileserver.contoso.com on port 445 established successfully via GSA (synthetic address: 6.6.0.12).
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAPrivateAccessTunnel - example output](docs/images/screenshot-private-access-tunnel.png)
 
 ---
 
@@ -456,6 +842,23 @@ Test-GSAClientProfileConnectivity [-ProfileType <m365|private|internet>[,...]] [
 | `ProfileType` | All three (`m365`, `private`, `internet`) | One or more of `m365`, `private`, `internet` to test |
 | `RegistryValueName` | `ForwardingProfile` | Registry value containing the GSA JSON policy |
 | `PassThru` | Off | Return the combined `$true`/`$false` test result (across all tested profiles) instead of just logging it |
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 17:11:00] [INFO] Checking Private Access profile...
+[2026-08-20 17:11:00] [SUCCESS] Private Access forwarding profile configuration has been retrieved.
+[2026-08-20 17:11:00] [INFO] Checking connectivity to Private Access edge...
+[2026-08-20 17:11:00] [SUCCESS] Connection to the Private Access primary edge (edge1.mec.gsaservice.net:443) succeeded.
+[2026-08-20 17:11:00] [INFO] Checking connectivity to the Private Access diagnostic endpoint...
+[2026-08-20 17:11:01] [SUCCESS] Connection to the Private Access diagnostic endpoint succeeded.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAClientProfileConnectivity - example output](docs/images/screenshot-gsa-client-profile-connectivity.png)
 
 ---
 
@@ -475,6 +878,23 @@ Test-GSAForwardingProfileAssignment [-AccessToken <string>] -ProfileType <m365|p
 | `ProfileType` | *(required)* | `m365`, `private`, or `internet` |
 | `UserPrincipalName` | Current signed-in user (`whoami /upn`) | UPN of the user to check assignment for |
 | `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 16:52:52] [INFO] Checking the Global Secure Access activation status...
+[2026-08-20 16:52:52] [SUCCESS] Global Secure Access is activated in the tenant.
+[2026-08-20 16:52:52] [INFO] Checking the Microsoft Traffic forwarding profile...
+[2026-08-20 16:52:55] [SUCCESS] Microsoft Traffic forwarding profile is enabled.
+[2026-08-20 16:52:55] [INFO] Checking user assignment to the Microsoft Traffic forwarding profile...
+[2026-08-20 16:52:56] [SUCCESS] 'michael@sonnes.cloud' is assigned to the Microsoft Traffic profile.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAForwardingProfileAssignment - example output](docs/images/screenshot-gsa-forwarding-profile-assignment.png)
 
 ---
 
@@ -496,6 +916,23 @@ Test-GSAPrivateAccessApplicationSegment [-AccessToken <string>] -AppId <string> 
 | `UserPrincipalName` | Current signed-in user (`whoami /upn`) | UPN of the user to check assignment for |
 | `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
 
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-GSAPrivateAccessApplicationSegment -AppId 5c3b2f7c-64fa-4d4f-aa39-1807c82db702 -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
+[2026-08-20 17:12:00] [INFO] Checking Private Access application status...
+[2026-08-20 17:12:00] [SUCCESS] Private Access application (App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702) is enabled.
+[2026-08-20 17:12:00] [INFO] Checking Private Access application user assignment...
+[2026-08-20 17:12:01] [SUCCESS] 'user@contoso.com' is assigned to the Private Access application (App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702).
+[2026-08-20 17:12:01] [SUCCESS] Test passed: 'fileserver.contoso.com' on port 445/TCP is configured for the Private Access application (App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702).
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAPrivateAccessApplicationSegment - example output](docs/images/screenshot-private-access-application-segment.png)
+
 ---
 
 ### `Test-GSAPrivateAccessApplication`
@@ -516,6 +953,22 @@ Test-GSAPrivateAccessApplication [-AccessToken <string>] -AppId <string> -FQDNor
 | `UserPrincipalName` | Current signed-in user (`whoami /upn`) | UPN of the user to check assignment for |
 | `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
 
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-GSAPrivateAccessApplication -AppId 5c3b2f7c-64fa-4d4f-aa39-1807c82db702 -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
+[2026-08-20 17:13:00] [INFO] Checking Private Access application configuration...
+[2026-08-20 17:13:00] [SUCCESS] Access with Global Secure Access client is enabled for 'FileServer App'.
+[2026-08-20 17:13:02] [INFO] Checking tunnel establishment for 'FileServer App'...
+[2026-08-20 17:13:02] [SUCCESS] Test passed: Private Access application 'FileServer App' (App ID: 5c3b2f7c-64fa-4d4f-aa39-1807c82db702) is fully configured and reachable for 'fileserver.contoso.com' on port 445/TCP.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAPrivateAccessApplication - example output](docs/images/screenshot-private-access-application.png)
+
 ---
 
 ### `Test-GSAEventLog`
@@ -525,6 +978,19 @@ Reads the GSA event log and reports recent errors and warnings.
 ```powershell
 Test-GSAEventLog [-LogLevel <string>]
 ```
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-08-20 17:14:00] [INFO] Scanning GSA event log 'Microsoft-Windows-Global Secure Access Client-Operational' for Critical/Error/Warning events in the last 1 hour(s)...
+[2026-08-20 17:14:00] [SUCCESS] No Critical/Error/Warning events found in the GSA event log in the last 1 hour(s).
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAEventLog - example output](docs/images/screenshot-gsa-event-log.png)
 
 ---
 
