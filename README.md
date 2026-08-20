@@ -1,8 +1,13 @@
 # GSAClientConnectivityChecker
 
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white)](https://learn.microsoft.com/powershell/)
+[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)](https://learn.microsoft.com/windows/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A PowerShell module that runs connectivity, proxy, health probe, and mTLS diagnostic checks for the **Microsoft Global Secure Access (GSA) Client**.
 
-> Requires PowerShell 5.1 or later. Most checks require the script to run on a machine with the GSA Client installed.
+> [!IMPORTANT]
+> Requires **PowerShell 5.1 or later**. Most checks must be run on a machine with the **Global Secure Access (GSA) Client** installed.
 
 ---
 
