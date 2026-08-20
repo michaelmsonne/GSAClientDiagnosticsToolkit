@@ -13,8 +13,14 @@
     # Minimum PowerShell version required
     PowerShellVersion = '5.1'
 
+    # Windows PowerShell only - relies on registry, dsregcmd, netsh, and Get-NetAdapter
+    CompatiblePSEditions = @('Desktop')
+
     # Module file
     RootModule        = 'GSAClientConnectivityChecker.psm1'
+
+    # Online help landing page for Get-Help -Online
+    HelpInfoURI       = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker/blob/main/README.md'
 
     # Functions to export (controls public API surface)
     FunctionsToExport = @(
@@ -52,7 +58,8 @@
         PSData = @{
             Tags         = @('GSA', 'GlobalSecureAccess', 'Connectivity', 'Diagnostics', 'Entra', 'mTLS', 'Microsoft')
             ProjectUri   = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker'
-            ReleaseNotes = 'Initial module release.'
+            LicenseUri   = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker/blob/main/LICENSE'
+            ReleaseNotes = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker/releases'
         }
     }
 }
