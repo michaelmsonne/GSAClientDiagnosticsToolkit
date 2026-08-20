@@ -39,6 +39,6 @@ function Get-GSAMainEndpoints {
         }
     }
 
-    Write-Log "Extracted $($channelEndpoints.Count) channel entries with endpoint data."
+    Write-Log "Extracted $($channelEndpoints.Count) channel entries with endpoint data." "INFO"
     return $channelEndpoints
 }
