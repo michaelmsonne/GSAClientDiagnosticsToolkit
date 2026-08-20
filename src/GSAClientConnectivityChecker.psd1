@@ -44,7 +44,9 @@
         'Test-ProxyDetection',
         'Test-EntraIDConnectivity',
         'Test-EntraIDUserAuthN',
-        'Test-DiagnosticUris'
+        'Test-DiagnosticUris',
+        'Test-GSAPrivateAccessRule',
+        'Test-GSAPrivateAccessTunnel'
     )
 
     CmdletsToExport   = @()

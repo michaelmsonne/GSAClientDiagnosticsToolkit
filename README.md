@@ -330,6 +330,34 @@ Test-GSAPrivateDnsResolver [-LogLevel <string>]
 
 ---
 
+### `Test-GSAPrivateAccessRule`
+
+Checks whether the locally cached forwarding profile's Private Access rules permit a given target FQDN/IP, port, and protocol - mirroring the client-side rule matching the GSA client performs itself. This is a fully local/offline check (registry only); it does not call Microsoft Graph or require sign-in. By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
+
+```powershell
+Test-GSAPrivateAccessRule -FQDNorIP <string> -Port <int> -Protocol <TCP|UDP> [-RegistryValueName <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `FQDNorIP` | *(required)* | Target FQDN or IPv4 address to test |
+| `Port` | *(required)* | Target TCP/UDP port number |
+| `Protocol` | *(required)* | `TCP` or `UDP` |
+| `RegistryValueName` | `ForwardingProfile` | Registry value containing the GSA JSON policy |
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+---
+
+### `Test-GSAPrivateAccessTunnel`
+
+Opens a live TCP connection to the target FQDN/IP and port to verify traffic is actually tunneled through GSA. For FQDN targets, confirms the connection resolved to a synthetic `6.6.x.x` address and resolves the internal address via the GSA Private DNS resolver (`6.6.255.254`). UDP targets cannot be tunnel-tested this way and are reported as a warning only. By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
+
+```powershell
+Test-GSAPrivateAccessTunnel -FQDNorIP <string> -Port <int> -Protocol <TCP|UDP> [-PassThru] [-LogLevel <string>]
+```
+
+---
+
 ### `Test-GSAEventLog`
 
 Reads the GSA event log and reports recent errors and warnings.
@@ -372,6 +400,16 @@ Test-mTLSConnection -fqdnList (Get-GSAEndpoints).MainEndpoints
 # Save the current edge addresses to a file
 $endpoints = Get-GSAEndpoints
 Save-EdgeAddresses -fqdnList $endpoints.MainEndpoints -filePath C:\Temp\edges.txt
+
+# Check whether a specific Private Access target/port/protocol is allowed locally,
+# then verify it actually tunnels through the GSA client
+Test-GSAPrivateAccessRule -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
+Test-GSAPrivateAccessTunnel -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
+
+# Same checks, but capture the pass/fail result for scripting instead of just logging it
+if (Test-GSAPrivateAccessRule -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP -PassThru) {
+    Write-Host 'Rule allows this target'
+}
 ```
 
 ---
