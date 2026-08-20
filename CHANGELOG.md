@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file. Dates reflect t
 
 ### Added
 
-- Microsoft Graph-based checks ported from the community GSATool project, adapted to this module's conventions:
+- Microsoft Graph-based checks, adapted to this module's conventions:
   - `Test-GSAForwardingProfileAssignment` - tenant onboarding, forwarding profile enablement, and user/group assignment.
   - `Test-GSAClientProfileConnectivity` - local edge/diagnostic connectivity per forwarding profile channel (`m365`/`private`/`internet`), testing all three by default when `-ProfileType` is omitted.
   - `Test-GSAPrivateAccessApplicationSegment` - Private Access application enablement, assignment, and application segment (FQDN/IP/port/protocol) matching via Graph.
