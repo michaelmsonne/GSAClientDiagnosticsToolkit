@@ -162,7 +162,29 @@ function Invoke-GSAClientConnectivityCheck {
     }
 
     Write-Log "Test Results Summary:" "INFO"
-    $summaryTable | Format-Table -AutoSize | Out-String -Stream | ForEach-Object { Write-Log $_ "INFO" }
+
+    $nameWidth   = [Math]::Max((($summaryTable.TestName | Measure-Object -Property Length -Maximum).Maximum), "Test Name".Length)
+    $resultWidth = [Math]::Max(6, "Result".Length)
+    $warnWidth   = [Math]::Max(8, "Warnings".Length)
+
+    # ASCII-only borders/icons - Windows PowerShell 5.1 reads .ps1 files using the system codepage
+    # without a UTF-8 BOM, so box-drawing/emoji characters can get mangled on save/load.
+    $topBorder    = "+---+-$('-' * $nameWidth)-+-$('-' * $resultWidth)-+-$('-' * $warnWidth)-+"
+    $midBorder    = "+---+-$('-' * $nameWidth)-+-$('-' * $resultWidth)-+-$('-' * $warnWidth)-+"
+    $bottomBorder = "+---+-$('-' * $nameWidth)-+-$('-' * $resultWidth)-+-$('-' * $warnWidth)-+"
+    $rowFormat    = "| {0} | {1,-$nameWidth} | {2,-$resultWidth} | {3,$warnWidth} |"
+
+    Write-Log $topBorder "INFO" -NoPrefix -Color DarkGray
+    Write-Log ($rowFormat -f " ", "Test Name", "Result", "Warnings") "INFO" -NoPrefix -Color White
+    Write-Log $midBorder "INFO" -NoPrefix -Color DarkGray
+
+    foreach ($row in $summaryTable) {
+        $icon = if ($row.Result -eq 'FAILED') { 'X' } elseif ($row.Warnings -gt 0) { '!' } else { '*' }
+        $rowColor = if ($row.Result -eq 'FAILED') { 'Red' } elseif ($row.Warnings -gt 0) { 'Yellow' } else { 'Green' }
+        Write-Log ($rowFormat -f $icon, $row.TestName, $row.Result, $row.Warnings) "INFO" -NoPrefix -Color $rowColor
+    }
+
+    Write-Log $bottomBorder "INFO" -NoPrefix -Color DarkGray
 
     Write-Log "Summary: $testsPassed tests passed, $testsFailed tests failed, $testsWithWarnings tests with warnings." "INFO"
 
