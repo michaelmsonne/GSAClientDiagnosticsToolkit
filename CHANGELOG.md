@@ -20,6 +20,10 @@ All notable changes to this project are documented in this file. Dates reflect t
 - README documentation covering installation, quick start, all public functions, log levels, and usage examples.
 - Module manifest metadata: `LicenseUri`, `CompatiblePSEditions`, `HelpInfoURI`, and `ReleaseNotes`.
 - Pester test suite (`tests/Public`, `tests/Private`) covering the module manifest/export consistency, private helper logic, and public function behavior via mocked dependencies.
+- `Test-GSAAuthCertificate` - checks whether a valid GSA mTLS authentication certificate (subject ending in `gsa.client`) exists in the LocalMachine\My store and hasn't expired, mirroring the client's built-in "Authentication certificate exists"/"Authentication certificate is valid" Health check tests.
+- `Export-GSAAuthCertificate` - read-only backup of the GSA authentication certificate(s) (password-protected `.pfx` with the private key when exportable, otherwise a public-key-only `.cer`), usable standalone or as the backup step reused by `Repair-GSAAuthCertificate`.
+- `Repair-GSAAuthCertificate` - remediation for a missing/invalid authentication certificate: always backs up the certificate first via `Export-GSAAuthCertificate`, requires two separate confirmations before deleting it (standard `-WhatIf`/`-Confirm` plus typing the exact thumbprint), clears the `CertCommonName` registry value, and can optionally restart `GlobalSecureAccessEngineService` via `-RestartEngineService`.
+- README badges (issues, pull requests, top language, code size, PowerShell/platform/license, stars, forks, made-by), a `Repository Structure` section outlining the repo's files/folders, a `Star This Project` section, and a `Support` section.
 
 ### Changed
 

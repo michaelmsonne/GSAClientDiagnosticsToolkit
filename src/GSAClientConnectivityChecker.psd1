@@ -50,7 +50,10 @@
         'Test-GSAForwardingProfileAssignment',
         'Test-GSAClientProfileConnectivity',
         'Test-GSAPrivateAccessApplicationSegment',
-        'Test-GSAPrivateAccessApplication'
+        'Test-GSAPrivateAccessApplication',
+        'Test-GSAAuthCertificate',
+        'Export-GSAAuthCertificate',
+        'Repair-GSAAuthCertificate'
     )
 
     CmdletsToExport   = @()

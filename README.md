@@ -326,9 +326,24 @@ Test-GSAAuthCertificate [-PassThru] [-LogLevel <string>]
 
 ---
 
+### `Export-GSAAuthCertificate`
+
+Exports (backs up) the GSA mTLS authentication certificate(s) - as a password-protected `.pfx` with the private key when exportable, otherwise a public-key-only `.cer` - without modifying or deleting anything. Read-only/non-destructive; use it to back up the certificate independently, or it's called automatically by `Repair-GSAAuthCertificate` before any deletion.
+
+```powershell
+Export-GSAAuthCertificate [-BackupPath <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `BackupPath` | Current directory | Directory to export the certificate backup(s) to |
+| `PassThru` | Off | Return the exported file path(s) instead of just logging them |
+
+---
+
 ### `Repair-GSAAuthCertificate`
 
-Backs up and removes the GSA mTLS authentication certificate so the client re-enrolls a new one - the documented fix when `Test-GSAAuthCertificate` fails. Always exports a backup first (`.pfx` with the private key when exportable, otherwise falls back to a public-key-only `.cer`), then requires **two separate confirmations** before deleting anything: the standard `-WhatIf`/`-Confirm` prompt, plus typing the certificate's exact thumbprint. Also clears the `CertCommonName` registry value so a new certificate is re-provisioned.
+Backs up (via `Export-GSAAuthCertificate`) and removes the GSA mTLS authentication certificate so the client re-enrolls a new one - the documented fix when `Test-GSAAuthCertificate` fails. Requires **two separate confirmations** before deleting anything: the standard `-WhatIf`/`-Confirm` prompt, plus typing the certificate's exact thumbprint. Also clears the `CertCommonName` registry value so a new certificate is re-provisioned.
 
 > [!WARNING]
 > This is a destructive operation. Requires an elevated (Administrator) PowerShell session. Run `Repair-GSAAuthCertificate -WhatIf` first to preview what would happen.
