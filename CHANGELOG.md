@@ -1,0 +1,39 @@
+# Changelog
+
+All notable changes to this project are documented in this file. Dates reflect the commit history in this repository.
+
+## [Unreleased] - xx-xx-xxxx
+
+### Added
+
+- Microsoft Graph-based checks ported from the community GSATool project, adapted to this module's conventions:
+  - `Test-GSAForwardingProfileAssignment` - tenant onboarding, forwarding profile enablement, and user/group assignment.
+  - `Test-GSAClientProfileConnectivity` - local edge/diagnostic connectivity per forwarding profile channel (`m365`/`private`/`internet`), testing all three by default when `-ProfileType` is omitted.
+  - `Test-GSAPrivateAccessApplicationSegment` - Private Access application enablement, assignment, and application segment (FQDN/IP/port/protocol) matching via Graph.
+  - `Test-GSAPrivateAccessApplication` - end-to-end Private Access application check combining the segment check with a live tunnel test.
+- Automatic interactive `Connect-MgGraph` sign-in fallback (via the optional `Microsoft.Graph.Authentication` module) when `-AccessToken` isn't supplied to the Graph-based checks, reusing any already-active session.
+- Local/offline Private Access checks: `Test-GSAPrivateAccessRule` (matches a target FQDN/IP + port + protocol against the locally cached forwarding profile's rules) and `Test-GSAPrivateAccessTunnel` (verifies a live tunnel connection resolves to a synthetic `6.6.x.x` address and resolves via the GSA Private DNS resolver).
+- `-PassThru` switch on the new Private Access and Graph-based functions so they stay silent by default and only return a `$true`/`$false` result when explicitly requested.
+- `-LogLevel` parameter on public functions to override the module's logging verbosity per call.
+- New connectivity tests: `Test-GSAPrimaryRefreshToken`, `Test-GSAForwardingProfileRegistry`, `Test-GSAForwardingProfileTimestamp`, `Test-GSAServiceStatus`, `Test-GSASecureDnsStatus`, `Test-GSAIPv6Status`, `Test-GSASyntheticRoutes`, `Test-GSAPrivateDnsResolver`, `Test-GSAEventLog`, `Test-DeviceEntraStatus`, and `Test-EntraIDConnectivity`.
+- Converted the original monolithic `GSAClientConnectivityChecker.ps1` script into a proper PowerShell module (`src/GSAClientConnectivityChecker.psd1`/`.psm1`) with `Public`/`Private` folder structure and `Invoke-GSAClientConnectivityCheck` as the orchestrator.
+- README documentation covering installation, quick start, all public functions, log levels, and usage examples.
+- Module manifest metadata: `LicenseUri`, `CompatiblePSEditions`, `HelpInfoURI`, and `ReleaseNotes`.
+- Pester test suite (`tests/Public`, `tests/Private`) covering the module manifest/export consistency, private helper logic, and public function behavior via mocked dependencies.
+
+### Changed
+
+- Refactored PowerShell scripts for improved readability and consistency.
+- Enhanced logging and error handling across connectivity tests, including detailed DEBUG-level information for DNS chain retrieval, Entra ID status, GSA event log scanning, and service status checks.
+
+### Fixed
+
+- Incorrect `tenantId` reference in `Test-GSAForwardingProfileRegistry` logging.
+- Noisy `Resolve-DnsName` output in `Test-GSAPrivateDnsResolver`.
+- Missing/failed GSA service test result handling.
+- `Select-Object -ExpandProperty` failing with "Property cannot be found" when Graph responses came back as `Hashtable` objects from `Invoke-MgGraphRequest` (as opposed to `PSCustomObject` from `Invoke-RestMethod`).
+
+## Project history
+
+- **2026-08-18** to **2026-08-20** - Converted the script into the `GSAClientConnectivityChecker` PowerShell module and progressively added the Entra ID, Private Access, and Microsoft Graph checks described above + more.
+- **2025-05-08** to **2025-05-09** - Initial standalone `GSAClientConnectivityChecker.ps1` script: connectivity, proxy, health probe, and mTLS diagnostic checks for the Global Secure Access client, including log path error handling.
