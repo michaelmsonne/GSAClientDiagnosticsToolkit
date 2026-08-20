@@ -80,7 +80,7 @@ Outline of the repository's file contents, to help you navigate the codebase, te
 | Requirement | Details |
 |---|---|
 | PowerShell | 5.1 or later |
-| OS | Windows (GSA Client must be installed) |
+| OS | Windows (GSA Client must be installed for some tests) |
 | Elevation | Recommended - some checks (mTLS certificate access) require admin rights |
 | Optional module | `MSAL.PS` - required only for `Test-EntraIDUserAuthN` |
 | Optional module | `Microsoft.Graph.Authentication` - required only for the Graph-based checks below when you don't supply `-AccessToken` yourself |
@@ -309,6 +309,39 @@ Tests mTLS connectivity using GSA client certificates from the LocalMachine cert
 ```powershell
 Test-mTLSConnection -fqdnList <string[]> [-port <int>] [-LogLevel <string>]
 ```
+
+---
+
+### `Test-GSAAuthCertificate`
+
+Checks whether a valid GSA mTLS authentication certificate (subject ending in `gsa.client`) exists in the LocalMachine\My certificate store and hasn't expired. Mirrors the client's built-in "Authentication certificate exists"/"Authentication certificate is valid" Health check tests. This test only applies to tenants with mTLS enabled - if mTLS isn't enabled, no certificate is expected.
+
+```powershell
+Test-GSAAuthCertificate [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+---
+
+### `Repair-GSAAuthCertificate`
+
+Backs up and removes the GSA mTLS authentication certificate so the client re-enrolls a new one - the documented fix when `Test-GSAAuthCertificate` fails. Always exports a backup first (`.pfx` with the private key when exportable, otherwise falls back to a public-key-only `.cer`), then requires **two separate confirmations** before deleting anything: the standard `-WhatIf`/`-Confirm` prompt, plus typing the certificate's exact thumbprint. Also clears the `CertCommonName` registry value so a new certificate is re-provisioned.
+
+> [!WARNING]
+> This is a destructive operation. Requires an elevated (Administrator) PowerShell session. Run `Repair-GSAAuthCertificate -WhatIf` first to preview what would happen.
+
+```powershell
+Repair-GSAAuthCertificate [-BackupPath <string>] [-RestartEngineService] [-PassThru] [-LogLevel <string>] [-WhatIf] [-Confirm]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `BackupPath` | Current directory | Directory to export the certificate backup(s) to before deletion |
+| `RestartEngineService` | Off | Restart `GlobalSecureAccessEngineService` afterwards so a new certificate is provisioned immediately |
+| `PassThru` | Off | Return the `$true`/`$false` result instead of just logging it |
 
 ---
 
