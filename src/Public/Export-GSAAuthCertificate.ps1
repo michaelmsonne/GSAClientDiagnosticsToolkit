@@ -15,7 +15,7 @@ function Export-GSAAuthCertificate {
 .EXAMPLE
     Export-GSAAuthCertificate -BackupPath C:\Temp\GSACertBackup
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
         [string]$BackupPath = (Get-Location),
         [switch]$PassThru,
@@ -49,7 +49,9 @@ function Export-GSAAuthCertificate {
     }
 
     if (-not (Test-Path $BackupPath)) {
-        New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+        if ($PSCmdlet.ShouldProcess($BackupPath, 'Create backup directory')) {
+            New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+        }
     }
 
     $exportedFiles = @()
@@ -59,7 +61,7 @@ function Export-GSAAuthCertificate {
 
         $exported = $false
         $backupFile = Join-Path -Path $BackupPath -ChildPath "$($cert.Thumbprint).pfx"
-        if ($cert.HasPrivateKey) {
+        if ($cert.HasPrivateKey -and $PSCmdlet.ShouldProcess("$($cert.Thumbprint) (with private key)", "Export to $backupFile")) {
             try {
                 $backupPassword = Read-Host -Prompt "Enter a password to protect the certificate backup ($backupFile)" -AsSecureString
                 Export-PfxCertificate -Cert $cert -FilePath $backupFile -Password $backupPassword -ErrorAction Stop | Out-Null
@@ -74,14 +76,16 @@ function Export-GSAAuthCertificate {
 
         if (-not $exported) {
             $backupFile = Join-Path -Path $BackupPath -ChildPath "$($cert.Thumbprint).cer"
-            try {
-                Export-Certificate -Cert $cert -FilePath $backupFile -ErrorAction Stop | Out-Null
-                Write-Log "Exported the public certificate (no private key) to: $backupFile" "SUCCESS"
-                $exported = $true
-            }
-            catch {
-                Write-Log "Failed to export the certificate: $_" "ERROR"
-                Write-Log "You can export it manually instead: certlm.msc > Personal > Certificates > right-click the '$($cert.Thumbprint)' certificate > All Tasks > Export." "WARNING"
+            if ($PSCmdlet.ShouldProcess($cert.Thumbprint, "Export public certificate to $backupFile")) {
+                try {
+                    Export-Certificate -Cert $cert -FilePath $backupFile -ErrorAction Stop | Out-Null
+                    Write-Log "Exported the public certificate (no private key) to: $backupFile" "SUCCESS"
+                    $exported = $true
+                }
+                catch {
+                    Write-Log "Failed to export the certificate: $_" "ERROR"
+                    Write-Log "You can export it manually instead: certlm.msc > Personal > Certificates > right-click the '$($cert.Thumbprint)' certificate > All Tasks > Export." "WARNING"
+                }
             }
         }
 

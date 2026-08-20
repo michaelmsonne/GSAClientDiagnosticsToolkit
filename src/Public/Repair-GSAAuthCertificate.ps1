@@ -63,21 +63,24 @@ function Repair-GSAAuthCertificate {
     }
 
     if (-not (Test-Path $BackupPath)) {
-        New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+        if ($PSCmdlet.ShouldProcess($BackupPath, 'Create backup directory')) {
+            New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+        }
     }
 
     Write-Log "Backing up the certificate(s) before making any changes..." "INFO"
-    $exportedFiles = @(Export-GSAAuthCertificate -BackupPath $BackupPath -PassThru)
+    $exportedFiles = @(Export-GSAAuthCertificate -BackupPath $BackupPath -PassThru -WhatIf:$WhatIfPreference -Confirm:$false)
 
     $allSucceeded = $true
 
     foreach ($cert in $certs) {
         Write-Log "Found GSA authentication certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint))." "INFO"
 
-        # Always back up the certificate before touching anything
+        # Always back up the certificate before touching anything (skip this gate under -WhatIf,
+        # since the backup step above is itself only previewed, not actually performed)
         $backupFile = @($exportedFiles) | Where-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) -eq $cert.Thumbprint } | Select-Object -First 1
 
-        if (-not $backupFile) {
+        if (-not $backupFile -and -not $WhatIfPreference) {
             Write-Log "Skipping deletion of '$($cert.Thumbprint)' because a backup could not be created." "ERROR"
             $allSucceeded = $false
             continue
@@ -110,12 +113,14 @@ function Repair-GSAAuthCertificate {
     }
 
     Write-Log "Clearing the CertCommonName registry value so the GSA client re-enrolls a new certificate..." "INFO"
-    try {
-        Remove-ItemProperty -Path $script:GSAFwdProfileRegistryPath -Name "CertCommonName" -ErrorAction Stop
-        Write-Log "Removed the CertCommonName registry value." "SUCCESS"
-    }
-    catch {
-        Write-Log "CertCommonName registry value was not found or could not be removed (it may already be absent): $_" "WARNING"
+    if ($PSCmdlet.ShouldProcess("$script:GSAFwdProfileRegistryPath\CertCommonName", "Remove registry value")) {
+        try {
+            Remove-ItemProperty -Path $script:GSAFwdProfileRegistryPath -Name "CertCommonName" -ErrorAction Stop
+            Write-Log "Removed the CertCommonName registry value." "SUCCESS"
+        }
+        catch {
+            Write-Log "CertCommonName registry value was not found or could not be removed (it may already be absent): $_" "WARNING"
+        }
     }
 
     if ($RestartEngineService) {
