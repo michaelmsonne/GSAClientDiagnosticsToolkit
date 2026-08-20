@@ -63,6 +63,8 @@ function Invoke-GSAClientConnectivityCheck {
     $testResults = @{}
 
     Write-Log "========= GSA Client Connectivity Checker v. $script:ModuleVer Started ========="
+    Write-Log "Device Name : $env:COMPUTERNAME"
+    Write-Log "User Account: $(Get-GSACurrentUserUPN)"
 
     $gsaEndpoints = Get-GSAEndpoints -RegistryValueName "ForwardingProfile"
     if (-Not $gsaEndpoints) { return }

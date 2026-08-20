@@ -46,7 +46,11 @@
         'Test-EntraIDUserAuthN',
         'Test-DiagnosticUris',
         'Test-GSAPrivateAccessRule',
-        'Test-GSAPrivateAccessTunnel'
+        'Test-GSAPrivateAccessTunnel',
+        'Test-GSAForwardingProfileAssignment',
+        'Test-GSAClientProfileConnectivity',
+        'Test-GSAPrivateAccessApplicationSegment',
+        'Test-GSAPrivateAccessApplication'
     )
 
     CmdletsToExport   = @()

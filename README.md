@@ -46,6 +46,7 @@ A PowerShell module that runs connectivity, proxy, health probe, and mTLS diagno
 | OS | Windows (GSA Client must be installed) |
 | Elevation | Recommended - some checks (mTLS certificate access) require admin rights |
 | Optional module | `MSAL.PS` - required only for `Test-EntraIDUserAuthN` |
+| Optional module | `Microsoft.Graph.Authentication` - required only for the Graph-based checks below when you don't supply `-AccessToken` yourself |
 
 ---
 
@@ -358,6 +359,81 @@ Test-GSAPrivateAccessTunnel -FQDNorIP <string> -Port <int> -Protocol <TCP|UDP> [
 
 ---
 
+### `Test-GSAClientProfileConnectivity`
+
+Confirms the locally cached forwarding profile contains a channel for the requested profile type(s) (`m365`/`private`/`internet`), tests TCP connectivity to each channel's primary edge (falling back to the secondary edge), and confirms each channel's diagnostic endpoint responds with HTTP 200 and body `pong`. This is a fully local/offline check; it does not call Microsoft Graph.
+
+```powershell
+Test-GSAClientProfileConnectivity [-ProfileType <m365|private|internet>[,...]] [-RegistryValueName <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `ProfileType` | All three (`m365`, `private`, `internet`) | One or more of `m365`, `private`, `internet` to test |
+| `RegistryValueName` | `ForwardingProfile` | Registry value containing the GSA JSON policy |
+| `PassThru` | Off | Return the combined `$true`/`$false` test result (across all tested profiles) instead of just logging it |
+
+---
+
+> The three functions below call Microsoft Graph. Pass an access token via `-AccessToken` (e.g. acquired via `Test-EntraIDUserAuthN`/`MSAL.PS`, or your own Graph sign-in) with the `NetworkAccess.Read.All`, `Application.Read.All`, `Directory.Read.All`, and `User.Read.All` delegated permissions. If you omit `-AccessToken`, the module automatically prompts an interactive sign-in via `Connect-MgGraph` (requires the `Microsoft.Graph.Authentication` module) and reuses any already-active Graph session for subsequent calls, so you're only prompted once per session.
+
+### `Test-GSAForwardingProfileAssignment`
+
+Checks via Microsoft Graph that the tenant is onboarded to Global Secure Access, that the requested forwarding profile (`m365`/`private`/`internet`) is enabled, and that the target user is assigned - directly or via group membership - to that profile's enterprise application.
+
+```powershell
+Test-GSAForwardingProfileAssignment [-AccessToken <string>] -ProfileType <m365|private|internet> [-UserPrincipalName <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `AccessToken` | Prompts `Connect-MgGraph` sign-in | Microsoft Graph access token |
+| `ProfileType` | *(required)* | `m365`, `private`, or `internet` |
+| `UserPrincipalName` | Current signed-in user (`whoami /upn`) | UPN of the user to check assignment for |
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+---
+
+### `Test-GSAPrivateAccessApplicationSegment`
+
+Checks via Microsoft Graph that a Private Access application is enabled, the user is assigned, and the target FQDN/IP + port + protocol is covered by one of its application segments.
+
+```powershell
+Test-GSAPrivateAccessApplicationSegment [-AccessToken <string>] -AppId <string> -FQDNorIP <string> -Port <int> -Protocol <TCP|UDP> [-UserPrincipalName <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `AccessToken` | Prompts `Connect-MgGraph` sign-in | Microsoft Graph access token |
+| `AppId` | *(required)* | The Private Access application's (client) App ID |
+| `FQDNorIP` | *(required)* | Target FQDN or IPv4 address to test |
+| `Port` | *(required)* | Target TCP/UDP port number |
+| `Protocol` | *(required)* | `TCP` or `UDP` |
+| `UserPrincipalName` | Current signed-in user (`whoami /upn`) | UPN of the user to check assignment for |
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+---
+
+### `Test-GSAPrivateAccessApplication`
+
+Full end-to-end Private Access application check: confirms "Enable access with Global Secure Access client" is turned on for the application, runs `Test-GSAPrivateAccessApplicationSegment` to validate the Entra-side configuration, and then runs `Test-GSAPrivateAccessTunnel` to verify the traffic actually tunnels through the GSA client.
+
+```powershell
+Test-GSAPrivateAccessApplication [-AccessToken <string>] -AppId <string> -FQDNorIP <string> -Port <int> -Protocol <TCP|UDP> [-UserPrincipalName <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `AccessToken` | Prompts `Connect-MgGraph` sign-in | Microsoft Graph access token |
+| `AppId` | *(required)* | The Private Access application's (client) App ID |
+| `FQDNorIP` | *(required)* | Target FQDN or IPv4 address to test |
+| `Port` | *(required)* | Target TCP/UDP port number |
+| `Protocol` | *(required)* | `TCP` or `UDP` |
+| `UserPrincipalName` | Current signed-in user (`whoami /upn`) | UPN of the user to check assignment for |
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+---
+
 ### `Test-GSAEventLog`
 
 Reads the GSA event log and reports recent errors and warnings.
@@ -410,6 +486,23 @@ Test-GSAPrivateAccessTunnel -FQDNorIP fileserver.contoso.com -Port 445 -Protocol
 if (Test-GSAPrivateAccessRule -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP -PassThru) {
     Write-Host 'Rule allows this target'
 }
+
+# Test a specific channel's edge/diagnostic connectivity locally (no sign-in required)
+Test-GSAClientProfileConnectivity -ProfileType private
+
+# Or test all three channels (m365, private, internet) at once
+Test-GSAClientProfileConnectivity
+
+# Graph-based checks - by default prompts an interactive Connect-MgGraph sign-in the first time
+# (requires the Microsoft.Graph.Authentication module); reuses the session on subsequent calls
+Test-GSAForwardingProfileAssignment -ProfileType private
+Test-GSAPrivateAccessApplicationSegment -AppId <appId> -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
+Test-GSAPrivateAccessApplication -AppId <appId> -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
+
+# Or pass your own access token instead (e.g. via Test-EntraIDUserAuthN + MSAL.PS)
+Install-Module MSAL.PS
+$token = (Get-MsalToken -ClientId '<your-client-id>' -Scopes 'https://graph.microsoft.com/.default').AccessToken
+Test-GSAForwardingProfileAssignment -AccessToken $token -ProfileType private
 ```
 
 ---
