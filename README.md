@@ -68,7 +68,6 @@ Outline of the repository's file contents, to help you navigate the codebase, te
 | `src/Private/` | Internal helper functions used by the public functions, not exported. |
 | `tests/` | Pester test suite, mirroring the `src/Public`/`src/Private` structure. |
 | `docs/` | Reserved for additional documentation. |
-| `GSAClientConnectivityChecker.ps1` | Legacy standalone script version, kept for reference/backward compatibility. |
 | `CHANGELOG.md` | List of notable changes to the module. |
 | `LICENSE` | The MIT license for this project. |
 | `README.md` | This README file. |
