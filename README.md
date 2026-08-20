@@ -106,6 +106,8 @@ Invoke-GSAClientConnectivityCheck -LogLevel DEBUG -BasePath C:\Logs
 
 ## Public Functions
 
+> Most functions below also accept an optional `-LogLevel <string>` parameter (`ERROR`, `WARNING`, `INFO`, `DEBUG`, `SUCCESS`) that overrides the module's current logging verbosity for just that call.
+
 ### `Invoke-GSAClientConnectivityCheck`
 
 Runs the complete diagnostic suite in sequence and produces a summary.
@@ -147,7 +149,7 @@ Save-EdgeAddresses -fqdnList <string[]> -filePath <string>
 Verifies that all required Global Secure Access Windows services are in the **Running** state.
 
 ```powershell
-Test-GSAServiceStatus
+Test-GSAServiceStatus [-LogLevel <string>]
 ```
 
 Services checked: `GlobalSecureAccessTunnelingService`, `GlobalSecureAccessClientManagerService`, `GlobalSecureAccessEngineService`, `GlobalSecureAccessDriver`, and the forwarding profile service.
@@ -159,7 +161,7 @@ Services checked: `GlobalSecureAccessTunnelingService`, `GlobalSecureAccessClien
 Checks whether the device is Entra ID joined or registered.
 
 ```powershell
-Test-DeviceEntraStatus
+Test-DeviceEntraStatus [-LogLevel <string>]
 ```
 
 ---
@@ -169,7 +171,7 @@ Test-DeviceEntraStatus
 Verifies that a valid Primary Refresh Token (PRT) is present on the device.
 
 ```powershell
-Test-GSAPrimaryRefreshToken
+Test-GSAPrimaryRefreshToken [-LogLevel <string>]
 ```
 
 ---
@@ -179,7 +181,7 @@ Test-GSAPrimaryRefreshToken
 Validates that the GSA forwarding profile exists and is readable from the registry.
 
 ```powershell
-Test-GSAForwardingProfileRegistry
+Test-GSAForwardingProfileRegistry [-LogLevel <string>]
 ```
 
 ---
@@ -189,7 +191,7 @@ Test-GSAForwardingProfileRegistry
 Checks the timestamp of the forwarding profile to detect stale configuration.
 
 ```powershell
-Test-GSAForwardingProfileTimestamp
+Test-GSAForwardingProfileTimestamp [-LogLevel <string>]
 ```
 
 ---
@@ -199,8 +201,14 @@ Test-GSAForwardingProfileTimestamp
 Tests basic internet reachability and inspects active network interfaces with default routes.
 
 ```powershell
-Test-InternetConnectivity
+Test-InternetConnectivity [-Websites <string[]>] [-DnsServers <string[]>] [-TimeoutMs <int>] [-LogLevel <string>]
 ```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `Websites` | `www.google.com`, `www.microsoft.com` | Websites to test for reachability |
+| `DnsServers` | `1.1.1.1`, `8.8.8.8`, `9.9.9.9` | DNS servers to test for reachability over UDP port 53 |
+| `TimeoutMs` | `5000` | UDP receive timeout in milliseconds |
 
 ---
 
@@ -209,7 +217,7 @@ Test-InternetConnectivity
 Detects outbound proxy configuration via system settings, transparent proxy HTTP headers, and HTTP 407 responses.
 
 ```powershell
-Test-ProxyDetection [-TestUrlHttp <string>] [-TestUrlHttps <string>] [-TimeoutSec <int>]
+Test-ProxyDetection [-TestUrlHttp <string>] [-TestUrlHttps <string>] [-TimeoutSec <int>] [-LogLevel <string>]
 ```
 
 ---
@@ -219,7 +227,7 @@ Test-ProxyDetection [-TestUrlHttp <string>] [-TestUrlHttps <string>] [-TimeoutSe
 Checks whether the GSA Secure DNS feature is enabled and active.
 
 ```powershell
-Test-GSASecureDnsStatus
+Test-GSASecureDnsStatus [-LogLevel <string>]
 ```
 
 ---
@@ -229,7 +237,7 @@ Test-GSASecureDnsStatus
 Reports the IPv6 status on the GSA tunnel adapter.
 
 ```powershell
-Test-GSAIPv6Status
+Test-GSAIPv6Status [-LogLevel <string>]
 ```
 
 ---
@@ -239,7 +247,7 @@ Test-GSAIPv6Status
 Resolves each FQDN in the provided list and logs the results.
 
 ```powershell
-Test-DnsResolution -fqdnList <string[]>
+Test-DnsResolution -fqdnList <string[]> [-LogLevel <string>]
 ```
 
 ---
@@ -249,7 +257,7 @@ Test-DnsResolution -fqdnList <string[]>
 Tests TLS (HTTPS) connectivity to each FQDN on port 443 and logs certificate details at DEBUG level.
 
 ```powershell
-Test-TLSConnection -fqdnList <string[]> [-port <int>]
+Test-TLSConnection -fqdnList <string[]> [-port <int>] [-LogLevel <string>]
 ```
 
 ---
@@ -261,7 +269,7 @@ Tests mTLS connectivity using GSA client certificates from the LocalMachine cert
 > Run as Administrator for full access to certificate private keys.
 
 ```powershell
-Test-mTLSConnection -fqdnList <string[]> [-port <int>]
+Test-mTLSConnection -fqdnList <string[]> [-port <int>] [-LogLevel <string>]
 ```
 
 ---
@@ -271,8 +279,13 @@ Test-mTLSConnection -fqdnList <string[]> [-port <int>]
 Tests network reachability of Entra ID endpoints.
 
 ```powershell
-Test-EntraIDConnectivity
+Test-EntraIDConnectivity [-Endpoints <string[]>] [-Timeout <int>] [-LogLevel <string>]
 ```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `Endpoints` | Core Entra ID/Graph/device-registration URLs | Entra ID endpoint URLs to test |
+| `Timeout` | `15` | HTTP request timeout in seconds |
 
 ---
 
@@ -292,7 +305,7 @@ Test-EntraIDUserAuthN
 Tests connectivity to the GSA per-channel diagnostic URIs extracted from the forwarding profile.
 
 ```powershell
-Test-DiagnosticUris -DiagnosticUris <string[]>
+Test-DiagnosticUris -DiagnosticUris <string[]> [-LogLevel <string>]
 ```
 
 ---
@@ -302,7 +315,7 @@ Test-DiagnosticUris -DiagnosticUris <string[]>
 Verifies that expected synthetic routes injected by the GSA tunnel are present in the routing table.
 
 ```powershell
-Test-GSASyntheticRoutes
+Test-GSASyntheticRoutes [-LogLevel <string>]
 ```
 
 ---
@@ -312,7 +325,7 @@ Test-GSASyntheticRoutes
 Tests whether the GSA Private DNS Resolver is active and responding.
 
 ```powershell
-Test-GSAPrivateDnsResolver
+Test-GSAPrivateDnsResolver [-LogLevel <string>]
 ```
 
 ---
@@ -322,7 +335,7 @@ Test-GSAPrivateDnsResolver
 Reads the GSA event log and reports recent errors and warnings.
 
 ```powershell
-Test-GSAEventLog
+Test-GSAEventLog [-LogLevel <string>]
 ```
 
 ---
