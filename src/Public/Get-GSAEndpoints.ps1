@@ -45,8 +45,15 @@ function Get-GSAEndpoints {
     if ($gsaMainEndpointAddrs.Count -eq 0) { Write-Log "No edge addresses found." "ERROR"; return $null }
     if ($DiagnosticUris.Count -eq 0) { Write-Log "No DiagnosticUris found." "ERROR"; return $null }
 
+    # Pre-build a one-item-per-line display string so the custom format view can just reference a property
+    $mainEndpointsDisplay = ($gsaMainEndpointAddrs | ForEach-Object { "  - $_" }) -join "`n"
+    $diagnosticUrisDisplay = ($DiagnosticUris | ForEach-Object { "  - $_" }) -join "`n"
+
     return [PSCustomObject]@{
-        MainEndpoints  = $gsaMainEndpointAddrs
-        DiagnosticUris = $DiagnosticUris
+        PSTypeName            = 'GSAClientConnectivityChecker.GSAEndpoints'
+        MainEndpoints         = $gsaMainEndpointAddrs
+        DiagnosticUris        = $DiagnosticUris
+        MainEndpointsDisplay  = "`n$mainEndpointsDisplay"
+        DiagnosticUrisDisplay = "`n$diagnosticUrisDisplay"
     }
 }

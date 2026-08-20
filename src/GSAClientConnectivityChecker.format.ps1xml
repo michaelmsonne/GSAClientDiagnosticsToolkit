@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+    <ViewDefinitions>
+        <View>
+            <Name>GSAClientConnectivityChecker.GSAEndpoints</Name>
+            <ViewSelectedBy>
+                <TypeName>GSAClientConnectivityChecker.GSAEndpoints</TypeName>
+            </ViewSelectedBy>
+            <ListControl>
+                <ListEntries>
+                    <ListEntry>
+                        <ListItems>
+                            <ListItem>
+                                <Label>MainEndpoints</Label>
+                                <PropertyName>MainEndpointsDisplay</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <Label>DiagnosticUris</Label>
+                                <PropertyName>DiagnosticUrisDisplay</PropertyName>
+                            </ListItem>
+                        </ListItems>
+                    </ListEntry>
+                </ListEntries>
+            </ListControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>

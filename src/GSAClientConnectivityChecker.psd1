@@ -19,6 +19,9 @@
     # Module file
     RootModule        = 'GSAClientConnectivityChecker.psm1'
 
+    # Custom output formatting (e.g. Get-GSAEndpoints)
+    FormatsToProcess  = @('GSAClientConnectivityChecker.format.ps1xml')
+
     # Online help landing page for Get-Help -Online
     HelpInfoURI       = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker/blob/main/README.md'
 
