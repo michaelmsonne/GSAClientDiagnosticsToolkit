@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'ConvertTo-GSAPortRange' {
     It 'converts start-end strings into objects' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $result = ConvertTo-GSAPortRange -Ranges @('443-443', '1000-2000')
             $result.Count | Should -Be 2
             $result[0].start | Should -Be 443
@@ -20,7 +20,7 @@ Describe 'ConvertTo-GSAPortRange' {
     }
 
     It 'ignores malformed range strings' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $result = @(ConvertTo-GSAPortRange -Ranges @('not-a-range-1-2', '443-443'))
             $result.Count | Should -Be 1
             $result[0].start | Should -Be 443
@@ -30,7 +30,7 @@ Describe 'ConvertTo-GSAPortRange' {
 
 Describe 'Get-GSAApplicationSegmentMatch' {
     It 'matches an fqdn segment on address, port, and protocol' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $segments = @(
                 [PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = 'fileserver.contoso.com'; ports = @('445-445'); protocol = 'tcp' }
             )
@@ -42,7 +42,7 @@ Describe 'Get-GSAApplicationSegmentMatch' {
     }
 
     It 'matches a wildcard fqdn segment' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $segments = @(
                 [PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = '*.contoso.com'; ports = @('445-445'); protocol = 'tcp' }
             )
@@ -52,7 +52,7 @@ Describe 'Get-GSAApplicationSegmentMatch' {
     }
 
     It 'matches an ip segment' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $segments = @(
                 [PSCustomObject]@{ destinationType = 'ip'; destinationHost = '10.0.0.42'; ports = @('3389-3389'); protocol = 'tcp' }
             )
@@ -64,7 +64,7 @@ Describe 'Get-GSAApplicationSegmentMatch' {
     }
 
     It 'matches an ipRange segment' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $segments = @(
                 [PSCustomObject]@{ destinationType = 'ipRange'; destinationHost = '10.0.0.0..10.0.0.255'; ports = @('445-445'); protocol = 'tcp' }
             )
@@ -74,7 +74,7 @@ Describe 'Get-GSAApplicationSegmentMatch' {
     }
 
     It 'matches an ipRangeCidr segment' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $segments = @(
                 [PSCustomObject]@{ destinationType = 'ipRangeCidr'; destinationHost = '10.0.0.0/24'; ports = @('445-445'); protocol = 'tcp' }
             )
@@ -84,7 +84,7 @@ Describe 'Get-GSAApplicationSegmentMatch' {
     }
 
     It 'reports port not matched when out of range' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $segments = @(
                 [PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = 'fileserver.contoso.com'; ports = @('80-80'); protocol = 'tcp' }
             )
@@ -95,7 +95,7 @@ Describe 'Get-GSAApplicationSegmentMatch' {
     }
 
     It 'reports no match when no segment covers the address' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $segments = @(
                 [PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = 'other.contoso.com'; ports = @('445-445'); protocol = 'tcp' }
             )

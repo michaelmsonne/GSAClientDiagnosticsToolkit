@@ -1,6 +1,6 @@
 BeforeAll {
-    $script:ModuleName = 'GSAClientConnectivityChecker'
-    $script:ModuleManifestPath = Join-Path -Path $PSScriptRoot -ChildPath '..\src\GSAClientConnectivityChecker.psd1'
+    $script:ModuleName = 'GSAClientDiagnosticsToolkit'
+    $script:ModuleManifestPath = Join-Path -Path $PSScriptRoot -ChildPath '..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $script:ModuleManifestPath -Force
 }
 
@@ -16,7 +16,7 @@ Describe 'Module manifest' {
 
 Describe 'Exported functions' {
     BeforeDiscovery {
-        $manifest = Import-PowerShellDataFile -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\src\GSAClientConnectivityChecker.psd1')
+        $manifest = Import-PowerShellDataFile -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\src\GSAClientDiagnosticsToolkit.psd1')
         $script:ExpectedFunctionNames = $manifest.FunctionsToExport
     }
 

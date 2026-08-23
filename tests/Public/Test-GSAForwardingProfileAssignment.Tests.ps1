@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-GSAForwardingProfileAssignment' {
     It 'fails when the tenant is not onboarded' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-GSACurrentUserUPN { 'user@contoso.com' }
             Mock Invoke-GSAGraphRequest { [PSCustomObject]@{ onboardingStatus = 'notOnboarded' } }
             Test-GSAForwardingProfileAssignment -AccessToken 'token' -ProfileType private -PassThru | Should -Be $false
@@ -17,7 +17,7 @@ Describe 'Test-GSAForwardingProfileAssignment' {
     }
 
     It 'fails when the forwarding profile is not enabled' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-GSACurrentUserUPN { 'user@contoso.com' }
             Mock Invoke-GSAGraphRequest {
                 param($Uri)
@@ -29,7 +29,7 @@ Describe 'Test-GSAForwardingProfileAssignment' {
     }
 
     It 'passes when onboarded, enabled, and assignment is not required' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-GSACurrentUserUPN { 'user@contoso.com' }
             Mock Invoke-GSAGraphRequest {
                 param($Uri)
@@ -42,7 +42,7 @@ Describe 'Test-GSAForwardingProfileAssignment' {
     }
 
     It 'fails when no UPN can be determined' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-GSACurrentUserUPN { $null }
             Test-GSAForwardingProfileAssignment -AccessToken 'token' -ProfileType private -PassThru | Should -Be $false
         }

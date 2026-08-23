@@ -27,7 +27,7 @@ function Invoke-GSAClientConnectivityCheck {
     Directory for the log file. Defaults to the current working directory.
 
 .PARAMETER LogFileName
-    Name of the log file. Defaults to GSAClientConnectivityChecker.log.
+    Name of the log file. Defaults to GSAClientDiagnosticsToolkit.log.
 
 .EXAMPLE
     Invoke-GSAClientConnectivityCheck -LogLevel DEBUG
@@ -40,7 +40,7 @@ function Invoke-GSAClientConnectivityCheck {
         [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
         [string]$LogLevel = "INFO",
         [string]$BasePath = (Get-Location),
-        [string]$LogFileName = "GSAClientConnectivityChecker.log"
+        [string]$LogFileName = "GSAClientDiagnosticsToolkit.log"
     )
 
     # Initialize module-level logging state

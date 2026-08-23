@@ -1,16 +1,16 @@
-# GSAClientConnectivityChecker
+# GSAClientDiagnosticsToolkit
 
 <p align="center">
-  <a href="https://github.com/michaelmsonne/GSAClientConnectivityChecker/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/michaelmsonne/GSAClientConnectivityChecker"></a>
-  <a href="https://github.com/michaelmsonne/GSAClientConnectivityChecker/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/michaelmsonne/GSAClientConnectivityChecker"></a>
-  <a href="https://github.com/michaelmsonne/GSAClientConnectivityChecker"><img alt="Top language" src="https://img.shields.io/github/languages/top/michaelmsonne/GSAClientConnectivityChecker.svg"></a>
-  <a href="https://github.com/michaelmsonne/GSAClientConnectivityChecker"><img alt="Code size" src="https://img.shields.io/github/languages/code-size/michaelmsonne/GSAClientConnectivityChecker.svg"></a><br>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img alt="Top language" src="https://img.shields.io/github/languages/top/michaelmsonne/GSAClientDiagnosticsToolkit.svg"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img alt="Code size" src="https://img.shields.io/github/languages/code-size/michaelmsonne/GSAClientDiagnosticsToolkit.svg"></a><br>
   <a href="https://learn.microsoft.com/powershell/"><img alt="PowerShell" src="https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white"></a>
   <a href="https://learn.microsoft.com/windows/"><img alt="Platform" src="https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a><br>
   <a href="https://www.linkedin.com/in/michaelmsonne/"><img alt="Made by" src="https://img.shields.io/static/v1?label=made%20by&message=Michael%20Morten%20Sonne&color=04D361"></a>
-  <a href="https://github.com/michaelmsonne/GSAClientConnectivityChecker/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/michaelmsonne/GSAClientConnectivityChecker?style=social"></a>
-  <a href="https://github.com/michaelmsonne/GSAClientConnectivityChecker/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/michaelmsonne/GSAClientConnectivityChecker?style=social"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/michaelmsonne/GSAClientDiagnosticsToolkit?style=social"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/michaelmsonne/GSAClientDiagnosticsToolkit?style=social"></a>
 </p>
 
 A PowerShell module that runs connectivity, proxy, health probe, and mTLS diagnostic checks for the **Microsoft Global Secure Access (GSA) Client**.
@@ -39,7 +39,7 @@ A PowerShell module that runs connectivity, proxy, health probe, and mTLS diagno
 
 ## Overview
 
-`GSAClientConnectivityChecker` automates end-to-end diagnostics for the Global Secure Access (GSA) Client on Windows. It covers:
+`GSAClientDiagnosticsToolkit` automates end-to-end diagnostics for the Global Secure Access (GSA) Client on Windows. It covers:
 
 - GSA Windows service health
 - Entra ID device and PRT status
@@ -62,8 +62,8 @@ Outline of the repository's file contents, to help you navigate the codebase, te
 | File/folder | Description |
 |---|---|
 | `src/` | Module source code. |
-| `src/GSAClientConnectivityChecker.psd1` | Module manifest (metadata, exported functions). |
-| `src/GSAClientConnectivityChecker.psm1` | Root module file - dot-sources `Private`/`Public` and exports the public functions. |
+| `src/GSAClientDiagnosticsToolkit.psd1` | Module manifest (metadata, exported functions). |
+| `src/GSAClientDiagnosticsToolkit.psm1` | Root module file - dot-sources `Private`/`Public` and exports the public functions. |
 | `src/Public/` | Exported public functions (one file per function, e.g. `Invoke-GSAClientConnectivityCheck.ps1`). |
 | `src/Private/` | Internal helper functions used by the public functions, not exported. |
 | `tests/` | Pester test suite, mirroring the `src/Public`/`src/Private` structure. |
@@ -91,23 +91,23 @@ Outline of the repository's file contents, to help you navigate the codebase, te
 ### Option A - Clone and import locally
 
 ```powershell
-git clone https://github.com/michaelmsonne/GSAClientConnectivityChecker.git
-Import-Module .\GSAClientConnectivityChecker\GSAClientConnectivityChecker.psd1
+git clone https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit.git
+Import-Module .\GSAClientDiagnosticsToolkit\GSAClientDiagnosticsToolkit.psd1
 ```
 
 ### Option B - Copy the folder to a module path
 
-Copy the `GSAClientConnectivityChecker` folder to one of your `$env:PSModulePath` directories, for example:
+Copy the `GSAClientDiagnosticsToolkit` folder to one of your `$env:PSModulePath` directories, for example:
 
 ```powershell
-Copy-Item -Recurse .\GSAClientConnectivityChecker `
-    "$env:USERPROFILE\Documents\PowerShell\Modules\GSAClientConnectivityChecker"
+Copy-Item -Recurse .\GSAClientDiagnosticsToolkit `
+    "$env:USERPROFILE\Documents\PowerShell\Modules\GSAClientDiagnosticsToolkit"
 ```
 
 Then import it in any PowerShell session:
 
 ```powershell
-Import-Module GSAClientConnectivityChecker
+Import-Module GSAClientDiagnosticsToolkit
 ```
 
 ---
@@ -116,10 +116,10 @@ Import-Module GSAClientConnectivityChecker
 
 ```powershell
 # From the cloned/downloaded folder
-Import-Module .\GSAClientConnectivityChecker.psd1
+Import-Module .\GSAClientDiagnosticsToolkit.psd1
 
 # Verify the module loaded and see all exported commands
-Get-Command -Module GSAClientConnectivityChecker
+Get-Command -Module GSAClientDiagnosticsToolkit
 ```
 
 ---
@@ -129,7 +129,7 @@ Get-Command -Module GSAClientConnectivityChecker
 Run the full diagnostic suite with default settings:
 
 ```powershell
-Import-Module .\GSAClientConnectivityChecker.psd1
+Import-Module .\GSAClientDiagnosticsToolkit.psd1
 Invoke-GSAClientConnectivityCheck
 ```
 
@@ -157,7 +157,7 @@ Invoke-GSAClientConnectivityCheck [-LogLevel <string>] [-BasePath <string>] [-Lo
 |---|---|---|
 | `LogLevel` | `INFO` | Verbosity: `ERROR`, `WARNING`, `INFO`, `DEBUG`, `SUCCESS` |
 | `BasePath` | Current directory | Directory where the log file is written |
-| `LogFileName` | `GSAClientConnectivityChecker.log` | Name of the log file |
+| `LogFileName` | `GSAClientDiagnosticsToolkit.log` | Name of the log file |
 
 <details>
 <summary>Sample output</summary>
@@ -1059,7 +1059,7 @@ Test-GSAForwardingProfileAssignment -AccessToken $token -ProfileType private
 
 ## Star This Project
 
-If `GSAClientConnectivityChecker` helps you troubleshoot Global Secure Access, please consider giving it a star! ⭐
+If `GSAClientDiagnosticsToolkit` helps you troubleshoot Global Secure Access, please consider giving it a star! ⭐
 
 ---
 
@@ -1071,7 +1071,7 @@ This project is open-source and I invite everybody who can and will to contribut
 
 Reach out to the maintainer at one of the following places:
 
-- [GitHub Issues](https://github.com/michaelmsonne/GSAClientConnectivityChecker/issues) - for bugs and feature requests
+- [GitHub Issues](https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/issues) - for bugs and feature requests
 - [LinkedIn](https://www.linkedin.com/in/michaelmsonne/) - for commercial inquiries
 - The email listed on the [GitHub profile](https://github.com/michaelmsonne)
 

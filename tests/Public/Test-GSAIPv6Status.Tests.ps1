@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-GSAIPv6Status' {
     It 'reports a warning when no active physical adapters are found' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-NetAdapter { @() }
             $result = Test-GSAIPv6Status
             $result.Passed | Should -Be $true
@@ -18,7 +18,7 @@ Describe 'Test-GSAIPv6Status' {
     }
 
     It 'passes when IPv6 is disabled on all active physical adapters' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-NetAdapter { @([PSCustomObject]@{ Name = 'Ethernet'; Status = 'Up'; Virtual = $false }) }
             Mock Get-NetAdapterBinding { [PSCustomObject]@{ Enabled = $false } }
             Test-GSAIPv6Status | Should -Be $true
@@ -26,7 +26,7 @@ Describe 'Test-GSAIPv6Status' {
     }
 
     It 'reports a warning when IPv6 is enabled on an adapter' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-NetAdapter { @([PSCustomObject]@{ Name = 'Ethernet'; Status = 'Up'; Virtual = $false }) }
             Mock Get-NetAdapterBinding { [PSCustomObject]@{ Enabled = $true } }
             $result = Test-GSAIPv6Status
@@ -36,7 +36,7 @@ Describe 'Test-GSAIPv6Status' {
     }
 
     It 'fails when adapter enumeration throws' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-NetAdapter { throw 'WMI error' }
             Test-GSAIPv6Status | Should -Be $false
         }

@@ -50,7 +50,7 @@ function Get-GSAEndpoints {
     $diagnosticUrisDisplay = ($DiagnosticUris | ForEach-Object { "  - $_" }) -join "`n"
 
     return [PSCustomObject]@{
-        PSTypeName            = 'GSAClientConnectivityChecker.GSAEndpoints'
+        PSTypeName            = 'GSAClientDiagnosticsToolkit.GSAEndpoints'
         MainEndpoints         = $gsaMainEndpointAddrs
         DiagnosticUris        = $DiagnosticUris
         MainEndpointsDisplay  = "`n$mainEndpointsDisplay"

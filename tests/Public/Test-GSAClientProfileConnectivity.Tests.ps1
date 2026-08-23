@@ -1,29 +1,29 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-GSAClientProfileConnectivity' {
     It 'fails when the registry configuration cannot be loaded' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-ItemPropertyValue { $null }
             Test-GSAClientProfileConnectivity -ProfileType private -PassThru | Should -Be $false
         }
     }
 
     It 'fails when the requested channel is not present' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-ItemPropertyValue { '{"policy":{"channels":[{"name":"m365"}]}}' }
             Test-GSAClientProfileConnectivity -ProfileType private -PassThru | Should -Be $false
         }
     }
 
     It 'fails when neither edge is reachable' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = '{"policy":{"channels":[{"name":"private","diagnosticUri":"https://diag.example.com","edgesSettings":{"primaryEdges":[{"edgeAddress":"edge1.example.com","edgePort":443}],"secondaryEdges":[{"edgeAddress":"edge2.example.com","edgePort":443}]}}]}}'
             Mock Get-ItemPropertyValue { $json }
             Mock Test-NetConnection { $false }
@@ -32,7 +32,7 @@ Describe 'Test-GSAClientProfileConnectivity' {
     }
 
     It 'passes when the primary edge and diagnostic endpoint are reachable' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = '{"policy":{"channels":[{"name":"private","diagnosticUri":"https://diag.example.com","edgesSettings":{"primaryEdges":[{"edgeAddress":"edge1.example.com","edgePort":443}],"secondaryEdges":[{"edgeAddress":"edge2.example.com","edgePort":443}]}}]}}'
             Mock Get-ItemPropertyValue { $json }
             Mock Test-NetConnection { $true }
@@ -42,7 +42,7 @@ Describe 'Test-GSAClientProfileConnectivity' {
     }
 
     It 'fails when the diagnostic endpoint does not respond with pong' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = '{"policy":{"channels":[{"name":"private","diagnosticUri":"https://diag.example.com","edgesSettings":{"primaryEdges":[{"edgeAddress":"edge1.example.com","edgePort":443}],"secondaryEdges":[{"edgeAddress":"edge2.example.com","edgePort":443}]}}]}}'
             Mock Get-ItemPropertyValue { $json }
             Mock Test-NetConnection { $true }
@@ -52,7 +52,7 @@ Describe 'Test-GSAClientProfileConnectivity' {
     }
 
     It 'tests all three profile types when -ProfileType is not specified' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = '{"policy":{"channels":[' +
                 '{"name":"m365","diagnosticUri":"https://diag.example.com","edgesSettings":{"primaryEdges":[{"edgeAddress":"edge1.example.com","edgePort":443}],"secondaryEdges":[{"edgeAddress":"edge2.example.com","edgePort":443}]}},' +
                 '{"name":"private","diagnosticUri":"https://diag.example.com","edgesSettings":{"primaryEdges":[{"edgeAddress":"edge1.example.com","edgePort":443}],"secondaryEdges":[{"edgeAddress":"edge2.example.com","edgePort":443}]}},' +
@@ -69,7 +69,7 @@ Describe 'Test-GSAClientProfileConnectivity' {
     }
 
     It 'reports overall failure when only one of several tested profiles fails' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = '{"policy":{"channels":[{"name":"m365"},{"name":"private","diagnosticUri":"https://diag.example.com","edgesSettings":{"primaryEdges":[{"edgeAddress":"edge1.example.com","edgePort":443}],"secondaryEdges":[{"edgeAddress":"edge2.example.com","edgePort":443}]}}]}}'
             Mock Get-ItemPropertyValue { $json }
             Mock Test-NetConnection { $true }

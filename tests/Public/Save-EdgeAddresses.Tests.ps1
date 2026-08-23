@@ -1,10 +1,10 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Save-EdgeAddresses' {

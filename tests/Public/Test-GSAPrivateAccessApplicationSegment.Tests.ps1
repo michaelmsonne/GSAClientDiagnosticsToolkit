@@ -1,21 +1,21 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-GSAPrivateAccessApplicationSegment' {
     It 'fails when the target is not a valid FQDN or IP' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Test-GSAPrivateAccessApplicationSegment -AccessToken 'token' -AppId 'app-1' -FQDNorIP 'not a host' -Port 445 -Protocol TCP -PassThru | Should -Be $false
         }
     }
 
     It 'fails when the application is disabled' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-GSACurrentUserUPN { 'user@contoso.com' }
             Mock Invoke-GSAGraphRequest { [PSCustomObject]@{ value = @([PSCustomObject]@{ id = 'sp-1'; accountEnabled = $false }) } }
             Test-GSAPrivateAccessApplicationSegment -AccessToken 'token' -AppId 'app-1' -FQDNorIP 'fileserver.contoso.com' -Port 445 -Protocol TCP -PassThru | Should -Be $false
@@ -23,7 +23,7 @@ Describe 'Test-GSAPrivateAccessApplicationSegment' {
     }
 
     It 'passes when enabled, assignment not required, and segment matches' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-GSACurrentUserUPN { 'user@contoso.com' }
             Mock Invoke-GSAGraphRequest {
                 param($Uri)
@@ -35,7 +35,7 @@ Describe 'Test-GSAPrivateAccessApplicationSegment' {
     }
 
     It 'fails when no application segment covers the address' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-GSACurrentUserUPN { 'user@contoso.com' }
             Mock Invoke-GSAGraphRequest {
                 param($Uri)

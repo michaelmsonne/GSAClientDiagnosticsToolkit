@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Get-DnsChain' {
     It 'follows a chain of CNAME records' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Resolve-DnsName {
                 switch ($Name) {
                     'start.example.com' { @([PSCustomObject]@{ QueryType = 'CNAME'; NameHost = 'middle.example.com' }) }
@@ -25,7 +25,7 @@ Describe 'Get-DnsChain' {
     }
 
     It 'skips self-referential CNAMEs injected by GSA synthetic DNS' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Resolve-DnsName { @([PSCustomObject]@{ QueryType = 'CNAME'; NameHost = 'loop.example.com' }) }
 
             $chain = Get-DnsChain -fqdn 'loop.example.com'
@@ -35,7 +35,7 @@ Describe 'Get-DnsChain' {
     }
 
     It 'stops following CNAMEs at the recursion depth limit' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Resolve-DnsName {
                 param($Name)
                 @([PSCustomObject]@{ QueryType = 'CNAME'; NameHost = "$Name.next" })
@@ -48,7 +48,7 @@ Describe 'Get-DnsChain' {
     }
 
     It 'returns an empty array when DNS resolution fails' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Resolve-DnsName { throw 'DNS failure' }
             $chain = Get-DnsChain -fqdn 'broken.example.com'
             $chain | Should -BeNullOrEmpty

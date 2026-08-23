@@ -16,7 +16,7 @@ All notable changes to this project are documented in this file. Dates reflect t
 - `-PassThru` switch on the new Private Access and Graph-based functions so they stay silent by default and only return a `$true`/`$false` result when explicitly requested.
 - `-LogLevel` parameter on public functions to override the module's logging verbosity per call.
 - New connectivity tests: `Test-GSAPrimaryRefreshToken`, `Test-GSAForwardingProfileRegistry`, `Test-GSAForwardingProfileTimestamp`, `Test-GSAServiceStatus`, `Test-GSASecureDnsStatus`, `Test-GSAIPv6Status`, `Test-GSASyntheticRoutes`, `Test-GSAPrivateDnsResolver`, `Test-GSAEventLog`, `Test-DeviceEntraStatus`, and `Test-EntraIDConnectivity`.
-- Converted the original monolithic `GSAClientConnectivityChecker.ps1` script into a proper PowerShell module (`src/GSAClientConnectivityChecker.psd1`/`.psm1`) with `Public`/`Private` folder structure and `Invoke-GSAClientConnectivityCheck` as the orchestrator.
+- Converted the original monolithic `GSAClientDiagnosticsToolkit.ps1` script into a proper PowerShell module (`src/GSAClientDiagnosticsToolkit.psd1`/`.psm1`) with `Public`/`Private` folder structure and `Invoke-GSAClientConnectivityCheck` as the orchestrator.
 - README documentation covering installation, quick start, all public functions, log levels, and usage examples.
 - Module manifest metadata: `LicenseUri`, `CompatiblePSEditions`, `HelpInfoURI`, and `ReleaseNotes`.
 - Pester test suite (`tests/Public`, `tests/Private`) covering the module manifest/export consistency, private helper logic, and public function behavior via mocked dependencies.
@@ -39,5 +39,5 @@ All notable changes to this project are documented in this file. Dates reflect t
 
 ## Project history
 
-- **2026-08-18** to **2026-08-20** - Converted the script into the `GSAClientConnectivityChecker` PowerShell module and progressively added the Entra ID, Private Access, and Microsoft Graph checks described above + more.
-- **2025-05-08** to **2025-05-09** - Initial standalone `GSAClientConnectivityChecker.ps1` script: connectivity, proxy, health probe, and mTLS diagnostic checks for the Global Secure Access client, including log path error handling.
+- **2026-08-18** to **2026-08-20** - Converted the script into the `GSAClientDiagnosticsToolkit` PowerShell module and progressively added the Entra ID, Private Access, and Microsoft Graph checks described above + more.
+- **2025-05-08** to **2025-05-09** - Initial standalone `GSAClientDiagnosticsToolkit.ps1` script: connectivity, proxy, health probe, and mTLS diagnostic checks for the Global Secure Access client, including log path error handling.

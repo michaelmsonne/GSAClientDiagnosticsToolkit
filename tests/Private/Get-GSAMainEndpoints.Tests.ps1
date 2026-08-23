@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Get-GSAMainEndpoints' {
     It 'extracts primary and secondary edge addresses per channel' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = [PSCustomObject]@{
                 policy = [PSCustomObject]@{
                     channels = @(
@@ -36,7 +36,7 @@ Describe 'Get-GSAMainEndpoints' {
     }
 
     It 'returns an empty array when no channels are present' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = [PSCustomObject]@{ policy = [PSCustomObject]@{ channels = @() } }
             $result = Get-GSAMainEndpoints -jsonContent $json
             $result.Count | Should -Be 0
@@ -44,7 +44,7 @@ Describe 'Get-GSAMainEndpoints' {
     }
 
     It 'handles a channel with no edges settings' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = [PSCustomObject]@{
                 policy = [PSCustomObject]@{
                     channels = @([PSCustomObject]@{ name = 'Internet'; diagnosticUri = $null; edgesSettings = $null })

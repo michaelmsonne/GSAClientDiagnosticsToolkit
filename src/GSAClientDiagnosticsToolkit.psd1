@@ -1,5 +1,5 @@
 #
-# Module manifest for GSAClientConnectivityChecker
+# Module manifest for GSAClientDiagnosticsToolkit
 #
 @{
     # Module identity
@@ -17,13 +17,13 @@
     CompatiblePSEditions = @('Desktop')
 
     # Module file
-    RootModule        = 'GSAClientConnectivityChecker.psm1'
+    RootModule        = 'GSAClientDiagnosticsToolkit.psm1'
 
     # Custom output formatting (e.g. Get-GSAEndpoints)
-    FormatsToProcess  = @('GSAClientConnectivityChecker.format.ps1xml')
+    FormatsToProcess  = @('GSAClientDiagnosticsToolkit.format.ps1xml')
 
     # Online help landing page for Get-Help -Online
-    HelpInfoURI       = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker/blob/main/README.md'
+    HelpInfoURI       = 'https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/blob/main/README.md'
 
     # Functions to export (controls public API surface)
     FunctionsToExport = @(
@@ -69,9 +69,9 @@
     PrivateData = @{
         PSData = @{
             Tags         = @('GSA', 'GlobalSecureAccess', 'Connectivity', 'Diagnostics', 'Entra', 'mTLS', 'Microsoft')
-            ProjectUri   = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker'
-            LicenseUri   = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker/blob/main/LICENSE'
-            ReleaseNotes = 'https://github.com/michaelmsonne/GSAClientConnectivityChecker/releases'
+            ProjectUri   = 'https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit'
+            LicenseUri   = 'https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/blob/main/LICENSE'
+            ReleaseNotes = 'https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/releases'
         }
     }
 }

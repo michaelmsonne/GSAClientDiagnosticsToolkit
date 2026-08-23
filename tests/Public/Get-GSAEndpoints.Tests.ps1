@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Get-GSAEndpoints' {
     It 'returns edge addresses and diagnostic URIs, plus the APS endpoint' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $json = '{"policy":{"channels":[{"name":"M365","diagnosticUri":"https://diag.example.com/m365","edgesSettings":{"primaryEdges":[{"edgeAddress":"edge1.example.com"}]}}]}}'
             Mock Get-ItemPropertyValue { $json }
 
@@ -22,14 +22,14 @@ Describe 'Get-GSAEndpoints' {
     }
 
     It 'returns $null when the registry configuration cannot be loaded' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-ItemPropertyValue { $null }
             Get-GSAEndpoints | Should -BeNullOrEmpty
         }
     }
 
     It 'returns $null when no channels/edge addresses are found' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-ItemPropertyValue { '{"policy":{"channels":[]}}' }
             Get-GSAEndpoints | Should -BeNullOrEmpty
         }

@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-GSAServiceStatus' {
     It 'fails fast when the GSA Client is not installed' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Test-Path { $false }
             Test-GSAServiceStatus
             $script:_testResult.Passed | Should -Be $false
@@ -17,7 +17,7 @@ Describe 'Test-GSAServiceStatus' {
     }
 
     It 'passes when all required services and the forwarding profile service are running' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Test-Path { $true }
             Mock Get-Service {
                 param($Name)
@@ -29,7 +29,7 @@ Describe 'Test-GSAServiceStatus' {
     }
 
     It 'fails when a required service is not running' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Test-Path { $true }
             Mock Get-Service {
                 param($Name)
@@ -42,7 +42,7 @@ Describe 'Test-GSAServiceStatus' {
     }
 
     It 'fails when neither forwarding profile service is registered' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Test-Path { $true }
             Mock Get-Service {
                 param($Name)

@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-ProxyDetection' {
     It 'reports no proxy when nothing is detected' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock netsh { 'Direct access (no proxy server).' }
             Mock Test-grpcProxy { $false }
             Mock Test-SystemWebProxy { $null }
@@ -25,7 +25,7 @@ Describe 'Test-ProxyDetection' {
     }
 
     It 'detects a system proxy from netsh output' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock netsh { 'Proxy Server :  proxy.example.com:8080' }
             Mock Test-grpcProxy { $false }
             Mock Test-SystemWebProxy { $null }
@@ -40,7 +40,7 @@ Describe 'Test-ProxyDetection' {
     }
 
     It 'detects a transparent proxy via response headers' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock netsh { 'Direct access (no proxy server).' }
             Mock Test-grpcProxy { $false }
             Mock Test-SystemWebProxy { $null }
@@ -56,7 +56,7 @@ Describe 'Test-ProxyDetection' {
     }
 
     It 'detects an authenticating proxy via an HTTP 407 response' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock netsh { 'Direct access (no proxy server).' }
             Mock Test-grpcProxy { $false }
             Mock Test-SystemWebProxy { $null }

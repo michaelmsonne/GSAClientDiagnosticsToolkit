@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Get-GSAPrivateAccessRuleMatch' {
     It 'matches an FQDN rule on address, port, and protocol' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $rules = @(
                 [PSCustomObject]@{
                     id                          = 'rule-1'
@@ -33,7 +33,7 @@ Describe 'Get-GSAPrivateAccessRuleMatch' {
     }
 
     It 'matches address but not port when the port is out of range' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $rules = @(
                 [PSCustomObject]@{
                     id                          = 'rule-1'
@@ -55,7 +55,7 @@ Describe 'Get-GSAPrivateAccessRuleMatch' {
     }
 
     It 'matches an IP-based rule using decimal address ranges' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $rules = @(
                 [PSCustomObject]@{
                     id                          = 'rule-2'
@@ -78,7 +78,7 @@ Describe 'Get-GSAPrivateAccessRuleMatch' {
     }
 
     It 'reports no match when no rule covers the address' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             $rules = @(
                 [PSCustomObject]@{
                     id                          = 'rule-1'

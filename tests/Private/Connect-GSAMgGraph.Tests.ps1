@@ -1,22 +1,22 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Connect-GSAMgGraph' {
     It 'throws when Microsoft.Graph.Authentication is not installed' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-Module { $null } -ParameterFilter { $ListAvailable }
             { Connect-GSAMgGraph -Scopes @('User.Read.All') } | Should -Throw
         }
     }
 
     It 'connects when there is no active Graph session' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-Module { [PSCustomObject]@{ Name = 'Microsoft.Graph.Authentication' } } -ParameterFilter { $ListAvailable }
             Mock Import-Module {}
             Mock Get-MgContext { $null }
@@ -27,7 +27,7 @@ Describe 'Connect-GSAMgGraph' {
     }
 
     It 'connects when the active session is missing a required scope' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-Module { [PSCustomObject]@{ Name = 'Microsoft.Graph.Authentication' } } -ParameterFilter { $ListAvailable }
             Mock Import-Module {}
             Mock Get-MgContext { [PSCustomObject]@{ Scopes = @('User.Read') } }
@@ -38,7 +38,7 @@ Describe 'Connect-GSAMgGraph' {
     }
 
     It 'does not reconnect when an active session already has the required scopes' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-Module { [PSCustomObject]@{ Name = 'Microsoft.Graph.Authentication' } } -ParameterFilter { $ListAvailable }
             Mock Import-Module {}
             Mock Get-MgContext { [PSCustomObject]@{ Scopes = @('User.Read.All', 'Application.Read.All') } }

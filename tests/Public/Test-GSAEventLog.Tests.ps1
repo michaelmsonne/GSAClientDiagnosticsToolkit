@@ -1,15 +1,15 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-GSAEventLog' {
     It 'reports a warning when the GSA event log is not registered' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-WinEvent { $null } -ParameterFilter { $ListLog }
             $result = Test-GSAEventLog
             $result.Passed | Should -Be $true
@@ -18,7 +18,7 @@ Describe 'Test-GSAEventLog' {
     }
 
     It 'passes when no Critical/Error/Warning events are found' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-WinEvent { [PSCustomObject]@{ LogName = $ListLog } } -ParameterFilter { $ListLog }
             Mock Get-WinEvent { @() } -ParameterFilter { $LogName }
             Test-GSAEventLog | Should -Be $true
@@ -26,7 +26,7 @@ Describe 'Test-GSAEventLog' {
     }
 
     It 'reports warnings when Critical/Error events are found in the last hour' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-WinEvent { [PSCustomObject]@{ LogName = $ListLog } } -ParameterFilter { $ListLog }
             Mock Get-WinEvent {
                 # Two events are used deliberately: a single-item array unwraps to a scalar

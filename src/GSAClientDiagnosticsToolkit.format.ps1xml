@@ -2,9 +2,9 @@
 <Configuration>
     <ViewDefinitions>
         <View>
-            <Name>GSAClientConnectivityChecker.GSAEndpoints</Name>
+            <Name>GSAClientDiagnosticsToolkit.GSAEndpoints</Name>
             <ViewSelectedBy>
-                <TypeName>GSAClientConnectivityChecker.GSAEndpoints</TypeName>
+                <TypeName>GSAClientDiagnosticsToolkit.GSAEndpoints</TypeName>
             </ViewSelectedBy>
             <ListControl>
                 <ListEntries>

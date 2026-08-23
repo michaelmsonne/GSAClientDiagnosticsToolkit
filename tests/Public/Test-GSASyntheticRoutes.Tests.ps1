@@ -1,22 +1,22 @@
 BeforeAll {
-    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientConnectivityChecker.psd1'
+    $modulePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\src\GSAClientDiagnosticsToolkit.psd1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module GSAClientConnectivityChecker -Force -ErrorAction SilentlyContinue
+    Remove-Module GSAClientDiagnosticsToolkit -Force -ErrorAction SilentlyContinue
 }
 
 Describe 'Test-GSASyntheticRoutes' {
     It 'passes when GSA synthetic routes (6.6.x.x) are present' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-NetRoute { @([PSCustomObject]@{ DestinationPrefix = '6.6.0.1/32'; NextHop = '0.0.0.0'; InterfaceAlias = 'GSA Tunnel' }) }
             Test-GSASyntheticRoutes | Should -Be $true
         }
     }
 
     It 'reports a warning when no synthetic routes are found' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-NetRoute { @([PSCustomObject]@{ DestinationPrefix = '0.0.0.0/0'; NextHop = '10.0.0.1'; InterfaceAlias = 'Ethernet' }) }
             $result = Test-GSASyntheticRoutes
             $result.Passed | Should -Be $true
@@ -25,7 +25,7 @@ Describe 'Test-GSASyntheticRoutes' {
     }
 
     It 'fails when the routing table cannot be queried' {
-        InModuleScope GSAClientConnectivityChecker {
+        InModuleScope GSAClientDiagnosticsToolkit {
             Mock Get-NetRoute { throw 'Access denied' }
             Test-GSASyntheticRoutes | Should -Be $false
         }
