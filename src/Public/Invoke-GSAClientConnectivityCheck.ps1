@@ -45,7 +45,6 @@ function Invoke-GSAClientConnectivityCheck {
 
     # Initialize module-level logging state
     $script:LogLevel = $LogLevel
-    $script:LogFilePath = Join-Path -Path $BasePath -ChildPath $LogFileName
 
     try {
         if (-Not (Test-Path $BasePath)) {
@@ -57,12 +56,17 @@ function Invoke-GSAClientConnectivityCheck {
         throw
     }
 
+    # Resolve to an absolute path so the log location does not depend on the current working directory
+    $BasePath = (Resolve-Path -Path $BasePath).ProviderPath
+    $script:LogFilePath = Join-Path -Path $BasePath -ChildPath $LogFileName
+
     $testsPassed = 0
     $testsFailed = 0
     $testsWithWarnings = 0
     $testResults = @{}
 
     Write-Log "========= GSA Client Connectivity Checker v. $script:ModuleVer Started ========="
+    Write-Log "Log file    : $script:LogFilePath"
     Write-Log "Device Name : $env:COMPUTERNAME"
     Write-Log "User Account: $(Get-GSACurrentUserUPN)"
 

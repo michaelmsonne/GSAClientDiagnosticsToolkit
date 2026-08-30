@@ -17,7 +17,8 @@
 $script:ModuleVer                 = "1.0.0"
 $script:GSAFwdProfileRegistryPath = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
 $script:LogLevel                  = "INFO"
-$script:LogFilePath               = $null
+# Default log path so any function (not just Invoke-GSAClientConnectivityCheck) writes to a file
+$script:LogFilePath               = Join-Path -Path $PWD.ProviderPath -ChildPath "GSAClientDiagnosticsToolkit.log"
 $script:LogLockObject             = New-Object System.Object
 
 #endregion
