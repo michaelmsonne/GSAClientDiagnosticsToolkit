@@ -236,6 +236,7 @@ ZTNA Policy Service - b3fa0115-39b3-4bec-8cc6-8c4fcd33e69d
 ZTNA Policy Service Client - ca01d00c-bfd6-46d6-ae7d-be5b5267d037
 ZTNA Policy Service Graph Client - 3b80cd3f-61ca-49b0-8d0f-7b6760e08705
 Global Secure Access Private Access Traffic Profile Resource Id - e92b9b37-1b47-4c01-9fbc-91d84450870e
+ZTNA Data Acquisition - PROD - 7dd7250c-c317-4bc6-8528-8d27b02707ef
 ```
 
 </details>

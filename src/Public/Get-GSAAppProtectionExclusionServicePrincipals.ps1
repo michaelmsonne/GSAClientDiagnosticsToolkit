@@ -41,7 +41,8 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
         @{ DisplayName = 'ZTNA Policy Service'; AppId = 'b3fa0115-39b3-4bec-8cc6-8c4fcd33e69d' },
         @{ DisplayName = 'ZTNA Policy Service Client'; AppId = 'ca01d00c-bfd6-46d6-ae7d-be5b5267d037' },
         @{ DisplayName = 'ZTNA Policy Service Graph Client'; AppId = '3b80cd3f-61ca-49b0-8d0f-7b6760e08705' },
-        @{ DisplayName = 'Global Secure Access Private Access Traffic Profile Resource Id'; AppId = 'e92b9b37-1b47-4c01-9fbc-91d84450870e' }
+        @{ DisplayName = 'Global Secure Access Private Access Traffic Profile Resource Id'; AppId = 'e92b9b37-1b47-4c01-9fbc-91d84450870e' },
+        @{ DisplayName = 'ZTNA Data Acquisition - PROD'; AppId = '7dd7250c-c317-4bc6-8528-8d27b02707ef' }
     )
 
     Write-Log "Checking Global Secure Access service principals to exclude from App Protection policies..." "INFO"
