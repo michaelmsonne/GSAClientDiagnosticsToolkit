@@ -13,7 +13,8 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a><br>
   <a href="https://www.linkedin.com/in/michaelmsonne/"><img alt="Made by" src="https://img.shields.io/static/v1?label=made%20by&message=Michael%20Morten%20Sonne&color=04D361"></a>
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/michaelmsonne/GSAClientDiagnosticsToolkit?style=social"></a>
-  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/michaelmsonne/GSAClientDiagnosticsToolkit?style=social"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/michaelmsonne/GSAClientDiagnosticsToolkit?style=social"></a><br>
+   <a href="https://www.buymeacoffee.com/sonnes" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 30px !important;width: 117px !important;"></a>
 </p>
 
 A PowerShell module that runs connectivity, proxy, health probe, and mTLS diagnostic checks for the **Microsoft Global Secure Access (GSA) Client**.
