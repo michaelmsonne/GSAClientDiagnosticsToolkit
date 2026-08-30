@@ -235,6 +235,7 @@ Microsoft apps with Global Secure Access - c08f52c9-8f03-4558-a0ea-9a4c878cf343
 ZTNA Policy Service - b3fa0115-39b3-4bec-8cc6-8c4fcd33e69d
 ZTNA Policy Service Client - ca01d00c-bfd6-46d6-ae7d-be5b5267d037
 ZTNA Policy Service Graph Client - 3b80cd3f-61ca-49b0-8d0f-7b6760e08705
+Global Secure Access Private Access Traffic Profile Resource Id - e92b9b37-1b47-4c01-9fbc-91d84450870e
 ```
 
 </details>

@@ -40,12 +40,12 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
         @{ DisplayName = 'Microsoft apps with Global Secure Access'; AppId = 'c08f52c9-8f03-4558-a0ea-9a4c878cf343' },
         @{ DisplayName = 'ZTNA Policy Service'; AppId = 'b3fa0115-39b3-4bec-8cc6-8c4fcd33e69d' },
         @{ DisplayName = 'ZTNA Policy Service Client'; AppId = 'ca01d00c-bfd6-46d6-ae7d-be5b5267d037' },
-        @{ DisplayName = 'ZTNA Policy Service Graph Client'; AppId = '3b80cd3f-61ca-49b0-8d0f-7b6760e08705' }
+        @{ DisplayName = 'ZTNA Policy Service Graph Client'; AppId = '3b80cd3f-61ca-49b0-8d0f-7b6760e08705' },
+        @{ DisplayName = 'Global Secure Access Private Access Traffic Profile Resource Id'; AppId = 'e92b9b37-1b47-4c01-9fbc-91d84450870e' }
     )
 
     Write-Log "Checking Global Secure Access service principals to exclude from App Protection policies..." "INFO"
 
-    $nameWidth = ($entries | ForEach-Object { $_.DisplayName.Length } | Measure-Object -Maximum).Maximum
     $stateCounts = @{}
 
     foreach ($entry in $entries) {
@@ -119,7 +119,7 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
             default { 'WARNING' }
         }
         $stateCounts[$currentState] = 1 + ([int]$stateCounts[$currentState])
-        Write-Log ("{0}  {1}  {2}" -f $entry.DisplayName.PadRight($nameWidth), $entry.AppId, $currentState) $statusLevel
+        Write-Log "$($entry.DisplayName) ($($entry.AppId)) is $currentState." $statusLevel
 
         if (-not ($PassThru -or $AsHashtable)) { continue }
 
