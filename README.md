@@ -1,6 +1,9 @@
 # GSAClientDiagnosticsToolkit
 
 <p align="center">
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/michaelmsonne/GSAClientDiagnosticsToolkit?include_prereleases&logo=github"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img src="https://img.shields.io/github/downloads/michaelmsonne/GSAClientDiagnosticsToolkit/total.svg" alt="Total Downloads"></a>
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=michaelmsonne.GSAClientDiagnosticsToolkit.README" alt="Visitors">
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img alt="Top language" src="https://img.shields.io/github/languages/top/michaelmsonne/GSAClientDiagnosticsToolkit.svg"></a>
