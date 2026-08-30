@@ -178,7 +178,6 @@ Invoke-GSAClientConnectivityCheck [-LogLevel <string>] [-BasePath <string>] [-Lo
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Invoke-GSAClientConnectivityCheck - full diagnostic run](docs/images/screenshot-full-check.png)
 
 ---
@@ -201,7 +200,6 @@ Get-GSAEndpoints [-RegistryValueName <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Get-GSAEndpoints - example output](docs/images/screenshot-get-gsa-endpoints.png)
 
 ---
@@ -212,6 +210,7 @@ Returns the known Global Secure Access-related service principals that can be ex
 By default, it validates each App ID against Microsoft Graph in the current tenant and writes a colored status line
 per service principal (green = present/enabled, red = missing/disabled, yellow = other). Use `-PassThru` to also
 return objects with fields such as `ExistsInTenant`, `CurrentState`, `TenantDisplayName`, and `DisplayNameMatches`.
+
 
 ```powershell
 Get-GSAAppProtectionExclusionServicePrincipals
@@ -240,6 +239,14 @@ ZTNA Data Acquisition - PROD - 7dd7250c-c317-4bc6-8528-8d27b02707ef
 ```
 
 </details>
+
+Info logs:
+
+![Invoke-GSAClientConnectivityCheck - Get-GSAAppProtectionExclusionServicePrincipals](docs/images/screenshot-service-principals-status-info.png)
+
+Debug logs:
+
+![Invoke-GSAClientConnectivityCheck - Get-GSAAppProtectionExclusionServicePrincipals debug log](docs/images/screenshot-service-principals-status-debug.png)
 
 ---
 
