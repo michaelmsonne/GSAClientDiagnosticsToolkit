@@ -206,6 +206,41 @@ Get-GSAEndpoints [-RegistryValueName <string>]
 
 ---
 
+### `Get-GSAAppProtectionExclusionServicePrincipals`
+
+Returns the known Global Secure Access-related service principals that can be excluded in App Protection policies.
+By default, it validates each App ID against Microsoft Graph in the current tenant and writes a colored status line
+per service principal (green = present/enabled, red = missing/disabled, yellow = other). Use `-PassThru` to also
+return objects with fields such as `ExistsInTenant`, `CurrentState`, `TenantDisplayName`, and `DisplayNameMatches`.
+
+```powershell
+Get-GSAAppProtectionExclusionServicePrincipals
+```
+
+```powershell
+Get-GSAAppProtectionExclusionServicePrincipals -PassThru | Format-Table DisplayName, AppId, ExistsInTenant, CurrentState
+```
+
+```powershell
+Get-GSAAppProtectionExclusionServicePrincipals -ValidateInTenant:$false
+```
+
+<details>
+<summary>Current entries</summary>
+
+```text
+Global Secure Access Client - cde6adac-58fd-4b78-8d6d-9beaf1b0d668
+Internet resources with Global Secure Access - 5dc48733-b5df-475c-a49b-fa307ef00853
+Microsoft apps with Global Secure Access - c08f52c9-8f03-4558-a0ea-9a4c878cf343
+ZTNA Policy Service - b3fa0115-39b3-4bec-8cc6-8c4fcd33e69d
+ZTNA Policy Service Client - ca01d00c-bfd6-46d6-ae7d-be5b5267d037
+ZTNA Policy Service Graph Client - 3b80cd3f-61ca-49b0-8d0f-7b6760e08705
+```
+
+</details>
+
+---
+
 ### `Save-EdgeAddresses`
 
 Saves a list of edge address FQDNs to a file.

@@ -29,6 +29,7 @@
     FunctionsToExport = @(
         'Invoke-GSAClientConnectivityCheck',
         'Get-GSAEndpoints',
+        'Get-GSAAppProtectionExclusionServicePrincipals',
         'Save-EdgeAddresses',
         'Test-GSAServiceStatus',
         'Test-DeviceEntraStatus',

@@ -24,6 +24,7 @@ All notable changes to this project are documented in this file. Dates reflect t
 - `Export-GSAAuthCertificate` - read-only backup of the GSA authentication certificate(s) (password-protected `.pfx` with the private key when exportable, otherwise a public-key-only `.cer`), usable standalone or as the backup step reused by `Repair-GSAAuthCertificate`.
 - `Repair-GSAAuthCertificate` - remediation for a missing/invalid authentication certificate: always backs up the certificate first via `Export-GSAAuthCertificate`, requires two separate confirmations before deleting it (standard `-WhatIf`/`-Confirm` plus typing the exact thumbprint), clears the `CertCommonName` registry value, and can optionally restart `GlobalSecureAccessEngineService` via `-RestartEngineService`.
 - README badges (issues, pull requests, top language, code size, PowerShell/platform/license, stars, forks, made-by), a `Repository Structure` section outlining the repo's files/folders, a `Star This Project` section, and a `Support` section.
+- `Get-GSAAppProtectionExclusionServicePrincipals` - returns the known Global Secure Access-related service principals/app IDs to exclude in App Protection policies (based on field validation on Windows and iOS), and validates each App ID in-tenant via Microsoft Graph to report existence and current state.
 
 ### Changed
 
