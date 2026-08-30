@@ -45,6 +45,9 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
 
     Write-Log "Checking Global Secure Access service principals to exclude from App Protection policies..." "INFO"
 
+    $nameWidth = ($entries | ForEach-Object { $_.DisplayName.Length } | Measure-Object -Maximum).Maximum
+    $stateCounts = @{}
+
     foreach ($entry in $entries) {
         $existsInTenant = $null
         $currentState = 'NotValidated'
@@ -56,6 +59,8 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
             try {
                 $encodedFilter = [uri]::EscapeDataString("appId eq '$($entry.AppId)'")
                 $uri = "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=$encodedFilter&`$select=id,appId,displayName,accountEnabled,servicePrincipalType"
+                Write-Log "Validating '$($entry.DisplayName)' (AppId $($entry.AppId)) via Microsoft Graph..." "DEBUG"
+                Write-Log "  GET $uri" "DEBUG"
                 $spResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri $uri -Scopes @('Application.Read.All', 'Directory.Read.All')
                 $sp = @($spResult.value)[0]
 
@@ -77,11 +82,21 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
                     if ($accountEnabled -eq $true) { $currentState = 'Enabled' }
                     elseif ($accountEnabled -eq $false) { $currentState = 'Disabled' }
                     else { $currentState = 'Unknown' }
+
+                    if ($script:LogLevel -eq "DEBUG") {
+                        Write-Log "  Found service principal:" "DEBUG"
+                        Write-Log "    ObjectId          : $tenantObjectId" "DEBUG"
+                        Write-Log "    TenantDisplayName : $tenantDisplayName" "DEBUG"
+                        Write-Log "    AccountEnabled    : $accountEnabled" "DEBUG"
+                        Write-Log "    DisplayNameMatches: $displayNameMatches" "DEBUG"
+                        if (-not $displayNameMatches) { Write-Log "    Note: tenant display name differs from the expected name '$($entry.DisplayName)'." "DEBUG" }
+                    }
                 }
                 else {
                     $existsInTenant = $false
                     $currentState = 'Missing'
                     $displayNameMatches = $false
+                    Write-Log "  No service principal returned for AppId $($entry.AppId)." "DEBUG"
                 }
             }
             catch {
@@ -89,6 +104,9 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
                 $currentState = 'ValidationFailed'
                 Write-Log "Failed to validate service principal '$($entry.DisplayName)' ($($entry.AppId)) via Microsoft Graph: $_" "ERROR"
             }
+        }
+        else {
+            Write-Log "Skipping tenant validation for '$($entry.DisplayName)' (ValidateInTenant is false)." "DEBUG"
         }
 
         # Emit a colored status line per service principal (green=present/enabled, red=missing/disabled, yellow=other)
@@ -100,7 +118,8 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
             'NotValidated' { 'INFO' }
             default { 'WARNING' }
         }
-        Write-Log "$($entry.DisplayName) ($($entry.AppId)) - $currentState" $statusLevel
+        $stateCounts[$currentState] = 1 + ([int]$stateCounts[$currentState])
+        Write-Log ("{0}  {1}  {2}" -f $entry.DisplayName.PadRight($nameWidth), $entry.AppId, $currentState) $statusLevel
 
         if (-not ($PassThru -or $AsHashtable)) { continue }
 
@@ -133,5 +152,13 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
                 DisplayNameMatches = $displayNameMatches
             }
         }
+    }
+
+    if ($ValidateInTenant) {
+        $enabled = [int]$stateCounts['Enabled']
+        $problems = $entries.Count - $enabled
+        $summary = "Summary: $enabled of $($entries.Count) service principal(s) present and enabled."
+        if ($problems -gt 0) { Write-Log "$summary $problems need attention (missing/disabled/unknown)." "WARNING" }
+        else { Write-Log $summary "SUCCESS" }
     }
 }
