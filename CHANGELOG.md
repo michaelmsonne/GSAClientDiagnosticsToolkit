@@ -17,7 +17,6 @@ All notable changes to this project are documented in this file. Dates reflect t
 - `-LogLevel` parameter on public functions to override the module's logging verbosity per call.
 - New connectivity tests: `Test-GSAPrimaryRefreshToken`, `Test-GSAForwardingProfileRegistry`, `Test-GSAForwardingProfileTimestamp`, `Test-GSAServiceStatus`, `Test-GSASecureDnsStatus`, `Test-GSAIPv6Status`, `Test-GSASyntheticRoutes`, `Test-GSAPrivateDnsResolver`, `Test-GSAEventLog`, `Test-DeviceEntraStatus`, and `Test-EntraIDConnectivity`.
 - Converted the original monolithic `GSAClientDiagnosticsToolkit.ps1` script into a proper PowerShell module (`src/GSAClientDiagnosticsToolkit.psd1`/`.psm1`) with `Public`/`Private` folder structure and `Invoke-GSAClientConnectivityCheck` as the orchestrator.
-- README documentation covering installation, quick start, all public functions, log levels, and usage examples.
 - Module manifest metadata: `LicenseUri`, `CompatiblePSEditions`, `HelpInfoURI`, and `ReleaseNotes`.
 - Pester test suite (`tests/Public`, `tests/Private`) covering the module manifest/export consistency, private helper logic, and public function behavior via mocked dependencies.
 - `Test-GSAAuthCertificate` - checks whether a valid GSA mTLS authentication certificate (subject ending in `gsa.client`) exists in the LocalMachine\My store and hasn't expired, mirroring the client's built-in "Authentication certificate exists"/"Authentication certificate is valid" Health check tests.
