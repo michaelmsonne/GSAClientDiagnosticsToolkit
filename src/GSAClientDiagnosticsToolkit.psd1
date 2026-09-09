@@ -55,6 +55,7 @@
         'Test-GSAClientProfileConnectivity',
         'Test-GSAPrivateAccessApplicationSegment',
         'Test-GSAPrivateAccessApplication',
+        'Test-GSAIntelligentLocalAccessConfiguration',
         'Test-GSAAuthCertificate',
         'Export-GSAAuthCertificate',
         'Repair-GSAAuthCertificate'

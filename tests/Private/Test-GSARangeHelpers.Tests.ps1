@@ -40,3 +40,29 @@ Describe 'Test-GSAPortInRange' {
         }
     }
 }
+
+Describe 'Test-GSAIsPrivateIPv4' {
+    It 'returns $true for RFC1918 and loopback addresses' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            Test-GSAIsPrivateIPv4 -IPAddress '10.1.2.3' | Should -Be $true
+            Test-GSAIsPrivateIPv4 -IPAddress '172.16.0.1' | Should -Be $true
+            Test-GSAIsPrivateIPv4 -IPAddress '172.31.255.255' | Should -Be $true
+            Test-GSAIsPrivateIPv4 -IPAddress '192.168.1.1' | Should -Be $true
+            Test-GSAIsPrivateIPv4 -IPAddress '127.0.0.1' | Should -Be $true
+        }
+    }
+
+    It 'returns $false for public addresses' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            Test-GSAIsPrivateIPv4 -IPAddress '20.10.30.40' | Should -Be $false
+            Test-GSAIsPrivateIPv4 -IPAddress '172.32.0.1' | Should -Be $false
+            Test-GSAIsPrivateIPv4 -IPAddress '8.8.8.8' | Should -Be $false
+        }
+    }
+
+    It 'returns $false for an invalid address' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            Test-GSAIsPrivateIPv4 -IPAddress 'not-an-ip' | Should -Be $false
+        }
+    }
+}

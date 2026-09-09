@@ -58,6 +58,7 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - Entra ID reachability
 - GSA diagnostic URI connectivity
 - GSA event log inspection
+- Intelligent Local Access (ILA) Private Network configuration checks via Microsoft Graph
 
 ---
 
@@ -1018,6 +1019,46 @@ PS> Test-GSAPrivateAccessApplication -AppId 5c3b2f7c-64fa-4d4f-aa39-1807c82db702
 
 <!-- TODO: Add screenshot -->
 ![Test-GSAPrivateAccessApplication - example output](docs/images/screenshot-private-access-application.png)
+
+---
+
+### `Test-GSAIntelligentLocalAccessConfiguration`
+
+Checks Intelligent Local Access (ILA) Private Network definitions via Microsoft Graph for a misconfiguration
+that can cause GSA to incorrectly bypass Private Access traffic to a local/direct connection when the client
+is **not** actually on the expected corporate network. For each Private Network's DNS-based identification, it
+flags: a probe FQDN that is publicly resolvable (defeats corporate-network detection), and DNS server/expected
+IP addresses that are public rather than private (RFC1918). This mirrors a confirmed real-world root cause
+where users on hotel/home networks couldn't reach Private Access resources because ILA's probe FQDN had a
+public DNS record and was satisfied from any network. Each Private Network's associated application IDs are
+resolved to friendly display names for more actionable logging, and any App ID that no longer resolves to a
+known ZTNA/Quick Access application is flagged as possibly stale.
+
+```powershell
+Test-GSAIntelligentLocalAccessConfiguration [-AccessToken <string>] [-PublicDnsServer <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `AccessToken` | Prompts `Connect-MgGraph` sign-in | Microsoft Graph access token |
+| `PublicDnsServer` | `8.8.8.8` | Public DNS server used to check whether a probe FQDN is publicly resolvable |
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-GSAIntelligentLocalAccessConfiguration
+[2026-09-09 10:00:00] [INFO] Retrieving Intelligent Local Access Private Network definitions via Microsoft Graph...
+[2026-09-09 10:00:01] [INFO] Checking Private Network 'Home sweet home' (target app(s): GSA-HTTPS - unifi.home.sonnes.cloud)...
+[2026-09-09 10:00:01] [ERROR] Private Network 'Home sweet home' probe FQDN 'pfsense.contoso.com' is PUBLICLY resolvable via 8.8.8.8 (resolves to 20.10.30.40).
+[2026-09-09 10:00:01] [WARNING] Recommended action: Use an FQDN for 'Home sweet home' that only resolves on your internal/corporate DNS servers (no public DNS record). A publicly resolvable probe FQDN defeats corporate-network detection and can cause GSA to incorrectly bypass Private Access traffic locally for users who are NOT on the corporate network (a confirmed real-world root cause of client connectivity failures on hotel/home networks).
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAIntelligentLocalAccessConfiguration - example output](docs/images/screenshot-gsa-ila-configuration.png)
 
 ---
 
