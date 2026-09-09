@@ -15,6 +15,22 @@ Describe 'Test-GSAIntelligentLocalAccessConfiguration' {
         }
     }
 
+    It 'manually checks a single FQDN without calling Microsoft Graph' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            Mock Invoke-GSAGraphRequest { throw 'Should not be called in manual mode' }
+            Mock Invoke-RestMethod { [PSCustomObject]@{ Status = 3; Answer = @() } }
+            Test-GSAIntelligentLocalAccessConfiguration -FQDN internal.contoso.local -DnsServerAddress 192.168.1.1 -ExpectedIPAddress 192.168.1.1 -PassThru | Should -Be $true
+            Should -Invoke Invoke-GSAGraphRequest -Times 0
+        }
+    }
+
+    It 'fails a manual check when the FQDN is publicly resolvable' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            Mock Invoke-RestMethod { [PSCustomObject]@{ Status = 0; Answer = @([PSCustomObject]@{ type = 1; data = '20.10.30.40' }) } }
+            Test-GSAIntelligentLocalAccessConfiguration -FQDN public.contoso.com -PassThru | Should -Be $false
+        }
+    }
+
     It 'fails when a private network has no network identification' {
         InModuleScope GSAClientDiagnosticsToolkit {
             Mock Invoke-GSAGraphRequest {

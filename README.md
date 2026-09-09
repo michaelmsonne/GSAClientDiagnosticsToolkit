@@ -1034,14 +1034,28 @@ public DNS record and was satisfied from any network. Each Private Network's ass
 resolved to friendly display names for more actionable logging, and any App ID that no longer resolves to a
 known ZTNA/Quick Access application is flagged as possibly stale.
 
+Public resolvability is checked via DNS-over-HTTPS (DoH) rather than a classic port-53 query, since a plain
+query can be silently intercepted and answered - either by the GSA client's own WFP driver for any FQDN it
+tunnels (returning a synthetic `6.6.x.x` address, which this check detects and reports as inconclusive rather
+than a false failure), or by a home/office router with its own local DNS records (e.g. a UniFi "Host (A)"
+record) - neither of which reflects what the FQDN actually resolves to on the public internet.
+
+Pass `-FQDN` (optionally with `-DnsServerAddress`/`-ExpectedIPAddress`) to manually check a single candidate
+FQDN instead of retrieving Private Network definitions from Microsoft Graph - useful to validate an FQDN
+before configuring it as an ILA Private Network in Entra. No Graph call or sign-in is made in this mode.
+
 ```powershell
 Test-GSAIntelligentLocalAccessConfiguration [-AccessToken <string>] [-PublicDnsServer <string>] [-PassThru] [-LogLevel <string>]
+Test-GSAIntelligentLocalAccessConfiguration -FQDN <string> [-DnsServerAddress <string[]>] [-ExpectedIPAddress <string[]>] [-PublicDnsServer <string>] [-PassThru] [-LogLevel <string>]
 ```
 
 | Parameter | Default | Description |
 |---|---|---|
 | `AccessToken` | Prompts `Connect-MgGraph` sign-in | Microsoft Graph access token |
-| `PublicDnsServer` | `8.8.8.8` | Public DNS server used to check whether a probe FQDN is publicly resolvable |
+| `FQDN` | *(none)* | Manually check a single candidate probe FQDN instead of querying Microsoft Graph |
+| `DnsServerAddress` | *(none)* | DNS server address(es) to also validate as private/internal - only used with `-FQDN` |
+| `ExpectedIPAddress` | *(none)* | Expected resolved IP address(es) to also validate as private/internal - only used with `-FQDN` |
+| `PublicDnsServer` | `https://dns.google/resolve` | DNS-over-HTTPS (DoH) JSON API endpoint used to check whether a probe FQDN is publicly resolvable |
 | `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
 
 <details>
@@ -1051,14 +1065,20 @@ Test-GSAIntelligentLocalAccessConfiguration [-AccessToken <string>] [-PublicDnsS
 PS> Test-GSAIntelligentLocalAccessConfiguration
 [2026-09-09 10:00:00] [INFO] Retrieving Intelligent Local Access Private Network definitions via Microsoft Graph...
 [2026-09-09 10:00:01] [INFO] Checking Private Network 'Home sweet home' (target app(s): GSA-HTTPS - unifi.home.sonnes.cloud)...
-[2026-09-09 10:00:01] [ERROR] Private Network 'Home sweet home' probe FQDN 'pfsense.contoso.com' is PUBLICLY resolvable via 8.8.8.8 (resolves to 20.10.30.40).
-[2026-09-09 10:00:01] [WARNING] Recommended action: Use an FQDN for 'Home sweet home' that only resolves on your internal/corporate DNS servers (no public DNS record). A publicly resolvable probe FQDN defeats corporate-network detection and can cause GSA to incorrectly bypass Private Access traffic locally for users who are NOT on the corporate network (a confirmed real-world root cause of client connectivity failures on hotel/home networks).
+[2026-09-09 10:00:01] [ERROR] Private Network 'Home sweet home' probe FQDN 'pfsense.contoso.com' is PUBLICLY resolvable via DNS-over-HTTPS (resolves to 20.10.30.40).
+[2026-09-09 10:00:01] [WARNING] Recommended action: Use an FQDN that only resolves on your internal/corporate DNS servers (no public DNS record). A publicly resolvable probe FQDN defeats corporate-network detection and can cause GSA to incorrectly bypass Private Access traffic locally for users who are NOT on the corporate network (a confirmed real-world root cause of client connectivity failures on hotel/home networks).
+
+PS> Test-GSAIntelligentLocalAccessConfiguration -FQDN unifi.home.sonnes.cloud
+[2026-09-09 23:37:45] [INFO] Manually checking probe FQDN 'unifi.home.sonnes.cloud' for Intelligent Local Access misconfigurations...
+[2026-09-09 23:37:45] [SUCCESS] Manual check for 'unifi.home.sonnes.cloud': probe FQDN 'unifi.home.sonnes.cloud' is not publicly resolvable - OK.
+[2026-09-09 23:37:45] [SUCCESS] Test passed: No Intelligent Local Access misconfigurations detected for 'unifi.home.sonnes.cloud'.
 ```
 
 </details>
 
 <!-- TODO: Add screenshot -->
 ![Test-GSAIntelligentLocalAccessConfiguration - example output](docs/images/screenshot-gsa-ila-configuration.png)
+
 
 ---
 

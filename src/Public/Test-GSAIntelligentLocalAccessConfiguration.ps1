@@ -33,6 +33,16 @@ function Test-GSAIntelligentLocalAccessConfiguration {
     A Microsoft Graph access token with NetworkAccess.Read.All and Application.Read.All permissions.
     If omitted, an interactive Connect-MgGraph sign-in is triggered automatically (requires the
     Microsoft.Graph.Authentication module), reusing any already-active Graph session.
+.PARAMETER FQDN
+    Manually check a single candidate probe FQDN instead of retrieving Private Network definitions from
+    Microsoft Graph - no Graph call or sign-in is made. Useful to validate a candidate FQDN before
+    configuring it as an Intelligent Local Access Private Network in Entra.
+.PARAMETER DnsServerAddress
+    One or more DNS server IPv4 addresses to also validate as private/internal (RFC1918). Only used
+    together with -FQDN.
+.PARAMETER ExpectedIPAddress
+    One or more expected resolved IPv4 addresses to also validate as private/internal (RFC1918). Only
+    used together with -FQDN.
 .PARAMETER PublicDnsServer
     The DNS-over-HTTPS (DoH) JSON API endpoint used to check whether a probe FQDN is publicly
     resolvable (default: https://dns.google/resolve).
@@ -42,10 +52,19 @@ function Test-GSAIntelligentLocalAccessConfiguration {
     Test-GSAIntelligentLocalAccessConfiguration
 .EXAMPLE
     Test-GSAIntelligentLocalAccessConfiguration -AccessToken $token -PassThru
+.EXAMPLE
+    Test-GSAIntelligentLocalAccessConfiguration -FQDN unifi.home.contoso.com -DnsServerAddress 192.168.1.1 -ExpectedIPAddress 192.168.1.1
 #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Graph')]
     param (
+        [Parameter(ParameterSetName = 'Graph')]
         [string]$AccessToken,
+        [Parameter(ParameterSetName = 'Manual', Mandatory)]
+        [string]$FQDN,
+        [Parameter(ParameterSetName = 'Manual')]
+        [string[]]$DnsServerAddress,
+        [Parameter(ParameterSetName = 'Manual')]
+        [string[]]$ExpectedIPAddress,
         [string]$PublicDnsServer = "https://dns.google/resolve",
         [switch]$PassThru,
         [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
@@ -53,6 +72,16 @@ function Test-GSAIntelligentLocalAccessConfiguration {
     )
 
     if ($PSBoundParameters.ContainsKey('LogLevel')) { $script:LogLevel = $LogLevel }
+
+    if ($PSCmdlet.ParameterSetName -eq 'Manual') {
+        Write-Log "Manually checking probe FQDN '$FQDN' for Intelligent Local Access misconfigurations..." "INFO"
+        $passed = Test-GSAILAProbeIdentification -ContextLabel "Manual check for '$FQDN':" -FQDN $FQDN -ServerAddresses $DnsServerAddress -ExpectedIPs $ExpectedIPAddress -PublicDnsServer $PublicDnsServer
+        if ($passed) {
+            Write-Log "Test passed: No Intelligent Local Access misconfigurations detected for '$FQDN'." "SUCCESS"
+        }
+        if ($PassThru) { return $passed }
+        return
+    }
 
     Write-Log "Retrieving Intelligent Local Access Private Network definitions via Microsoft Graph..." "INFO"
     try {
@@ -116,66 +145,9 @@ function Test-GSAIntelligentLocalAccessConfiguration {
                 continue
             }
 
-            # 1. The probe FQDN must NOT be resolvable via a public DNS resolver - if it is, corporate-network
-            #    detection can be satisfied from anywhere, causing GSA to falsely bypass traffic locally.
-            #    Uses DNS-over-HTTPS rather than a classic port-53 query, since the latter can be silently
-            #    intercepted/answered by the local GSA client or a router's own local DNS records.
-            $publiclyResolvable = $false
-            $publicIPs = @()
-            try {
-                $dohUri = "$PublicDnsServer`?name=$([uri]::EscapeDataString($fqdn))&type=A"
-                $dohResponse = Invoke-RestMethod -Uri $dohUri -Headers @{ Accept = 'application/dns-json' } -ErrorAction Stop
-                if ($dohResponse.Status -eq 0) {
-                    # Status 0 (NOERROR) alone doesn't guarantee an A record exists - a NODATA response
-                    # (e.g. only an Authority/SOA section, no Answer) means the zone exists but this
-                    # name doesn't resolve publicly, so only a non-empty Answer counts as resolvable.
-                    $publicIPs = @($dohResponse.Answer | Where-Object { $_.type -eq 1 } | Select-Object -ExpandProperty data -ErrorAction SilentlyContinue)
-                    $publiclyResolvable = $publicIPs.Count -gt 0
-                }
-                elseif ($dohResponse.Status -ne 3) {
-                    # Status 3 (NXDOMAIN) simply means "not resolvable" - anything else is inconclusive
-                    Write-Log "Could not determine public resolvability of '$fqdn' via DNS-over-HTTPS ($PublicDnsServer): DNS status code $($dohResponse.Status)." "WARNING"
-                }
-            }
-            catch {
-                Write-Log "Could not determine public resolvability of '$fqdn' via DNS-over-HTTPS ($PublicDnsServer): $_" "WARNING"
-            }
-
-            if ($publiclyResolvable) {
-                # A GSA-only device could still return its own synthetic 6.6.x.x address if the DoH provider
-                # itself happened to be covered by a Private Access rule - vanishingly unlikely, but checked
-                # anyway as defense-in-depth so this never produces a false failure.
-                $syntheticIPs = @($publicIPs | Where-Object { $_ -like '6.6.*' })
-                if ($syntheticIPs.Count -gt 0 -and $syntheticIPs.Count -eq $publicIPs.Count) {
-                    Write-Log "Private Network '$networkName' probe FQDN '$fqdn' resolved to a GSA synthetic address ($($syntheticIPs -join ', ')) - the local GSA client is intercepting this query, so public resolvability can't be verified from this device." "WARNING"
-                    Write-Log "Recommended action: Re-run this check from a device without the GSA client active for '$fqdn' (e.g. temporarily disable Private Access, or use a machine that doesn't have it installed) to get a trustworthy result." "WARNING"
-                }
-                else {
-                    $ipInfo = if ($publicIPs.Count -gt 0) { " (resolves to $($publicIPs -join ', '))" } else { "" }
-                    Write-Log "Private Network '$networkName' probe FQDN '$fqdn' is PUBLICLY resolvable via DNS-over-HTTPS$ipInfo." "ERROR"
-                    Write-Log "Recommended action: Use an FQDN for '$networkName' that only resolves on your internal/corporate DNS servers (no public DNS record). A publicly resolvable probe FQDN defeats corporate-network detection and can cause GSA to incorrectly bypass Private Access traffic locally for users who are NOT on the corporate network (a confirmed real-world root cause of client connectivity failures on hotel/home networks)." "WARNING"
-                    $allTestsPassed = $false
-                }
-            }
-            else {
-                Write-Log "Private Network '$networkName' probe FQDN '$fqdn' is not publicly resolvable - OK." "SUCCESS"
-            }
-
-            # 2. The DNS server(s) used for the probe should be private/internal addresses only.
-            foreach ($serverAddress in $serverAddresses) {
-                if (-not (Test-GSAIsPrivateIPv4 -IPAddress $serverAddress)) {
-                    Write-Log "Private Network '$networkName' uses a public/non-RFC1918 DNS server address ($serverAddress) for corporate-network detection." "ERROR"
-                    Write-Log "Recommended action: Configure an internal DNS server address for '$networkName' that is only reachable from inside the corporate network." "WARNING"
-                    $allTestsPassed = $false
-                }
-            }
-
-            # 3. The expected IP resolution(s) should be private/internal addresses.
-            foreach ($expectedIP in $expectedIPs) {
-                if (-not (Test-GSAIsPrivateIPv4 -IPAddress $expectedIP)) {
-                    Write-Log "Private Network '$networkName' expects the probe to resolve to a public/non-RFC1918 address ($expectedIP)." "WARNING"
-                    Write-Log "Recommended action: Verify '$networkName' is intentionally using a public IP as its corporate-network indicator; this is unusual for Intelligent Local Access." "WARNING"
-                }
+            $identificationPassed = Test-GSAILAProbeIdentification -ContextLabel "Private Network '$networkName'" -FQDN $fqdn -ServerAddresses $serverAddresses -ExpectedIPs $expectedIPs -PublicDnsServer $PublicDnsServer
+            if (-not $identificationPassed) {
+                $allTestsPassed = $false
             }
         }
     }
