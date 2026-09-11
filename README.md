@@ -50,6 +50,8 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - GSA Windows service health
 - Entra ID device and PRT status
 - Forwarding profile registry and timestamp validation
+- Forwarding profile channel, edge, and diagnostic endpoint connectivity
+- GSA mTLS authentication certificate validation, backup, and repair
 - DNS resolution for GSA edge addresses
 - TLS and mTLS connectivity to GSA endpoints
 - Proxy detection (system proxy, transparent proxy, authenticating proxy)
@@ -57,7 +59,9 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - Synthetic routes and private DNS resolver
 - Entra ID reachability
 - GSA diagnostic URI connectivity
+- Private Access rule, application segment, and tunnel validation
 - GSA event log inspection
+- Global Secure Access tenant, profile, user-assignment, and application configuration checks via Microsoft Graph
 - Intelligent Local Access (ILA) Private Network configuration checks via Microsoft Graph
 
 ---
