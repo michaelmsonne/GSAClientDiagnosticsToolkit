@@ -18,7 +18,7 @@ function Get-JsonFromRegistry {
         return $jsonContent
     }
     catch {
-        Write-Log -Message "Failed to read JSON from registry: $_" -Level "ERROR"
+        Write-Log -Message "Failed to read JSON from registry: $($_.Exception.Message)" -Level "ERROR"
         return $null
     }
 }

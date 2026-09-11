@@ -25,7 +25,7 @@ function Get-DnsChain {
         $records = Resolve-DnsName -Name $fqdn -ErrorAction Stop
     }
     catch {
-        Write-Log "Failed to resolve $fqdn when chasing CNAMEs: $_" "ERROR"
+        Write-Log "Failed to resolve $fqdn when chasing CNAMEs: $($_.Exception.Message)" "ERROR"
         return @()
     }
 

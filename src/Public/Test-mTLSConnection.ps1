@@ -1,3 +1,7 @@
+#
+# Function: Test-mTLSConnection
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-mTLSConnection {
     <#
 .SYNOPSIS
@@ -54,7 +58,7 @@ function Test-mTLSConnection {
                 Write-Log "TCP connection successful to $fqdn" "SUCCESS"
             }
             catch {
-                Write-Log "TCP connection failed to $fqdn : $_" "ERROR"
+                Write-Log "TCP connection failed to $fqdn : $($_.Exception.Message)" "ERROR"
                 $allTestsPassed = $false
                 continue
             }
@@ -76,7 +80,7 @@ function Test-mTLSConnection {
                     $warningsLogged = $true
                 }
                 else {
-                    Write-Log "mTLS handshake failed for $fqdn with certificate $($ClientCert.Subject) : $_" "ERROR"
+                    Write-Log "mTLS handshake failed for $fqdn with certificate $($ClientCert.Subject) : $($_.Exception.Message)" "ERROR"
                     $allTestsPassed = $false
                 }
             }

@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAPrivateAccessTunnel
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAPrivateAccessTunnel {
     <#
 .SYNOPSIS
@@ -56,7 +60,7 @@ function Test-GSAPrivateAccessTunnel {
         $tcpClient = [System.Net.Sockets.TcpClient]::new($FQDNorIP, $Port)
     }
     catch {
-        Write-Log "Failed to establish a tunnel connection to ${FQDNorIP}:${Port} : $_" "ERROR"
+        Write-Log "Failed to establish a tunnel connection to ${FQDNorIP}:${Port} : $($_.Exception.Message)" "ERROR"
         Write-Log "Recommended action: Ensure the Private Access application segment, port, and protocol are correctly configured and that the GSA client tunnel is active." "WARNING"
         if ($PassThru) { return $false }
         return
@@ -84,7 +88,7 @@ function Test-GSAPrivateAccessTunnel {
             Write-Log "Internal address for '$FQDNorIP' resolved via GSA Private DNS: $($dnsResult.IPAddress -join ', ')" "SUCCESS"
         }
         catch {
-            Write-Log "Could not resolve the internal DNS name for '$FQDNorIP' via the GSA Private DNS resolver: $_" "ERROR"
+            Write-Log "Could not resolve the internal DNS name for '$FQDNorIP' via the GSA Private DNS resolver: $($_.Exception.Message)" "ERROR"
             Write-Log "Recommended action: Ensure Private DNS is configured and the Private Network Connector can resolve this name." "WARNING"
             if ($PassThru) { return $false }
             return

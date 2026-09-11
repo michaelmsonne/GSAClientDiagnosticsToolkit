@@ -1,3 +1,7 @@
+#
+# Function: Test-ProxyDetection
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-ProxyDetection {
     <#
 .SYNOPSIS
@@ -49,7 +53,7 @@ function Test-ProxyDetection {
         }
     }
     catch {
-        Write-Log -Message "Error retrieving system proxy settings: $_" -Level "ERROR"
+        Write-Log -Message "Error retrieving system proxy settings: $($_.Exception.Message)" -Level "ERROR"
         $result.Passed = $false
     }
 
@@ -86,7 +90,7 @@ function Test-ProxyDetection {
         }
     }
     catch {
-        Write-Log -Message "HTTP test error: $_" -Level "ERROR"
+        Write-Log -Message "HTTP test error: $($_.Exception.Message)" -Level "ERROR"
         $result.Passed = $false
     }
 
@@ -103,7 +107,7 @@ function Test-ProxyDetection {
             $result.Warnings++
         }
         else {
-            Write-Log -Message "HTTPS test error: $_" -Level "ERROR"
+            Write-Log -Message "HTTPS test error: $($_.Exception.Message)" -Level "ERROR"
             $result.Passed = $false
         }
     }

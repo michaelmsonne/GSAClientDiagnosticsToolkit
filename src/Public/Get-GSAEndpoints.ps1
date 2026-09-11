@@ -1,3 +1,7 @@
+#
+# Function: Get-GSAEndpoints
+# Public function for the GSA client diagnostics toolkit.
+#
 function Get-GSAEndpoints {
     <#
 .SYNOPSIS

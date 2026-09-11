@@ -60,7 +60,7 @@ function Test-GSAIPv6Status {
         return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
     }
     catch {
-        Write-Log "Failed to check IPv6 adapter bindings: $_" "ERROR"
+        Write-Log "Failed to check IPv6 adapter bindings: $($_.Exception.Message)" "ERROR"
         return $false
     }
 }

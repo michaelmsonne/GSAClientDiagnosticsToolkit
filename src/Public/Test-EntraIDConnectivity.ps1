@@ -1,3 +1,7 @@
+#
+# Function: Test-EntraIDConnectivity
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-EntraIDConnectivity {
     <#
 .SYNOPSIS

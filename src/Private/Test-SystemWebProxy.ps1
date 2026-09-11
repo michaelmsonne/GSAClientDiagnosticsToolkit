@@ -25,7 +25,7 @@ function Test-SystemWebProxy {
         }
     }
     catch {
-        Write-Log -Message "Error during proxy detection: $_" -Level "ERROR"
+        Write-Log -Message "Error during proxy detection: $($_.Exception.Message)" -Level "ERROR"
         return $null
     }
 }

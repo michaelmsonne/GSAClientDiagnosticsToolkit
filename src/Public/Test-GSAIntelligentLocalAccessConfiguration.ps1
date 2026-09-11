@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAIntelligentLocalAccessConfiguration
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAIntelligentLocalAccessConfiguration {
     <#
 .SYNOPSIS
@@ -88,7 +92,7 @@ function Test-GSAIntelligentLocalAccessConfiguration {
         $result = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/networkAccess/privateNetworks"
     }
     catch {
-        Write-Log "Failed to retrieve Private Networks via Microsoft Graph: $_" "ERROR"
+        Write-Log "Failed to retrieve Private Networks via Microsoft Graph: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }
@@ -109,7 +113,7 @@ function Test-GSAIntelligentLocalAccessConfiguration {
         }
     }
     catch {
-        Write-Log "Failed to resolve Private Access/Quick Access application display names via Microsoft Graph: $_" "DEBUG"
+        Write-Log "Failed to resolve Private Access/Quick Access application display names via Microsoft Graph: $($_.Exception.Message)" "DEBUG"
     }
 
     $allTestsPassed = $true

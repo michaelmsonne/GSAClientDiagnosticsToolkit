@@ -1,3 +1,7 @@
+#
+# Function: Get-GSAAppProtectionExclusionServicePrincipals
+# Public function for the GSA client diagnostics toolkit.
+#
 function Get-GSAAppProtectionExclusionServicePrincipals {
     <#
 .SYNOPSIS
@@ -103,7 +107,7 @@ function Get-GSAAppProtectionExclusionServicePrincipals {
             catch {
                 $existsInTenant = $null
                 $currentState = 'ValidationFailed'
-                Write-Log "Failed to validate service principal '$($entry.DisplayName)' ($($entry.AppId)) via Microsoft Graph: $_" "ERROR"
+                Write-Log "Failed to validate service principal '$($entry.DisplayName)' ($($entry.AppId)) via Microsoft Graph: $($_.Exception.Message)" "ERROR"
             }
         }
         else {

@@ -1,3 +1,7 @@
+#
+# Function: Test-TLSConnection
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-TLSConnection {
     <#
 .SYNOPSIS
@@ -51,7 +55,7 @@ function Test-TLSConnection {
                 }
             }
             catch {
-                Write-Log "TLS handshake failed with $fqdn : $_" "ERROR"
+                Write-Log "TLS handshake failed with $fqdn : $($_.Exception.Message)" "ERROR"
                 $allTestsPassed = $false
             }
             finally {
@@ -59,7 +63,7 @@ function Test-TLSConnection {
             }
         }
         catch {
-            Write-Log "TCP connection failed to $fqdn : $_" "ERROR"
+            Write-Log "TCP connection failed to $fqdn : $($_.Exception.Message)" "ERROR"
             $allTestsPassed = $false
         }
         finally {

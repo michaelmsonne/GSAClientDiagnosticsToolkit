@@ -1,3 +1,7 @@
+#
+# Function: Test-DiagnosticUris
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-DiagnosticUris {
     <#
 .SYNOPSIS

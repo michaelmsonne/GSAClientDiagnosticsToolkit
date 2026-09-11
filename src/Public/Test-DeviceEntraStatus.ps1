@@ -43,7 +43,7 @@ function Test-DeviceEntraStatus {
         }
     }
     catch {
-        Write-Log "Failed to determine Entra ID join status via dsregcmd: $_" "ERROR"
+        Write-Log "Failed to determine Entra ID join status via dsregcmd: $($_.Exception.Message)" "ERROR"
         $allTestsPassed = $false
     }
 

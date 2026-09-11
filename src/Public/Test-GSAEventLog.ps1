@@ -99,7 +99,7 @@ function Test-GSAEventLog {
             return $true
         }
         # Log not accessible (e.g. not yet created on a new install) - treat as warning
-        Write-Log "Could not read GSA event log '$logName': $_" "WARNING"
+        Write-Log "Could not read GSA event log '$logName': $($_.Exception.Message)" "WARNING"
         return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
     }
 }

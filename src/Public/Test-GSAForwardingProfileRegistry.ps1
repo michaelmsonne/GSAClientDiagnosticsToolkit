@@ -47,7 +47,7 @@ function Test-GSAForwardingProfileRegistry {
         $json = $profileValue | ConvertFrom-Json
     }
     catch {
-        Write-Log "ForwardingProfile JSON is corrupt or unparseable: $_. Restart 'GlobalSecureAccessPolicyRetrieverService' to refresh the profile." "ERROR"
+        Write-Log "ForwardingProfile JSON is corrupt or unparseable: $($_.Exception.Message). Restart 'GlobalSecureAccessPolicyRetrieverService' to refresh the profile." "ERROR"
         return $false
     }
 

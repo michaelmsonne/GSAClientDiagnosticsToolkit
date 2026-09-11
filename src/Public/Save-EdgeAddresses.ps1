@@ -1,3 +1,7 @@
+#
+# Function: Save-EdgeAddresses
+# Public function for the GSA client diagnostics toolkit.
+#
 function Save-EdgeAddresses {
     <#
 .SYNOPSIS
@@ -30,7 +34,7 @@ function Save-EdgeAddresses {
                 Write-Log "Created directory: $directory" "INFO"
             }
             catch {
-                Write-Log "Failed to create directory: $directory. Error: $_" "ERROR"
+                Write-Log "Failed to create directory: $directory. Error: $($_.Exception.Message)" "ERROR"
                 return
             }
         }
@@ -39,6 +43,6 @@ function Save-EdgeAddresses {
         Write-Log "Edge addresses saved to: $filePath" "SUCCESS"
     }
     catch {
-        Write-Log "Failed to save edge addresses to $filePath. Error: $_" "ERROR"
+        Write-Log "Failed to save edge addresses to $filePath. Error: $($_.Exception.Message)" "ERROR"
     }
 }

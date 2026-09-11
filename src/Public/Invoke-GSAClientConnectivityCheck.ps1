@@ -1,3 +1,7 @@
+#
+# Function: Invoke-GSAClientConnectivityCheck
+# Public function for the GSA client diagnostics toolkit.
+#
 function Invoke-GSAClientConnectivityCheck {
     <#
 .SYNOPSIS
@@ -52,7 +56,7 @@ function Invoke-GSAClientConnectivityCheck {
         }
     }
     catch {
-        Write-Log -Message "Failed to create directory at path: $BasePath. Error: $_" -Level "ERROR"
+        Write-Log -Message "Failed to create directory at path: $BasePath. Error: $($_.Exception.Message)" -Level "ERROR"
         throw
     }
 

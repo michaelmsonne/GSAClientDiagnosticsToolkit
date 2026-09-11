@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAPrivateAccessRule
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAPrivateAccessRule {
     <#
 .SYNOPSIS

@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAClientProfileConnectivity
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAClientProfileConnectivity {
     <#
 .SYNOPSIS
@@ -86,7 +90,7 @@ function Test-GSAClientProfileConnectivity {
             $healthCheck = Invoke-WebRequest -Uri $diagnosticUri -UseBasicParsing
         }
         catch {
-            Write-Log "Failed to connect to the $profileName diagnostic endpoint ($diagnosticUri): $_" "ERROR"
+            Write-Log "Failed to connect to the $profileName diagnostic endpoint ($diagnosticUri): $($_.Exception.Message)" "ERROR"
             Write-Log "Recommended action: Ensure outbound traffic to $diagnosticUri is allowed." "WARNING"
             $allPassed = $false
             continue

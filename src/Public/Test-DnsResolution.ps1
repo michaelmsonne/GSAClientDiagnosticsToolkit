@@ -1,3 +1,7 @@
+#
+# Function: Test-DnsResolution
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-DnsResolution {
     <#
 .SYNOPSIS
@@ -48,7 +52,7 @@ function Test-DnsResolution {
             }
         }
         catch {
-            Write-Log "DNS resolution for $fqdn failed: $_" "ERROR"
+            Write-Log "DNS resolution for $fqdn failed: $($_.Exception.Message)" "ERROR"
             $allTestsPassed = $false
         }
     }

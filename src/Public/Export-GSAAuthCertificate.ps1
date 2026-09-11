@@ -1,3 +1,7 @@
+#
+# Function: Export-GSAAuthCertificate
+# Public function for the GSA client diagnostics toolkit.
+#
 function Export-GSAAuthCertificate {
     <#
 .SYNOPSIS
@@ -12,12 +16,17 @@ function Export-GSAAuthCertificate {
     Directory to export the certificate backup(s) to. Defaults to the current directory.
 .PARAMETER PassThru
     Return the exported file path(s). By default nothing is returned - only logged.
+.PARAMETER LogLevel
+    Sets the minimum log level written by the module. Valid values are ERROR, WARNING, INFO, DEBUG, and SUCCESS.
 .EXAMPLE
     Export-GSAAuthCertificate -BackupPath C:\Temp\GSACertBackup
+.EXAMPLE
+    Export-GSAAuthCertificate -BackupPath C:\Temp\GSACertBackup -PassThru
+    Exports the certificates and returns the paths of the files that were created.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [string]$BackupPath = (Get-Location),
+        [string]$BackupPath = (Get-Location).Path,
         [switch]$PassThru,
         [ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
         [string]$LogLevel
@@ -30,17 +39,23 @@ function Export-GSAAuthCertificate {
         return
     }
 
-    $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
+    if (Test-Path -LiteralPath $BackupPath -PathType Leaf) {
+        Write-Log "BackupPath points to a file, not a directory: $BackupPath" "ERROR"
+        return
+    }
+
+    $store = $null
     try {
+        $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
         $store.Open('ReadOnly')
-        $certs = @($store.Certificates | Where-Object { $_.Subject -match 'gsa\.client' })
+        $certs = @($store.Certificates | Where-Object { $_.Subject -match 'gsa\.client$' })
     }
     catch {
-        Write-Log "Failed to read the LocalMachine\My certificate store: $_" "ERROR"
+        Write-Log "Failed to read the LocalMachine\My certificate store: $($_.Exception.Message)" "ERROR"
         return
     }
     finally {
-        $store.Close()
+        if ($null -ne $store) { $store.Close() }
     }
 
     if ($certs.Count -eq 0) {
@@ -50,17 +65,24 @@ function Export-GSAAuthCertificate {
 
     if (-not (Test-Path $BackupPath)) {
         if ($PSCmdlet.ShouldProcess($BackupPath, 'Create backup directory')) {
-            New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+            try {
+                New-Item -ItemType Directory -Path $BackupPath -Force -ErrorAction Stop | Out-Null
+            }
+            catch {
+                Write-Log "Failed to create backup directory '$BackupPath': $($_.Exception.Message)" "ERROR"
+                return
+            }
         }
     }
 
-    $exportedFiles = @()
+    $exportedFiles = [System.Collections.Generic.List[string]]::new()
 
     foreach ($cert in $certs) {
         Write-Log "Found GSA authentication certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint))." "INFO"
 
         $exported = $false
         $backupFile = Join-Path -Path $BackupPath -ChildPath "$($cert.Thumbprint).pfx"
+        # Prefer a protected PFX, but retain a public certificate backup when the private key is not exportable.
         if ($cert.HasPrivateKey -and $PSCmdlet.ShouldProcess("$($cert.Thumbprint) (with private key)", "Export to $backupFile")) {
             try {
                 $backupPassword = Read-Host -Prompt "Enter a password to protect the certificate backup ($backupFile)" -AsSecureString
@@ -69,7 +91,7 @@ function Export-GSAAuthCertificate {
                 $exported = $true
             }
             catch {
-                Write-Log "Could not export the certificate with its private key: $_" "WARNING"
+                Write-Log "Could not export the certificate with its private key: $($_.Exception.Message)" "WARNING"
                 Write-Log "If the key is exportable, you can also export it manually: certlm.msc > Personal > Certificates > right-click the '$($cert.Thumbprint)' certificate > All Tasks > Export > Yes, export the private key." "WARNING"
             }
         }
@@ -83,13 +105,13 @@ function Export-GSAAuthCertificate {
                     $exported = $true
                 }
                 catch {
-                    Write-Log "Failed to export the certificate: $_" "ERROR"
+                    Write-Log "Failed to export the certificate: $($_.Exception.Message)" "ERROR"
                     Write-Log "You can export it manually instead: certlm.msc > Personal > Certificates > right-click the '$($cert.Thumbprint)' certificate > All Tasks > Export." "WARNING"
                 }
             }
         }
 
-        if ($exported) { $exportedFiles += $backupFile }
+        if ($exported) { [void]$exportedFiles.Add($backupFile) }
     }
 
     if ($PassThru) { return $exportedFiles }

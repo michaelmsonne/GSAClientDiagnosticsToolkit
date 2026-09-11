@@ -41,7 +41,7 @@ function Test-GSAPrimaryRefreshToken {
         }
     }
     catch {
-        Write-Log "Failed to check PRT status via dsregcmd: $_" "ERROR"
+        Write-Log "Failed to check PRT status via dsregcmd: $($_.Exception.Message)" "ERROR"
         return $false
     }
 }

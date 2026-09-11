@@ -27,7 +27,7 @@ function Test-grpcProxy {
         return ($machineGrpcProxy -and $userGrpcProxy)
     }
     catch {
-        Write-Log -Message "Error checking grpc_proxy environment variables: $_" -Level "ERROR"
+        Write-Log -Message "Error checking grpc_proxy environment variables: $($_.Exception.Message)" -Level "ERROR"
         return $false
     }
 }

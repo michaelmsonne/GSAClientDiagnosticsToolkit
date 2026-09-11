@@ -28,7 +28,7 @@ function Test-GSASyntheticRoutes {
         $gsaRoutes = Get-NetRoute -ErrorAction Stop | Where-Object { $_.DestinationPrefix -like "6.6.*" }
     }
     catch {
-        Write-Log "Failed to query routing table: $_" "ERROR"
+        Write-Log "Failed to query routing table: $($_.Exception.Message)" "ERROR"
         return $false
     }
 

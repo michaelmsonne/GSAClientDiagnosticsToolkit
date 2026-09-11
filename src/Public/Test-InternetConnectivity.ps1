@@ -1,3 +1,7 @@
+#
+# Function: Test-InternetConnectivity
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-InternetConnectivity {
     <#
 .SYNOPSIS

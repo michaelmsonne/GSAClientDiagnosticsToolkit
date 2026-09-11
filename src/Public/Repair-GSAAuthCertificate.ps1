@@ -1,3 +1,7 @@
+#
+# Function: Repair-GSAAuthCertificate
+# Public function for the GSA client diagnostics toolkit.
+#
 function Repair-GSAAuthCertificate {
     <#
 .SYNOPSIS
@@ -45,10 +49,10 @@ function Repair-GSAAuthCertificate {
     $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
     try {
         $store.Open('ReadOnly')
-        $certs = @($store.Certificates | Where-Object { $_.Subject -match 'gsa\.client' })
+        $certs = @($store.Certificates | Where-Object { $_.Subject -match 'gsa\.client$' })
     }
     catch {
-        Write-Log "Failed to read the LocalMachine\My certificate store: $_" "ERROR"
+        Write-Log "Failed to read the LocalMachine\My certificate store: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }
@@ -106,7 +110,7 @@ function Repair-GSAAuthCertificate {
             Write-Log "Deleted certificate '$($cert.Thumbprint)' from LocalMachine\My." "SUCCESS"
         }
         catch {
-            Write-Log "Failed to delete certificate '$($cert.Thumbprint)': $_" "ERROR"
+            Write-Log "Failed to delete certificate '$($cert.Thumbprint)': $($_.Exception.Message)" "ERROR"
             $allSucceeded = $false
             continue
         }
@@ -119,7 +123,7 @@ function Repair-GSAAuthCertificate {
             Write-Log "Removed the CertCommonName registry value." "SUCCESS"
         }
         catch {
-            Write-Log "CertCommonName registry value was not found or could not be removed (it may already be absent): $_" "WARNING"
+            Write-Log "CertCommonName registry value was not found or could not be removed (it may already be absent): $($_.Exception.Message)" "WARNING"
         }
     }
 
@@ -130,7 +134,7 @@ function Repair-GSAAuthCertificate {
                 Write-Log "Restarted GlobalSecureAccessEngineService. A new certificate should be provisioned within a few minutes." "SUCCESS"
             }
             catch {
-                Write-Log "Failed to restart GlobalSecureAccessEngineService: $_" "ERROR"
+                Write-Log "Failed to restart GlobalSecureAccessEngineService: $($_.Exception.Message)" "ERROR"
                 $allSucceeded = $false
             }
         }

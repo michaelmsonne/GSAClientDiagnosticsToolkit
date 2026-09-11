@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAPrivateAccessApplication
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAPrivateAccessApplication {
     <#
 .SYNOPSIS
@@ -51,7 +55,7 @@ function Test-GSAPrivateAccessApplication {
         $appResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/applications?`$select=displayName,appId,id,tags&`$filter=appid eq '$AppId'"
     }
     catch {
-        Write-Log "Failed to retrieve the application via Microsoft Graph: $_" "ERROR"
+        Write-Log "Failed to retrieve the application via Microsoft Graph: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }

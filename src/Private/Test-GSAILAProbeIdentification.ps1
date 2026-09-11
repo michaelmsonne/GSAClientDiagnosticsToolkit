@@ -41,7 +41,7 @@ function Test-GSAILAProbeIdentification {
         }
     }
     catch {
-        Write-Log "Could not determine public resolvability of '$FQDN' via DNS-over-HTTPS ($PublicDnsServer): $_" "WARNING"
+        Write-Log "Could not determine public resolvability of '$FQDN' via DNS-over-HTTPS ($PublicDnsServer): $($_.Exception.Message)" "WARNING"
     }
 
     if ($publiclyResolvable) {

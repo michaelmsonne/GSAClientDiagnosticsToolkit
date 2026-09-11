@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAPrivateAccessApplicationSegment
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAPrivateAccessApplicationSegment {
     <#
 .SYNOPSIS
@@ -65,7 +69,7 @@ function Test-GSAPrivateAccessApplicationSegment {
         $spResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appid eq '$AppId'&`$select=id,appid,accountEnabled,appRoleAssignmentRequired&`$expand=appRoleAssignedTo(`$select=principalId,principalType,principalDisplayName)"
     }
     catch {
-        Write-Log "Failed to retrieve the Private Access application via Microsoft Graph: $_" "ERROR"
+        Write-Log "Failed to retrieve the Private Access application via Microsoft Graph: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }
@@ -102,7 +106,7 @@ function Test-GSAPrivateAccessApplicationSegment {
         $segmentsResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/applications/$appObjectId/onPremisesPublishing/segmentsConfiguration/microsoft.graph.ipSegmentConfiguration/applicationSegments"
     }
     catch {
-        Write-Log "Failed to retrieve application segments via Microsoft Graph: $_" "ERROR"
+        Write-Log "Failed to retrieve application segments via Microsoft Graph: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }

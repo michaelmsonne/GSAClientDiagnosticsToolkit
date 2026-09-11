@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAAuthCertificate
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAAuthCertificate {
     <#
 .SYNOPSIS
@@ -27,10 +31,10 @@ function Test-GSAAuthCertificate {
     $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
     try {
         $store.Open('ReadOnly')
-        $certs = @($store.Certificates | Where-Object { $_.Subject -match 'gsa\.client' })
+        $certs = @($store.Certificates | Where-Object { $_.Subject -match 'gsa\.client$' })
     }
     catch {
-        Write-Log "Failed to read the LocalMachine\My certificate store: $_" "ERROR"
+        Write-Log "Failed to read the LocalMachine\My certificate store: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }

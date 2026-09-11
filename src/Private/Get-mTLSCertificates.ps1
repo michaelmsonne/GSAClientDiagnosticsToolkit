@@ -40,13 +40,13 @@ function Get-mTLSCertificates {
                 }
             }
             catch {
-                Write-Log "Error processing certificate $($cert.Subject): $_" "ERROR"
+                Write-Log "Error processing certificate $($cert.Subject): $($_.Exception.Message)" "ERROR"
             }
         }
         return $mtlsCerts
     }
     catch {
-        Write-Log "Error retrieving certificates from store: $_" "ERROR"
+        Write-Log "Error retrieving certificates from store: $($_.Exception.Message)" "ERROR"
         return @()
     }
     finally {

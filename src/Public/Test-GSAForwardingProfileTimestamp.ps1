@@ -49,7 +49,7 @@ function Test-GSAForwardingProfileTimestamp {
         }
     }
     catch {
-        Write-Log "ForwardingProfileTimestamp value '$timestampValue' could not be parsed as a date: $_" "WARNING"
+        Write-Log "ForwardingProfileTimestamp value '$timestampValue' could not be parsed as a date: $($_.Exception.Message)" "WARNING"
         return [PSCustomObject]@{ Passed = $true; Warnings = 1 }
     }
 }

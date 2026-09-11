@@ -1,3 +1,7 @@
+#
+# Function: Test-GSAForwardingProfileAssignment
+# Public function for the GSA client diagnostics toolkit.
+#
 function Test-GSAForwardingProfileAssignment {
     <#
 .SYNOPSIS
@@ -53,7 +57,7 @@ function Test-GSAForwardingProfileAssignment {
         $tenantStatus = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/networkAccess/tenantStatus"
     }
     catch {
-        Write-Log "Failed to check tenant onboarding status via Microsoft Graph: $_" "ERROR"
+        Write-Log "Failed to check tenant onboarding status via Microsoft Graph: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }
@@ -70,7 +74,7 @@ function Test-GSAForwardingProfileAssignment {
         $profilesResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/networkAccess/forwardingProfiles?`$filter=trafficForwardingType eq '$ProfileType'"
     }
     catch {
-        Write-Log "Failed to retrieve the $profileName forwarding profile via Microsoft Graph: $_" "ERROR"
+        Write-Log "Failed to retrieve the $profileName forwarding profile via Microsoft Graph: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }
@@ -89,7 +93,7 @@ function Test-GSAForwardingProfileAssignment {
         $sp = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$servicePrincipalId`?`$select=id,appid,accountEnabled,appRoleAssignmentRequired&`$expand=appRoleAssignedTo(`$select=principalId,principalType,principalDisplayName)"
     }
     catch {
-        Write-Log "Failed to retrieve the $profileName service principal via Microsoft Graph: $_" "ERROR"
+        Write-Log "Failed to retrieve the $profileName service principal via Microsoft Graph: $($_.Exception.Message)" "ERROR"
         if ($PassThru) { return $false }
         return
     }
