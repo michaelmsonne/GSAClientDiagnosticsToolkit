@@ -10,20 +10,23 @@ function Invoke-GSAClientConnectivityCheck
 
 .DESCRIPTION
 	Executes the full diagnostic suite:
-		1. Active network interfaces with default routes
-		2. Reachability of specified websites
-		3. Reachability of specified DNS servers
-		4. Read the GSA JSON from the registry
-		5. Extract Edge Addresses from JSON
-		6. Test DNS resolution for each FQDN
-		7. Test TLS connectivity to each FQDN
-		8. Test mTLS connectivity to each FQDN
-		9. Test gRPC proxy settings
-	   10. Test system web proxy settings
-	   11. Test for transparent proxy detection via HTTP headers
-	   12. Test for authenticating proxy detection via HTTP 407 response
-	   13. Test Entra ID connectivity
-	   14. Test DiagnosticUri connectivity
+		1. GSA Service status
+		2. Device Entra join/registration status
+		3. GSA Primary Refresh Token status
+		4. GSA Forwarding Profile registry contents
+		5. GSA Forwarding Profile timestamp/freshness
+		6. Basic internet connectivity
+		7. Proxy detection (transparent/authenticating proxy via HTTP headers/407 response)
+		8. GSA Secure DNS status
+		9. GSA IPv6 status
+	   10. DNS resolution for each FQDN
+	   11. Entra ID connectivity
+	   12. TLS connectivity to each FQDN
+	   13. mTLS connectivity to each FQDN
+	   14. DiagnosticUri connectivity
+	   15. GSA synthetic routes
+	   16. GSA private DNS resolver
+	   17. GSA event log
 
 .PARAMETER LogLevel
 	Verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG, SUCCESS.
