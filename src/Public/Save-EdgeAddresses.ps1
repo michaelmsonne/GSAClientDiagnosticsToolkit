@@ -2,47 +2,55 @@
 # Function: Save-EdgeAddresses
 # Public function for the GSA client diagnostics toolkit.
 #
-function Save-EdgeAddresses {
-    <#
+function Save-EdgeAddresses
+{
+	<#
 .SYNOPSIS
-    Saves a list of FQDNs/edge addresses to a file.
+	Saves a list of FQDNs/edge addresses to a file.
 .PARAMETER fqdnList
-    Array of FQDNs to save.
+	Array of FQDNs to save.
 .PARAMETER filePath
-    Destination file path.
+	Destination file path.
 #>
-    param (
-        [string[]]$fqdnList,
-        [string]$filePath
-    )
+	param (
+		[string[]]$fqdnList,
+		[string]$filePath
+	)
 
-    try {
-        if (-not $fqdnList -or $fqdnList.Count -eq 0) {
-            Write-Log "No FQDNs provided to save." "ERROR"
-            return
-        }
+	try
+    {
+		if (-not $fqdnList -or $fqdnList.Count -eq 0)
+        {
+			Write-Log "No FQDNs provided to save." "ERROR"
+			return
+		}
 
-        if (-not $filePath) {
-            Write-Log "File path is not specified." "ERROR"
-            return
-        }
+		if (-not $filePath)
+        {
+			Write-Log "File path is not specified." "ERROR"
+			return
+		}
 
-        $directory = Split-Path -Path $filePath -Parent
-        if (-not (Test-Path $directory)) {
-            try {
-                New-Item -ItemType Directory -Path $directory -Force | Out-Null
-                Write-Log "Created directory: $directory" "INFO"
-            }
-            catch {
-                Write-Log "Failed to create directory: $directory. Error: $($_.Exception.Message)" "ERROR"
-                return
-            }
-        }
+		$directory = Split-Path -Path $filePath -Parent
+		if (-not (Test-Path $directory))
+        {
+			try
+            {
+				New-Item -ItemType Directory -Path $directory -Force | Out-Null
+				Write-Log "Created directory: $directory" "INFO"
+			}
+			catch
+            {
+				Write-Log "Failed to create directory: $directory. Error: $($_.Exception.Message)" "ERROR"
+				return
+			}
+		}
 
-        $fqdnList | Out-File -Encoding utf8 $filePath -Force
-        Write-Log "Edge addresses saved to: $filePath" "SUCCESS"
-    }
-    catch {
-        Write-Log "Failed to save edge addresses to $filePath. Error: $($_.Exception.Message)" "ERROR"
-    }
+		$fqdnList | Out-File -Encoding utf8 $filePath -Force
+		Write-Log "Edge addresses saved to: $filePath" "SUCCESS"
+	}
+	catch
+    {
+		Write-Log "Failed to save edge addresses to $filePath. Error: $($_.Exception.Message)" "ERROR"
+	}
 }
