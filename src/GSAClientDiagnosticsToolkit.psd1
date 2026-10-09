@@ -40,6 +40,7 @@
         'Test-GSAIPv6Status',
         'Test-GSASyntheticRoutes',
         'Test-GSAPrivateDnsResolver',
+        'Test-GSAVpnSplitDnsInteroperability',
         'Test-GSAEventLog',
         'Test-InternetConnectivity',
         'Test-DnsResolution',

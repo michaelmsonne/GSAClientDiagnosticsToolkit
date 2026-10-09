@@ -57,6 +57,7 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - Proxy detection (system proxy, transparent proxy, authenticating proxy)
 - Secure DNS and IPv6 status
 - Synthetic routes and private DNS resolver
+- Cisco VPN split-DNS interoperability check for GSA NRPT/private DNS REFUSED scenarios
 - Entra ID reachability
 - GSA diagnostic URI connectivity
 - Private Access rule, application segment, and tunnel validation
@@ -816,6 +817,48 @@ Test-GSAPrivateDnsResolver [-LogLevel <string>]
 
 ---
 
+### `Test-GSAVpnSplitDnsInteroperability`
+
+Detects a known interoperability scenario where Cisco VPN split-DNS overlaps with GSA private DNS/NRPT for the same suffix and DNS lookups fail with `REFUSED`.
+
+This local check looks for:
+- An active Cisco VPN adapter
+- An NRPT rule matching the target suffix
+- A probe lookup under that suffix returning `REFUSED`
+
+If detected, it logs a recommendation to allow source `6.6.0.0/16` in Cisco split-DNS/extended ACL source networks.
+
+```powershell
+Test-GSAVpnSplitDnsInteroperability -DnsSuffix <string> [-ProbeHostLabel <string>] [-CiscoAdapterPattern <string>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `DnsSuffix` | *(required)* | DNS suffix/domain to test (for example `mydomain.com`) |
+| `ProbeHostLabel` | `_gsa_vpn_interop_probe` | Label used to build a probe FQDN under `DnsSuffix` |
+| `CiscoAdapterPattern` | `Cisco AnyConnect\|Cisco Secure Client` | Regex used to identify Cisco adapters by name/description |
+| `PassThru` | Off | Return the `$true`/`$false` result instead of only logging |
+| `LogLevel` | Current module level | Optional per-call log verbosity override |
+
+<details>
+<summary>Sample output (REFUSED detected)</summary>
+
+```text
+PS> Test-GSAVpnSplitDnsInteroperability -DnsSuffix mydomain.com
+[2026-10-09 12:00:00] [INFO] Checking Cisco VPN + GSA split-DNS interoperability for suffix 'mydomain.com'...
+[2026-10-09 12:00:00] [INFO] Detected active Cisco VPN adapter(s): Cisco Secure Client.
+[2026-10-09 12:00:00] [INFO] Found 1 NRPT rule(s) matching 'mydomain.com'.
+[2026-10-09 12:00:00] [ERROR] DNS lookup for '_gsa_vpn_interop_probe.mydomain.com' failed with REFUSED while Cisco VPN and matching NRPT rule(s) are active.
+[2026-10-09 12:00:00] [WARNING] Recommended action: In Cisco VPN split-DNS + extended ACL, add source network 6.6.0.0/16 so these DNS queries are allowed.
+```
+
+</details>
+
+<!-- TODO: Add screenshot -->
+![Test-GSAVpnSplitDnsInteroperability - example output](docs/images/screenshot-gsa-vpn-split-dns-interoperability.png)
+
+---
+
 ### `Test-GSAPrivateAccessRule`
 
 Checks whether the locally cached forwarding profile's Private Access rules permit a given target FQDN/IP, port, and protocol - mirroring the client-side rule matching the GSA client performs itself. This is a fully local/offline check (registry only); it does not call Microsoft Graph or require sign-in. By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
@@ -1157,6 +1200,9 @@ Test-GSAClientProfileConnectivity -ProfileType private
 
 # Or test all three channels (m365, private, internet) at once
 Test-GSAClientProfileConnectivity
+
+# Detect Cisco VPN + GSA split-DNS REFUSED scenario for a private suffix
+Test-GSAVpnSplitDnsInteroperability -DnsSuffix mydomain.com
 
 # Graph-based checks - by default prompts an interactive Connect-MgGraph sign-in the first time
 # (requires the Microsoft.Graph.Authentication module); reuses the session on subsequent calls
