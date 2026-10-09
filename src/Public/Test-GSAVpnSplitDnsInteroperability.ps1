@@ -61,7 +61,7 @@ function Test-GSAVpnSplitDnsInteroperability {
     )
 
     if ($ciscoAdapters.Count -eq 0) {
-        Write-Log "No active Cisco VPN adapter detected. Scenario is not currently applicable." "WARNING"
+        Write-Log "No active Cisco VPN adapter detected. Scenario is not currently applicable." "SUCCESS"
         if ($PassThru)
         { $script:_testResult = $true }
         return
