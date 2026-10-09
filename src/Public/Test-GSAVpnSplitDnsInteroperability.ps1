@@ -23,7 +23,8 @@ function Test-GSAVpnSplitDnsInteroperability {
 	Regex pattern used to identify Cisco VPN adapters by Name/InterfaceDescription.
 	Default matches Cisco AnyConnect and Cisco Secure Client.
 .PARAMETER PassThru
-	Return $true/$false test result. By default nothing is returned - only logged.
+    Stores the pass/fail result for orchestration without writing boolean output to the pipeline.
+    By default nothing is returned - only logged.
 .EXAMPLE
 	Test-GSAVpnSplitDnsInteroperability -DnsSuffix mydomain.com
 .EXAMPLE
@@ -62,7 +63,7 @@ function Test-GSAVpnSplitDnsInteroperability {
     if ($ciscoAdapters.Count -eq 0) {
         Write-Log "No active Cisco VPN adapter detected. Scenario is not currently applicable." "WARNING"
         if ($PassThru)
-        { return $true }
+        { $script:_testResult = $true }
         return
     }
 
@@ -76,7 +77,7 @@ function Test-GSAVpnSplitDnsInteroperability {
         Write-Log "Could not read NRPT rules: $($_.Exception.Message)." "WARNING"
         Write-Log "This check is inconclusive without NRPT visibility." "WARNING"
         if ($PassThru)
-        { return $true }
+        { $script:_testResult = $true }
         return
     }
 
@@ -100,7 +101,7 @@ function Test-GSAVpnSplitDnsInteroperability {
     if ($matchingNrptRules.Count -eq 0) {
         Write-Log "No NRPT rules apply to '$normalizedSuffix'. This specific scenario was not detected." "INFO"
         if ($PassThru)
-        { return $true }
+        { $script:_testResult = $true }
         return
     }
 
@@ -131,5 +132,5 @@ function Test-GSAVpnSplitDnsInteroperability {
     }
 
     if ($PassThru)
-    { return $passed }
+    { $script:_testResult = $passed }
 }

@@ -837,7 +837,7 @@ Test-GSAVpnSplitDnsInteroperability -DnsSuffix <string> [-ProbeHostLabel <string
 | `DnsSuffix` | *(required)* | DNS suffix/domain to test (for example `mydomain.com`) |
 | `ProbeHostLabel` | `_gsa_vpn_interop_probe` | Label used to build a probe FQDN under `DnsSuffix` |
 | `CiscoAdapterPattern` | `Cisco AnyConnect\|Cisco Secure Client` | Regex used to identify Cisco adapters by name/description |
-| `PassThru` | Off | Return the `$true`/`$false` result instead of only logging |
+| `PassThru` | Off | Store the `$true`/`$false` result for orchestration without emitting boolean pipeline output |
 | `LogLevel` | Current module level | Optional per-call log verbosity override |
 
 <details>
