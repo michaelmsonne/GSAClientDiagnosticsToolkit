@@ -56,6 +56,7 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - TLS and mTLS connectivity to GSA endpoints
 - Proxy detection (system proxy, transparent proxy, authenticating proxy)
 - Secure DNS and IPv6 status
+- Tenant Internet DNS override detection (hosts-file and direct DNS comparison)
 - Synthetic routes and private DNS resolver
 - Cisco VPN split-DNS interoperability check for GSA NRPT/private DNS REFUSED scenarios
 - Entra ID reachability
@@ -545,6 +546,37 @@ PS> Test-DnsResolution -fqdnList fileserver.contoso.com
 
 <!-- TODO: Add screenshot -->
 ![Test-DnsResolution - example output](docs/images/screenshot-dns-resolution.png)
+
+---
+
+### `Test-GSATenantInternetDnsOverride`
+
+Validates tenant Internet forwarding hostnames from the local ForwardingProfile (`tenantId`) and checks for local hosts-file DNS overrides by comparing system resolution with direct DNS (`-NoHostsFile`).
+
+```powershell
+Test-GSATenantInternetDnsOverride [-RegistryValueName <string>] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `RegistryValueName` | `ForwardingProfile` | Registry value containing the forwarding profile JSON |
+| `LogLevel` | Current module level | Optional per-call log verbosity override |
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-GSATenantInternetDnsOverride
+[2026-10-14 21:45:00] [INFO] Checking tenant Internet forwarding DNS hostnames for local override issues...
+[2026-10-14 21:45:00] [INFO] Validating tenant hostname 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.internet.client.globalsecureaccess.microsoft.com'...
+[2026-10-14 21:45:00] [INFO] Direct DNS (NoHostsFile): 6.6.0.12
+[2026-10-14 21:45:00] [INFO] System DNS: 6.6.0.12
+[2026-10-14 21:45:00] [INFO] CNAME/alias targets: ztna3p-0001.ztna3p-msedge.net -> ztna3p-ring.ztna3p-0001.ztna3p-msedge.net
+[2026-10-14 21:45:00] [SUCCESS] System DNS returned expected synthetic GSA address(es): 6.6.0.12.
+[2026-10-14 21:45:00] [SUCCESS] Tenant Internet forwarding DNS hostnames resolve to real DNS addresses with no hosts-file override detected.
+```
+
+</details>
 
 ---
 

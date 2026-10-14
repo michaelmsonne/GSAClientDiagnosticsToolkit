@@ -16,6 +16,7 @@ All notable changes to this project are documented in this file. Dates reflect t
 - `-PassThru` switch on the new Private Access and Graph-based functions so they stay silent by default and only return a `$true`/`$false` result when explicitly requested.
 - `-LogLevel` parameter on public functions to override the module's logging verbosity per call.
 - New connectivity tests: `Test-GSAPrimaryRefreshToken`, `Test-GSAForwardingProfileRegistry`, `Test-GSAForwardingProfileTimestamp`, `Test-GSAServiceStatus`, `Test-GSASecureDnsStatus`, `Test-GSAIPv6Status`, `Test-GSASyntheticRoutes`, `Test-GSAPrivateDnsResolver`, `Test-GSAEventLog`, `Test-DeviceEntraStatus`, and `Test-EntraIDConnectivity`.
+- `Test-GSATenantInternetDnsOverride` - validates `<tenantId>.internet.client.globalsecureaccess.microsoft.com` and `<tenantId>.internet-backup.client.globalsecureaccess.microsoft.com`, expects synthetic `6.6.0.0/16` answers (with CNAME aliases), compares against direct DNS (`-NoHostsFile`), and flags local hosts-file/private-IP overrides.
 - Converted the original monolithic `GSAClientDiagnosticsToolkit.ps1` script into a proper PowerShell module (`src/GSAClientDiagnosticsToolkit.psd1`/`.psm1`) with `Public`/`Private` folder structure and `Invoke-GSAClientConnectivityCheck` as the orchestrator.
 - Module manifest metadata: `LicenseUri`, `CompatiblePSEditions`, `HelpInfoURI`, and `ReleaseNotes`.
 - Pester test suite (`tests/Public`, `tests/Private`) covering the module manifest/export consistency, private helper logic, and public function behavior via mocked dependencies.

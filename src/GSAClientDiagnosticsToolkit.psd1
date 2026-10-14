@@ -44,6 +44,7 @@
         'Test-GSAEventLog',
         'Test-InternetConnectivity',
         'Test-DnsResolution',
+        'Test-GSATenantInternetDnsOverride',
         'Test-TLSConnection',
         'Test-mTLSConnection',
         'Test-ProxyDetection',

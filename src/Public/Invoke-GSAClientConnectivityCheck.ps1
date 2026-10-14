@@ -20,13 +20,14 @@ function Invoke-GSAClientConnectivityCheck
 		8. GSA Secure DNS status
 		9. GSA IPv6 status
 	   10. DNS resolution for each FQDN
-	   11. Entra ID connectivity
-	   12. TLS connectivity to each FQDN
-	   13. mTLS connectivity to each FQDN
-	   14. DiagnosticUri connectivity
-	   15. GSA synthetic routes
-	   16. GSA private DNS resolver
-	   17. GSA event log
+	   11. Tenant Internet DNS override detection
+	   12. Entra ID connectivity
+	   13. TLS connectivity to each FQDN
+	   14. mTLS connectivity to each FQDN
+	   15. DiagnosticUri connectivity
+	   16. GSA synthetic routes
+	   17. GSA private DNS resolver
+	   18. GSA event log
 
 .PARAMETER LogLevel
 	Verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG, SUCCESS.
@@ -99,6 +100,7 @@ function Invoke-GSAClientConnectivityCheck
 		"GSA Secure DNS Status"            = { Test-GSASecureDnsStatus }
 		"GSA IPv6 Status"                  = { Test-GSAIPv6Status -PassThru }
 		"DNS Resolution"                   = { param($param1) Test-DnsResolution -fqdnList $param1 }
+		"Tenant Internet DNS Override"     = { Test-GSATenantInternetDnsOverride }
 		"Entra ID Connectivity"            = { Test-EntraIDConnectivity }
 		"TLS Connectivity"                 = { param($param1) Test-TLSConnection -fqdnList $param1 }
 		"mTLS Connectivity"                = { param($param1) Test-mTLSConnection -fqdnList $param1 -PassThru }
