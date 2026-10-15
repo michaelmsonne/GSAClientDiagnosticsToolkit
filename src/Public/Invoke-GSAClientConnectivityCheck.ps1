@@ -19,7 +19,7 @@ function Invoke-GSAClientConnectivityCheck {
 		8. GSA Secure DNS status
 		9. GSA IPv6 status
 	   10. DNS resolution for each FQDN
-	   11. Tenant Internet DNS override detection
+	   11. Tenant Internet DNS Resolution detection
 	   12. Entra ID connectivity
 	   13. TLS connectivity to each FQDN
 	   14. mTLS connectivity to each FQDN
@@ -96,7 +96,7 @@ function Invoke-GSAClientConnectivityCheck {
 		"GSA Secure DNS Status"            = { Test-GSASecureDnsStatus }
 		"GSA IPv6 Status"                  = { Test-GSAIPv6Status -PassThru }
 		"DNS Resolution"                   = { param($param1) Test-DnsResolution -fqdnList $param1 }
-		"Tenant Internet DNS Override"     = { Test-GSATenantInternetDnsResolution }
+		"Tenant Internet DNS Resolution"     = { Test-GSATenantInternetDnsResolution }
 		"Entra ID Connectivity"            = { Test-EntraIDConnectivity }
 		"TLS Connectivity"                 = { param($param1) Test-TLSConnection -fqdnList $param1 }
 		"mTLS Connectivity"                = { param($param1) Test-mTLSConnectivity -fqdnList $param1 -PassThru }

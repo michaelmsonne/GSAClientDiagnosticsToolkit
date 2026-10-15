@@ -56,7 +56,7 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - TLS and mTLS connectivity to GSA endpoints
 - Proxy detection (system proxy, transparent proxy, authenticating proxy)
 - Secure DNS and IPv6 status
-- Tenant Internet DNS override detection (hosts-file and direct DNS comparison)
+- Tenant Internet DNS Resolution detection (hosts-file and direct DNS comparison)
 - Synthetic routes and private DNS resolver
 - Cisco VPN split-DNS interoperability check for GSA NRPT/private DNS REFUSED scenarios
 - Entra ID reachability
