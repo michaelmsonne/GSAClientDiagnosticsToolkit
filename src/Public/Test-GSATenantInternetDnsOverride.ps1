@@ -158,7 +158,7 @@ function Test-GSATenantInternetDnsOverride {
 			Select-Object -ExpandProperty NameHost -Unique
 		)
 		if ($cnameRecords.Count -gt 0) {
-			Write-Log "CNAME/alias targets: $($cnameRecords -join ' -> ')" "INFO"
+			Write-Log "CNAME/alias targets: $($cnameRecords -join ' -> ')" "DEBUG"
 		}
 
 		$hostsFileLines = @(Get-HostsFileLinesForFqdn -Fqdn $tenantFqdn)
