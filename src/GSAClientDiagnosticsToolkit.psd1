@@ -49,7 +49,7 @@
         'Test-mTLSConnection',
         'Test-ProxyDetection',
         'Test-EntraIDConnectivity',
-        'Test-EntraIDUserAuthN',
+        'Test-EntraIDUserAuthentication',
         'Test-GSADiagnosticUriConnectivity',
         'Test-GSAPrivateAccessRule',
         'Test-GSAPrivateAccessTunnel',
@@ -67,7 +67,7 @@
     VariablesToExport = @()
     AliasesToExport   = @()
 
-    # Test-EntraIDUserAuthN requires MSAL.PS; listed as optional since it is not part of the main check suite
+    # Test-EntraIDUserAuthentication requires MSAL.PS; listed as optional since it is not part of the main check suite
     # RequiredModules = @('MSAL.PS')
 
     PrivateData = @{

@@ -13,7 +13,7 @@ function Test-GSAForwardingProfileAssignment
 	a group assigned - to that profile's enterprise application (service principal).
 .PARAMETER AccessToken
 	A Microsoft Graph access token with NetworkAccess.Read.All, Application.Read.All, Directory.Read.All,
-	and User.Read.All permissions (e.g. obtained via Test-EntraIDUserAuthN or your own MSAL/Graph sign-in).
+	and User.Read.All permissions (e.g. obtained via Test-EntraIDUserAuthentication or your own MSAL/Graph sign-in).
 	If omitted, an interactive Connect-MgGraph sign-in is triggered automatically (requires the
 	Microsoft.Graph.Authentication module), reusing any already-active Graph session.
 .PARAMETER ProfileType

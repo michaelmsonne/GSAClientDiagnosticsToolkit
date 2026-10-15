@@ -94,7 +94,7 @@ Outline of the repository's file contents, to help you navigate the codebase, te
 | PowerShell | 5.1 or later |
 | OS | Windows (GSA Client must be installed for some tests) |
 | Elevation | Recommended - some checks (mTLS certificate access) require admin rights |
-| Optional module | `MSAL.PS` - required only for `Test-EntraIDUserAuthN` |
+| Optional module | `MSAL.PS` - required only for `Test-EntraIDUserAuthentication` |
 | Optional module | `Microsoft.Graph.Authentication` - required only for the Graph-based checks below when you don't supply `-AccessToken` yourself |
 
 ---
@@ -756,13 +756,13 @@ Test-EntraIDConnectivity [-Endpoints <string[]>] [-Timeout <int>] [-LogLevel <st
 
 ---
 
-### `Test-EntraIDUserAuthN`
+### `Test-EntraIDUserAuthentication`
 
 Performs an interactive MSAL token acquisition against Entra ID. Requires the `MSAL.PS` module.
 
 ```powershell
 Install-Module MSAL.PS
-Test-EntraIDUserAuthN
+Test-EntraIDUserAuthentication
 ```
 
 <details>
@@ -776,7 +776,7 @@ Test-EntraIDUserAuthN
 </details>
 
 <!-- TODO: Add screenshot -->
-![Test-EntraIDUserAuthN - example output](docs/images/screenshot-entra-id-user-authn.png)
+![Test-EntraIDUserAuthentication - example output](docs/images/screenshot-entra-id-user-authn.png)
 
 ---
 
@@ -992,7 +992,7 @@ Test-GSAClientProfileConnectivity [-ProfileType <m365|private|internet>[,...]] [
 
 ---
 
-> The three functions below call Microsoft Graph. Pass an access token via `-AccessToken` (e.g. acquired via `Test-EntraIDUserAuthN`/`MSAL.PS`, or your own Graph sign-in) with the `NetworkAccess.Read.All`, `Application.Read.All`, `Directory.Read.All`, and `User.Read.All` delegated permissions. If you omit `-AccessToken`, the module automatically prompts an interactive sign-in via `Connect-MgGraph` (requires the `Microsoft.Graph.Authentication` module) and reuses any already-active Graph session for subsequent calls, so you're only prompted once per session.
+> The three functions below call Microsoft Graph. Pass an access token via `-AccessToken` (e.g. acquired via `Test-EntraIDUserAuthentication`/`MSAL.PS`, or your own Graph sign-in) with the `NetworkAccess.Read.All`, `Application.Read.All`, `Directory.Read.All`, and `User.Read.All` delegated permissions. If you omit `-AccessToken`, the module automatically prompts an interactive sign-in via `Connect-MgGraph` (requires the `Microsoft.Graph.Authentication` module) and reuses any already-active Graph session for subsequent calls, so you're only prompted once per session.
 
 ### `Test-GSAForwardingProfileAssignment`
 
@@ -1242,7 +1242,7 @@ Test-GSAForwardingProfileAssignment -ProfileType private
 Test-GSAPrivateAccessApplicationSegment -AppId <appId> -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
 Test-GSAPrivateAccessApplication -AppId <appId> -FQDNorIP fileserver.contoso.com -Port 445 -Protocol TCP
 
-# Or pass your own access token instead (e.g. via Test-EntraIDUserAuthN + MSAL.PS)
+# Or pass your own access token instead (e.g. via Test-EntraIDUserAuthentication + MSAL.PS)
 Install-Module MSAL.PS
 $token = (Get-MsalToken -ClientId '<your-client-id>' -Scopes 'https://graph.microsoft.com/.default').AccessToken
 Test-GSAForwardingProfileAssignment -AccessToken $token -ProfileType private

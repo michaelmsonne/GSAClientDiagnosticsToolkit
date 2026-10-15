@@ -1,8 +1,8 @@
 #
-# Function: Test-EntraIDUserAuthN
+# Function: Test-EntraIDUserAuthentication
 # Public function for the GSA client diagnostics toolkit.
 #
-function Test-EntraIDUserAuthN
+function Test-EntraIDUserAuthentication
 {
 	<#
 .SYNOPSIS
