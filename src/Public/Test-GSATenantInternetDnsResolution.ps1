@@ -1,8 +1,8 @@
 #
-# Function: Test-GSATenantInternetDnsOverride
+# Function: Test-GSATenantInternetDnsResolution
 # Validates tenant Internet forwarding DNS hostnames and detects local hosts-file overrides.
 #
-function Test-GSATenantInternetDnsOverride {
+function Test-GSATenantInternetDnsResolution {
 	<#
 .SYNOPSIS
 	Checks tenant Internet forwarding DNS hostnames for local hosts-file override issues.

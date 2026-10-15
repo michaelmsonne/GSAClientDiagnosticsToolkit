@@ -549,12 +549,12 @@ PS> Test-DnsResolution -fqdnList fileserver.contoso.com
 
 ---
 
-### `Test-GSATenantInternetDnsOverride`
+### `Test-GSATenantInternetDnsResolution`
 
 Validates tenant Internet forwarding hostnames from the local ForwardingProfile (`tenantId`) and checks for local hosts-file DNS overrides by comparing system resolution with direct DNS (`-NoHostsFile`).
 
 ```powershell
-Test-GSATenantInternetDnsOverride [-RegistryValueName <string>] [-LogLevel <string>]
+Test-GSATenantInternetDnsResolution [-RegistryValueName <string>] [-LogLevel <string>]
 ```
 
 | Parameter | Default | Description |
@@ -566,7 +566,7 @@ Test-GSATenantInternetDnsOverride [-RegistryValueName <string>] [-LogLevel <stri
 <summary>Sample output</summary>
 
 ```text
-PS> Test-GSATenantInternetDnsOverride
+PS> Test-GSATenantInternetDnsResolution
 [2026-10-14 21:45:00] [INFO] Checking tenant Internet forwarding DNS hostnames for local override issues...
 [2026-10-14 21:45:00] [INFO] Validating tenant hostname 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.internet.client.globalsecureaccess.microsoft.com'...
 [2026-10-14 21:45:00] [INFO] Direct DNS (NoHostsFile): 6.6.0.12
