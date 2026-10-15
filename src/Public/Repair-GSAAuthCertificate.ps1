@@ -2,8 +2,7 @@
 # Function: Repair-GSAAuthCertificate
 # Public function for the GSA client diagnostics toolkit.
 #
-function Repair-GSAAuthCertificate
-{
+function Repair-GSAAuthCertificate {
 	<#
 .SYNOPSIS
 	Backs up and removes the GSA mTLS authentication certificate so the client re-enrolls a new one.
@@ -44,46 +43,39 @@ function Repair-GSAAuthCertificate
 	)
 
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
-    { $script:LogLevel = $LogLevel }
+	{ $script:LogLevel = $LogLevel }
 
-	if (-not (Test-IsElevated))
-    {
+	if (-not (Test-IsElevated)) {
 		Write-Log "This function must be run elevated (as Administrator) to access the LocalMachine certificate store and registry." "ERROR"
 		if ($PassThru)
-        { return $false }
+		{ return $false }
 		return
 	}
 
 	$store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
-	try
-    {
+	try {
 		$store.Open('ReadOnly')
 		$certs = @($store.Certificates | Where-Object { $_.Subject -match 'gsa\.client$' })
 	}
-	catch
-    {
+	catch {
 		Write-Log "Failed to read the LocalMachine\My certificate store: $($_.Exception.Message)" "ERROR"
 		if ($PassThru)
-        { return $false }
+		{ return $false }
 		return
 	}
-	finally
-    {
+	finally {
 		$store.Close()
 	}
 
-	if ($certs.Count -eq 0)
-    {
+	if ($certs.Count -eq 0) {
 		Write-Log "No GSA authentication certificate was found - nothing to repair." "WARNING"
 		if ($PassThru)
-        { return $false }
+		{ return $false }
 		return
 	}
 
-	if (-not (Test-Path $BackupPath))
-    {
-		if ($PSCmdlet.ShouldProcess($BackupPath, 'Create backup directory'))
-        {
+	if (-not (Test-Path $BackupPath)) {
+		if ($PSCmdlet.ShouldProcess($BackupPath, 'Create backup directory')) {
 			New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
 		}
 	}
@@ -93,24 +85,21 @@ function Repair-GSAAuthCertificate
 
 	$allSucceeded = $true
 
-	foreach ($cert in $certs)
-    {
+	foreach ($cert in $certs) {
 		Write-Log "Found GSA authentication certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint))." "INFO"
 
 		# Always back up the certificate before touching anything (skip this gate under -WhatIf,
 		# since the backup step above is itself only previewed, not actually performed)
 		$backupFile = @($exportedFiles) | Where-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) -eq $cert.Thumbprint } | Select-Object -First 1
 
-		if (-not $backupFile -and -not $WhatIfPreference)
-        {
+		if (-not $backupFile -and -not $WhatIfPreference) {
 			Write-Log "Skipping deletion of '$($cert.Thumbprint)' because a backup could not be created." "ERROR"
 			$allSucceeded = $false
 			continue
 		}
 
 		# First confirmation: standard -WhatIf/-Confirm support
-		if (-not $PSCmdlet.ShouldProcess("Certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint))", "Delete from LocalMachine\My"))
-        {
+		if (-not $PSCmdlet.ShouldProcess("Certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint))", "Delete from LocalMachine\My")) {
 			Write-Log "Deletion of '$($cert.Thumbprint)' was skipped (not confirmed)." "WARNING"
 			$allSucceeded = $false
 			continue
@@ -118,20 +107,17 @@ function Repair-GSAAuthCertificate
 
 		# Second, explicit confirmation - deliberately separate from -Confirm so -Confirm:$false cannot bypass it
 		$confirmation = Read-Host -Prompt "Type the certificate thumbprint '$($cert.Thumbprint)' to confirm PERMANENT deletion (backup saved to $backupFile)"
-		if ($confirmation -ne $cert.Thumbprint)
-        {
+		if ($confirmation -ne $cert.Thumbprint) {
 			Write-Log "Deletion of '$($cert.Thumbprint)' was NOT confirmed (input did not match the thumbprint). Skipping." "WARNING"
 			$allSucceeded = $false
 			continue
 		}
 
-		try
-        {
+		try {
 			Remove-Item -Path "Cert:\LocalMachine\My\$($cert.Thumbprint)" -Force -ErrorAction Stop
 			Write-Log "Deleted certificate '$($cert.Thumbprint)' from LocalMachine\My." "SUCCESS"
 		}
-		catch
-        {
+		catch {
 			Write-Log "Failed to delete certificate '$($cert.Thumbprint)': $($_.Exception.Message)" "ERROR"
 			$allSucceeded = $false
 			continue
@@ -139,40 +125,32 @@ function Repair-GSAAuthCertificate
 	}
 
 	Write-Log "Clearing the CertCommonName registry value so the GSA client re-enrolls a new certificate..." "INFO"
-	if ($PSCmdlet.ShouldProcess("$script:GSAFwdProfileRegistryPath\CertCommonName", "Remove registry value"))
-    {
-		try
-        {
+	if ($PSCmdlet.ShouldProcess("$script:GSAFwdProfileRegistryPath\CertCommonName", "Remove registry value")) {
+		try {
 			Remove-ItemProperty -Path $script:GSAFwdProfileRegistryPath -Name "CertCommonName" -ErrorAction Stop
 			Write-Log "Removed the CertCommonName registry value." "SUCCESS"
 		}
-		catch
-        {
+		catch {
 			Write-Log "CertCommonName registry value was not found or could not be removed (it may already be absent): $($_.Exception.Message)" "WARNING"
 		}
 	}
 
-	if ($RestartEngineService)
-    {
-		if ($PSCmdlet.ShouldProcess("GlobalSecureAccessEngineService", "Restart"))
-        {
-			try
-            {
+	if ($RestartEngineService) {
+		if ($PSCmdlet.ShouldProcess("GlobalSecureAccessEngineService", "Restart")) {
+			try {
 				Restart-Service -Name "GlobalSecureAccessEngineService" -Force -ErrorAction Stop
 				Write-Log "Restarted GlobalSecureAccessEngineService. A new certificate should be provisioned within a few minutes." "SUCCESS"
 			}
-			catch
-            {
+			catch {
 				Write-Log "Failed to restart GlobalSecureAccessEngineService: $($_.Exception.Message)" "ERROR"
 				$allSucceeded = $false
 			}
 		}
 	}
-	else
-    {
+	else {
 		Write-Log "Recommended action: Restart the 'GlobalSecureAccessEngineService' service (or re-run with -RestartEngineService) so a new certificate is provisioned." "WARNING"
 	}
 
 	if ($PassThru)
-    { return $allSucceeded }
+	{ return $allSucceeded }
 }
