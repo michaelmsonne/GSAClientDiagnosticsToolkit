@@ -263,12 +263,12 @@ Debug logs:
 
 ---
 
-### `Save-EdgeAddresses`
+### `Export-GSAEdgeAddresses`
 
 Saves a list of edge address FQDNs to a file.
 
 ```powershell
-Save-EdgeAddresses -fqdnList <string[]> -filePath <string>
+Export-GSAEdgeAddresses -fqdnList <string[]> -filePath <string>
 ```
 
 <details>
@@ -281,7 +281,7 @@ Save-EdgeAddresses -fqdnList <string[]> -filePath <string>
 </details>
 
 <!-- TODO: Add screenshot -->
-![Save-EdgeAddresses - example output](docs/images/screenshot-save-edge-addresses.png)
+![Export-GSAEdgeAddresses - example output](docs/images/screenshot-save-edge-addresses.png)
 
 ---
 
@@ -1215,7 +1215,7 @@ Test-mTLSConnection -fqdnList (Get-GSAEndpoints).MainEndpoints
 
 # Save the current edge addresses to a file
 $endpoints = Get-GSAEndpoints
-Save-EdgeAddresses -fqdnList $endpoints.MainEndpoints -filePath C:\Temp\edges.txt
+Export-GSAEdgeAddresses -fqdnList $endpoints.MainEndpoints -filePath C:\Temp\edges.txt
 
 # Check whether a specific Private Access target/port/protocol is allowed locally,
 # then verify it actually tunnels through the GSA client

@@ -1,8 +1,8 @@
 #
-# Function: Save-EdgeAddresses
+# Function: Export-GSAEdgeAddresses
 # Public function for the GSA client diagnostics toolkit.
 #
-function Save-EdgeAddresses
+function Export-GSAEdgeAddresses
 {
 	<#
 .SYNOPSIS

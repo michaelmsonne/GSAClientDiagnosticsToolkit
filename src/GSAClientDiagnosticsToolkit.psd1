@@ -30,7 +30,7 @@
         'Invoke-GSAClientConnectivityCheck',
         'Get-GSAEndpoints',
         'Get-GSAAppProtectionExclusionServicePrincipals',
-        'Save-EdgeAddresses',
+        'Export-GSAEdgeAddresses',
         'Test-GSAServiceStatus',
         'Test-DeviceEntraStatus',
         'Test-GSAPrimaryRefreshToken',
