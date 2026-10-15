@@ -50,7 +50,7 @@
         'Test-ProxyDetection',
         'Test-EntraIDConnectivity',
         'Test-EntraIDUserAuthN',
-        'Test-DiagnosticUris',
+        'Test-GSADiagnosticUriConnectivity',
         'Test-GSAPrivateAccessRule',
         'Test-GSAPrivateAccessTunnel',
         'Test-GSAForwardingProfileAssignment',

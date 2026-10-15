@@ -780,26 +780,26 @@ Test-EntraIDUserAuthN
 
 ---
 
-### `Test-DiagnosticUris`
+### `Test-GSADiagnosticUriConnectivity`
 
 Tests connectivity to the GSA per-channel diagnostic URIs extracted from the forwarding profile.
 
 ```powershell
-Test-DiagnosticUris -DiagnosticUris <string[]> [-LogLevel <string>]
+Test-GSADiagnosticUriConnectivity -DiagnosticUris <string[]> [-LogLevel <string>]
 ```
 
 <details>
 <summary>Sample output</summary>
 
 ```text
-PS> Test-DiagnosticUris -DiagnosticUris https://edgediagnostic.globalsecureaccess.microsoft.com/m365
+PS> Test-GSADiagnosticUriConnectivity -DiagnosticUris https://edgediagnostic.globalsecureaccess.microsoft.com/m365
 [2026-08-20 17:06:00] [SUCCESS] DiagnosticUrl test https://edgediagnostic.globalsecureaccess.microsoft.com/m365 succeeded. RTT: 42.13 ms
 ```
 
 </details>
 
 <!-- TODO: Add screenshot -->
-![Test-DiagnosticUris - example output](docs/images/screenshot-diagnostic-uris.png)
+![Test-GSADiagnosticUriConnectivity - example output](docs/images/screenshot-diagnostic-uris.png)
 
 ---
 

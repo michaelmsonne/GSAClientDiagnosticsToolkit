@@ -1,8 +1,8 @@
 #
-# Function: Test-DiagnosticUris
+# Function: Test-GSADiagnosticUriConnectivity
 # Public function for the GSA client diagnostics toolkit.
 #
-function Test-DiagnosticUris
+function Test-GSADiagnosticUriConnectivity
 {
 	<#
 .SYNOPSIS

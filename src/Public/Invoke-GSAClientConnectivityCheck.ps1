@@ -100,7 +100,7 @@ function Invoke-GSAClientConnectivityCheck {
 		"Entra ID Connectivity"            = { Test-EntraIDConnectivity }
 		"TLS Connectivity"                 = { param($param1) Test-TLSConnection -fqdnList $param1 }
 		"mTLS Connectivity"                = { param($param1) Test-mTLSConnection -fqdnList $param1 -PassThru }
-		"Diagnostics Connectivity"         = { param($param1) Test-DiagnosticUris -DiagnosticUris $param1 }
+		"Diagnostics Connectivity"         = { param($param1) Test-GSADiagnosticUriConnectivity -DiagnosticUris $param1 }
 		"GSA Synthetic Routes"             = { Test-GSASyntheticRoutes -PassThru }
 		"GSA Private DNS Resolver"         = { Test-GSAPrivateDnsResolver }
 		"GSA Event Log"                    = { Test-GSAEventLog -PassThru }
