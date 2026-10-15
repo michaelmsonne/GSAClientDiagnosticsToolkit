@@ -93,7 +93,8 @@ function Test-GSATenantInternetDnsOverride {
 	$profileJson = Get-JsonFromRegistry -ValueName $RegistryValueName
 	if (-Not $profileJson -or -Not $profileJson.policy -or [string]::IsNullOrWhiteSpace($profileJson.policy.tenantId)) {
 		Write-Log "TenantId was not found in '$RegistryValueName' registry JSON. Cannot validate tenant Internet DNS hostnames." "ERROR"
-		return $false
+		$script:_testResult = [PSCustomObject]@{ Passed = $false; Warnings = 0 }
+		return
 	}
 
 	$tenantId = "$($profileJson.policy.tenantId)".Trim()
@@ -205,5 +206,5 @@ function Test-GSATenantInternetDnsOverride {
 		Write-Log "Tenant Internet forwarding DNS hostnames resolve to real DNS addresses with no hosts-file override detected." "SUCCESS"
 	}
 
-	return $allPassed
+	$script:_testResult = [PSCustomObject]@{ Passed = $allPassed; Warnings = 0 }
 }
