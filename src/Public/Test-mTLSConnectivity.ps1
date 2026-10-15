@@ -1,8 +1,8 @@
 #
-# Function: Test-mTLSConnection
+# Function: Test-mTLSConnectivity
 # Public function for the GSA client diagnostics toolkit.
 #
-function Test-mTLSConnection
+function Test-mTLSConnectivity
 {
 	<#
 .SYNOPSIS

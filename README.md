@@ -605,21 +605,21 @@ PS> Test-TLSConnection -fqdnList edge1.mec.gsaservice.net
 
 ---
 
-### `Test-mTLSConnection`
+### `Test-mTLSConnectivity`
 
 Tests mTLS connectivity using GSA client certificates from the LocalMachine certificate store.
 
 > Run as Administrator for full access to certificate private keys.
 
 ```powershell
-Test-mTLSConnection -fqdnList <string[]> [-port <int>] [-LogLevel <string>]
+Test-mTLSConnectivity -fqdnList <string[]> [-port <int>] [-LogLevel <string>]
 ```
 
 <details>
 <summary>Sample output</summary>
 
 ```text
-PS> Test-mTLSConnection -fqdnList edge1.mec.gsaservice.net
+PS> Test-mTLSConnectivity -fqdnList edge1.mec.gsaservice.net
 [2026-08-20 17:02:00] [SUCCESS] Found 1 mTLS-capable GSA client certificate(s).
 [2026-08-20 17:02:00] [INFO] Attempting mTLS connection to: edge1.mec.gsaservice.net on port 443
 [2026-08-20 17:02:00] [SUCCESS] TCP connection successful to edge1.mec.gsaservice.net
@@ -629,7 +629,7 @@ PS> Test-mTLSConnection -fqdnList edge1.mec.gsaservice.net
 </details>
 
 <!-- TODO: Add screenshot -->
-![Test-mTLSConnection - example output](docs/images/screenshot-mtls-connection.png)
+![Test-mTLSConnectivity - example output](docs/images/screenshot-mtls-connection.png)
 
 ---
 
@@ -1211,7 +1211,7 @@ Invoke-GSAClientConnectivityCheck -LogLevel WARNING
 # Run individual checks
 Test-GSAServiceStatus
 Test-DeviceEntraStatus
-Test-mTLSConnection -fqdnList (Get-GSAEndpoints).MainEndpoints
+Test-mTLSConnectivity -fqdnList (Get-GSAEndpoints).MainEndpoints
 
 # Save the current edge addresses to a file
 $endpoints = Get-GSAEndpoints

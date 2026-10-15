@@ -99,7 +99,7 @@ function Invoke-GSAClientConnectivityCheck {
 		"Tenant Internet DNS Override"     = { Test-GSATenantInternetDnsResolution }
 		"Entra ID Connectivity"            = { Test-EntraIDConnectivity }
 		"TLS Connectivity"                 = { param($param1) Test-TLSConnection -fqdnList $param1 }
-		"mTLS Connectivity"                = { param($param1) Test-mTLSConnection -fqdnList $param1 -PassThru }
+		"mTLS Connectivity"                = { param($param1) Test-mTLSConnectivity -fqdnList $param1 -PassThru }
 		"Diagnostics Connectivity"         = { param($param1) Test-GSADiagnosticUriConnectivity -DiagnosticUris $param1 }
 		"GSA Synthetic Routes"             = { Test-GSASyntheticRoutes -PassThru }
 		"GSA Private DNS Resolver"         = { Test-GSAPrivateDnsResolver }

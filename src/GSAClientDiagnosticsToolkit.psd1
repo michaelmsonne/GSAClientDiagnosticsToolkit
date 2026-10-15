@@ -46,7 +46,7 @@
         'Test-DnsResolution',
         'Test-GSATenantInternetDnsResolution',
         'Test-TLSConnection',
-        'Test-mTLSConnection',
+        'Test-mTLSConnectivity',
         'Test-ProxyDetection',
         'Test-EntraIDConnectivity',
         'Test-EntraIDUserAuthentication',
