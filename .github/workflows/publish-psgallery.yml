@@ -1,0 +1,125 @@
+name: Publish to PowerShell Gallery
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (validate and stage only, do NOT publish)'
+        type: boolean
+        default: true
+      run_tests:
+        description: 'Run the Pester test suite before publishing'
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Prerelease label (e.g. beta1). Leave empty for a stable release.'
+        type: string
+        required: false
+        default: ''
+      release_notes:
+        description: 'Optional release notes (overrides the ReleaseNotes URL in the manifest for this publish)'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  MODULE_NAME: GSAClientDiagnosticsToolkit
+
+jobs:
+  publish:
+    name: Validate and publish
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        if: ${{ inputs.run_tests }}
+        shell: pwsh
+        run: |
+          Install-Module Pester -MinimumVersion 5.0 -Force -SkipPublisherCheck -Scope CurrentUser
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Normal'
+          Invoke-Pester -Configuration $config
+
+      - name: Stage module
+        shell: pwsh
+        run: |
+          # Publish-Module requires the folder name to match the module name
+          $stage = Join-Path $env:RUNNER_TEMP $env:MODULE_NAME
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+          Copy-Item -Path ./src/* -Destination $stage -Recurse -Force
+          "STAGE_PATH=$stage" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Apply prerelease label / release notes
+        if: ${{ inputs.prerelease != '' || inputs.release_notes != '' }}
+        shell: pwsh
+        env:
+          PRERELEASE: ${{ inputs.prerelease }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: |
+          $manifest = Join-Path $env:STAGE_PATH "$($env:MODULE_NAME).psd1"
+          if ($env:PRERELEASE) {
+            Update-ModuleManifest -Path $manifest -Prerelease $env:PRERELEASE
+          }
+          if ($env:RELEASE_NOTES) {
+            Update-ModuleManifest -Path $manifest -ReleaseNotes $env:RELEASE_NOTES
+          }
+
+      - name: Validate manifest and import
+        shell: pwsh
+        run: |
+          $manifestPath = Join-Path $env:STAGE_PATH "$($env:MODULE_NAME).psd1"
+          $manifest = Test-ModuleManifest -Path $manifestPath -ErrorAction Stop
+          Write-Host "Module : $($manifest.Name)"
+          Write-Host "Version: $($manifest.Version)"
+          Import-Module $manifestPath -Force -ErrorAction Stop
+
+          $exported = @((Get-Command -Module $env:MODULE_NAME).Name)
+          $missing = $manifest.ExportedFunctions.Keys | Where-Object { $_ -notin $exported }
+          if ($missing) { throw "Manifest exports functions that do not exist: $($missing -join ', ')" }
+
+          "MODULE_VERSION=$($manifest.Version)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Ensure version is not already published
+        shell: pwsh
+        env:
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          $version = $env:MODULE_VERSION
+          $findParams = @{
+            Name            = $env:MODULE_NAME
+            Repository      = 'PSGallery'
+            ErrorAction     = 'SilentlyContinue'
+          }
+          if ($env:PRERELEASE) {
+            $version = "$version-$($env:PRERELEASE)"
+            $findParams.AllowPrerelease = $true
+          }
+          $findParams.RequiredVersion = $version
+          if (Find-Module @findParams) {
+            throw "Version $version of $($env:MODULE_NAME) already exists on PowerShell Gallery. Bump ModuleVersion in src/$($env:MODULE_NAME).psd1."
+          }
+          Write-Host "Version $version is not yet published."
+
+      - name: Publish (dry run)
+        if: ${{ inputs.dry_run }}
+        shell: pwsh
+        run: |
+          Write-Host "Dry run enabled - validating publish with -WhatIf (nothing will be published)."
+          Publish-Module -Path $env:STAGE_PATH -NuGetApiKey 'dry-run' -Repository PSGallery -WhatIf -Verbose
+
+      - name: Publish to PowerShell Gallery
+        if: ${{ !inputs.dry_run }}
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if (-not $env:NUGET_API_KEY) { throw "Secret PSGALLERY_API_KEY is not set." }
+          Publish-Module -Path $env:STAGE_PATH -NuGetApiKey $env:NUGET_API_KEY -Repository PSGallery -Verbose
+          Write-Host "Published $($env:MODULE_NAME) $($env:MODULE_VERSION) - https://www.powershellgallery.com/packages/$($env:MODULE_NAME)"
