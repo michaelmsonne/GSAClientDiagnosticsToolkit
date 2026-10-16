@@ -102,6 +102,13 @@ jobs:
             [System.IO.File]::WriteAllText($notesFile, $notes, (New-Object System.Text.UTF8Encoding($false)))
             "RELEASE_NOTES_FILE=$notesFile" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
             Write-Host "Release notes source: $source ($($notes.Length) characters)"
+            # Disable workflow-command processing while echoing user-controlled text
+            $stopToken = [guid]::NewGuid().ToString('N')
+            Write-Host "::stop-commands::$stopToken"
+            Write-Host "::group::Release notes ($source)"
+            Write-Host $notes
+            Write-Host "::endgroup::"
+            Write-Host "::$stopToken::"
             "### Release notes ($source)`n`n$notes" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           }
           else {
@@ -211,6 +218,10 @@ jobs:
 
           gh @ghArgs
           if ($LASTEXITCODE -ne 0) { throw "Failed to create GitHub release $($env:RELEASE_TAG)." }
+
+          $releaseUrl = "https://github.com/$($env:GITHUB_REPOSITORY)/releases/tag/$($env:RELEASE_TAG)"
+          Write-Host "Created GitHub release: $releaseUrl"
+          "### Published`n`n- PowerShell Gallery: https://www.powershellgallery.com/packages/$($env:MODULE_NAME)/$($env:RELEASE_VERSION)`n- GitHub release: $releaseUrl" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
       - name: Show planned GitHub release (dry run)
         if: ${{ inputs.dry_run }}
