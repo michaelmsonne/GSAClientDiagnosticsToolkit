@@ -8,7 +8,7 @@
     Author            = 'Michael Morten Sonne'
     CompanyName       = 'blog.sonnes.cloud'
     Copyright         = '(c) Michael Morten Sonne. All rights reserved.'
-    Description       = 'Runs connectivity, proxy, health probe and mTLS checks for the Global Secure Access (GSA) Client.'
+    Description       = 'Troubleshooting and diagnostics toolkit for the Microsoft Entra Global Secure Access (GSA) Windows client (Entra Internet Access, Entra Private Access, Microsoft 365 traffic). Checks client services, forwarding profile, DNS, TLS/mTLS connectivity, proxy, IPv6, Entra device/PRT status, authentication certificate, Intelligent Local Access and Private Access applications (via Microsoft Graph).'
 
     # Minimum PowerShell version required
     PowerShellVersion = '5.1'
@@ -72,7 +72,11 @@
 
     PrivateData = @{
         PSData = @{
-            Tags         = @('GSA', 'GlobalSecureAccess', 'Connectivity', 'Diagnostics', 'Entra', 'mTLS', 'Microsoft')
+            Tags         = @(
+                'GSA', 'GlobalSecureAccess', 'Global-Secure-Access', 'MicrosoftEntra', 'Entra', 'EntraID', 'AzureAD',
+                'EntraInternetAccess', 'EntraPrivateAccess', 'PrivateAccess', 'InternetAccess', 'ZTNA', 'SSE', 'ZeroTrust',
+                'Troubleshooting', 'Diagnostics', 'Connectivity', 'HealthCheck', 'mTLS', 'DNS', 'Microsoft', 'Windows'
+            )
             ProjectUri   = 'https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit'
             LicenseUri   = 'https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/blob/main/LICENSE'
             ReleaseNotes = 'https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/releases'
