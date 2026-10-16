@@ -17,13 +17,13 @@ on:
         required: false
         default: ''
       release_notes:
-        description: 'Optional release notes (overrides the ReleaseNotes URL in the manifest for this publish)'
+        description: 'Optional release notes (used for the PowerShell Gallery and the GitHub release; auto-generated for GitHub if empty)'
         type: string
         required: false
         default: ''
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   MODULE_NAME: GSAClientDiagnosticsToolkit
@@ -90,6 +90,7 @@ jobs:
         shell: pwsh
         env:
           PRERELEASE: ${{ inputs.prerelease }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           $version = $env:MODULE_VERSION
           $findParams = @{
@@ -107,6 +108,17 @@ jobs:
           }
           Write-Host "Version $version is not yet published."
 
+          # Fail before publishing if the GitHub release/tag already exists
+          $tag = "v$version"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) { throw "GitHub release '$tag' already exists." }
+          git ls-remote --exit-code --tags origin "refs/tags/$tag" *> $null
+          if ($LASTEXITCODE -eq 0) { throw "Git tag '$tag' already exists." }
+          $global:LASTEXITCODE = 0
+
+          "RELEASE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Publish (dry run)
         if: ${{ inputs.dry_run }}
         shell: pwsh
@@ -122,4 +134,35 @@ jobs:
         run: |
           if (-not $env:NUGET_API_KEY) { throw "Secret PSGALLERY_API_KEY is not set." }
           Publish-Module -Path $env:STAGE_PATH -NuGetApiKey $env:NUGET_API_KEY -Repository PSGallery -Verbose
-          Write-Host "Published $($env:MODULE_NAME) $($env:MODULE_VERSION) - https://www.powershellgallery.com/packages/$($env:MODULE_NAME)"
+          Write-Host "Published $($env:MODULE_NAME) $($env:RELEASE_VERSION) - https://www.powershellgallery.com/packages/$($env:MODULE_NAME)"
+
+      - name: Create GitHub release
+        if: ${{ !inputs.dry_run }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ inputs.prerelease }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: |
+          $zip = Join-Path $env:RUNNER_TEMP "$($env:MODULE_NAME)-$($env:RELEASE_VERSION).zip"
+          Compress-Archive -Path $env:STAGE_PATH -DestinationPath $zip -Force
+
+          $ghArgs = @(
+            'release', 'create', $env:RELEASE_TAG, $zip,
+            '--repo', $env:GITHUB_REPOSITORY,
+            '--target', $env:GITHUB_SHA,
+            '--title', "$($env:MODULE_NAME) $($env:RELEASE_VERSION)"
+          )
+          if ($env:PRERELEASE) { $ghArgs += '--prerelease' }
+          if ($env:RELEASE_NOTES) { $ghArgs += @('--notes', $env:RELEASE_NOTES) } else { $ghArgs += '--generate-notes' }
+
+          gh @ghArgs
+          if ($LASTEXITCODE -ne 0) { throw "Failed to create GitHub release $($env:RELEASE_TAG)." }
+
+      - name: Show planned GitHub release (dry run)
+        if: ${{ inputs.dry_run }}
+        shell: pwsh
+        env:
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          Write-Host "Dry run - would create GitHub release '$($env:RELEASE_TAG)' (prerelease: $([bool]$env:PRERELEASE)) with $($env:MODULE_NAME)-$($env:RELEASE_VERSION).zip attached."
