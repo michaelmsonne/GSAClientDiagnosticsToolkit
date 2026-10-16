@@ -17,7 +17,7 @@ on:
         required: false
         default: ''
       release_notes:
-        description: 'Optional release notes (used for the PowerShell Gallery and the GitHub release; auto-generated for GitHub if empty)'
+        description: 'Optional release notes override. If empty, the matching CHANGELOG.md section is used (falling back to [Unreleased], then GitHub auto-generated notes)'
         type: string
         required: false
         default: ''
@@ -56,12 +56,62 @@ jobs:
           Copy-Item -Path ./src/* -Destination $stage -Recurse -Force
           "STAGE_PATH=$stage" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
-      - name: Apply prerelease label / release notes
-        if: ${{ inputs.prerelease != '' || inputs.release_notes != '' }}
+      - name: Resolve release notes
         shell: pwsh
         env:
           PRERELEASE: ${{ inputs.prerelease }}
           RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: |
+          $notesFile = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          $notes = $null
+          $source = $null
+
+          if ($env:RELEASE_NOTES) {
+            $notes = $env:RELEASE_NOTES
+            $source = "workflow input 'release_notes'"
+          }
+          elseif (Test-Path ./CHANGELOG.md) {
+            $baseVersion = (Import-PowerShellDataFile -Path ./src/$($env:MODULE_NAME).psd1).ModuleVersion
+            $candidates = @()
+            if ($env:PRERELEASE) { $candidates += "$baseVersion-$($env:PRERELEASE)" }
+            $candidates += $baseVersion
+            $candidates += 'Unreleased'
+
+            # Level-2 headings look like: ## [1.0.0] - 2026-10-16  (level-3 '### Added' headings are part of the section)
+            $lines = Get-Content -Path ./CHANGELOG.md -Encoding UTF8
+            foreach ($candidate in $candidates) {
+              $start = -1
+              for ($i = 0; $i -lt $lines.Count; $i++) {
+                if ($lines[$i] -match '^##\s+\[?([^\]\s]+)\]?(\s|$)' -and $Matches[1] -ieq $candidate) { $start = $i + 1; break }
+              }
+              if ($start -lt 0) { continue }
+              $end = $lines.Count
+              for ($i = $start; $i -lt $lines.Count; $i++) {
+                if ($lines[$i] -match '^##\s') { $end = $i; break }
+              }
+              $section = ($lines[$start..($end - 1)] -join "`n").Trim()
+              if ($section) {
+                $notes = $section
+                $source = "CHANGELOG.md section [$candidate]"
+                break
+              }
+            }
+          }
+
+          if ($notes) {
+            [System.IO.File]::WriteAllText($notesFile, $notes, (New-Object System.Text.UTF8Encoding($false)))
+            "RELEASE_NOTES_FILE=$notesFile" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            Write-Host "Release notes source: $source ($($notes.Length) characters)"
+            "### Release notes ($source)`n`n$notes" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          }
+          else {
+            Write-Warning "No release notes found (no input and no matching CHANGELOG.md section). GitHub will auto-generate notes; the Gallery ReleaseNotes will keep the manifest value."
+          }
+
+      - name: Apply prerelease label / release notes
+        shell: pwsh
+        env:
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
           $manifest = Join-Path $env:STAGE_PATH "$($env:MODULE_NAME).psd1"
           $declared = (Import-PowerShellDataFile -Path $manifest).ModuleVersion
@@ -71,8 +121,8 @@ jobs:
           if ($env:PRERELEASE) {
             Update-ModuleManifest -Path $manifest -Prerelease $env:PRERELEASE
           }
-          if ($env:RELEASE_NOTES) {
-            Update-ModuleManifest -Path $manifest -ReleaseNotes $env:RELEASE_NOTES
+          if ($env:RELEASE_NOTES_FILE) {
+            Update-ModuleManifest -Path $manifest -ReleaseNotes (Get-Content -Path $env:RELEASE_NOTES_FILE -Raw -Encoding UTF8)
           }
 
       - name: Validate manifest and import
@@ -146,7 +196,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PRERELEASE: ${{ inputs.prerelease }}
-          RELEASE_NOTES: ${{ inputs.release_notes }}
         run: |
           $zip = Join-Path $env:RUNNER_TEMP "$($env:MODULE_NAME)-$($env:RELEASE_VERSION).zip"
           Compress-Archive -Path $env:STAGE_PATH -DestinationPath $zip -Force
@@ -158,7 +207,7 @@ jobs:
             '--title', "$($env:MODULE_NAME) $($env:RELEASE_VERSION)"
           )
           if ($env:PRERELEASE) { $ghArgs += '--prerelease' }
-          if ($env:RELEASE_NOTES) { $ghArgs += @('--notes', $env:RELEASE_NOTES) } else { $ghArgs += '--generate-notes' }
+          if ($env:RELEASE_NOTES_FILE) { $ghArgs += @('--notes-file', $env:RELEASE_NOTES_FILE) } else { $ghArgs += '--generate-notes' }
 
           gh @ghArgs
           if ($LASTEXITCODE -ne 0) { throw "Failed to create GitHub release $($env:RELEASE_TAG)." }
