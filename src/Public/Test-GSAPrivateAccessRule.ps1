@@ -58,6 +58,7 @@ function Test-GSAPrivateAccessRule
 
 	Write-Log "Checking Private Access rules in the local forwarding profile for ${FQDNorIP}:${Port}/${Protocol}..." "INFO"
 
+	# Load the GSA forwarding profile from the registry and parse it as JSON.
 	$jsonContent = Get-JsonFromRegistry -ValueName $RegistryValueName
 	if (-not $jsonContent)
     {
@@ -67,6 +68,7 @@ function Test-GSAPrivateAccessRule
 		return
 	}
 
+	# Extract the Private Access rules from the parsed JSON content.
 	$rules = @($jsonContent.policy.rules)
 	if ($rules.Count -eq 0 -or -not $rules[0])
     {
@@ -76,6 +78,7 @@ function Test-GSAPrivateAccessRule
 		return
 	}
 
+	# Find the matching Private Access rule for the given FQDN/IP, port, and protocol.
 	$match = Get-GSAPrivateAccessRuleMatch -Rules $rules -FQDNorIP $FQDNorIP -InputType $inputType -Port $Port -Protocol $Protocol
 
 	if (-not $match.AddressMatched)

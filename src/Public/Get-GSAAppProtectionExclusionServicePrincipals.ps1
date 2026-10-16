@@ -40,6 +40,7 @@ function Get-GSAAppProtectionExclusionServicePrincipals
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
     { $script:LogLevel = $LogLevel }
 
+	# Initialize the list of service principal entries to be checked.
 	$entries = @(
 		@{ DisplayName = 'Global Secure Access Client'; AppId = 'cde6adac-58fd-4b78-8d6d-9beaf1b0d668' },
 		@{ DisplayName = 'Internet resources with Global Secure Access'; AppId = '5dc48733-b5df-475c-a49b-fa307ef00853' },
@@ -55,6 +56,7 @@ function Get-GSAAppProtectionExclusionServicePrincipals
 
 	$stateCounts = @{}
 
+	# Iterate over each service principal entry and validate its presence and state in the tenant.
 	foreach ($entry in $entries)
     {
 		$existsInTenant = $null
@@ -63,10 +65,12 @@ function Get-GSAAppProtectionExclusionServicePrincipals
 		$tenantObjectId = $null
 		$displayNameMatches = $null
 
+		# Reset the state for the current service principal entry.
 		if ($ValidateInTenant)
         {
 			try
             {
+				# Construct the Microsoft Graph API request URI for the current service principal entry.
 				$encodedFilter = [uri]::EscapeDataString("appId eq '$($entry.AppId)'")
 				$uri = "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=$encodedFilter&`$select=id,appId,displayName,accountEnabled,servicePrincipalType"
 				Write-Log "Validating '$($entry.DisplayName)' (AppId $($entry.AppId)) via Microsoft Graph..." "DEBUG"
@@ -74,6 +78,7 @@ function Get-GSAAppProtectionExclusionServicePrincipals
 				$spResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri $uri -Scopes @('Application.Read.All', 'Directory.Read.All')
 				$sp = @($spResult.value)[0]
 
+				# Check if a service principal was returned for the current entry.
 				if ($sp)
                 {
 					$existsInTenant = $true
@@ -92,12 +97,14 @@ function Get-GSAAppProtectionExclusionServicePrincipals
 						$accountEnabled = $sp.accountEnabled
 					}
 
+					# Determine the current state of the service principal based on its accountEnabled property.
 					if ($accountEnabled -eq $true)
                     { $currentState = 'Enabled' }
 					elseif ($accountEnabled -eq $false) { $currentState = 'Disabled' }
 					else
                     { $currentState = 'Unknown' }
 
+					# Log the current state of the service principal for debugging purposes.
 					if ($script:LogLevel -eq "DEBUG")
                     {
 						Write-Log "  Found service principal:" "DEBUG"
@@ -138,12 +145,15 @@ function Get-GSAAppProtectionExclusionServicePrincipals
 			'NotValidated' { 'INFO' }
 			default { 'WARNING' }
 		}
+
+		# Update the state counts and log the status for the current service principal.
 		$stateCounts[$currentState] = 1 + ([int]$stateCounts[$currentState])
 		Write-Log "$($entry.DisplayName) ($($entry.AppId)) is $currentState." $statusLevel
 
 		if (-not ($PassThru -or $AsHashtable))
         { continue }
 
+		# Prepare the output for the current service principal based on the specified output format.
 		if ($AsHashtable)
         {
 			@{

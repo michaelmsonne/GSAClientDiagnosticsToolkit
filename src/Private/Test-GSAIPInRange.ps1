@@ -11,6 +11,7 @@ function Test-GSAIPInRange
 		[string]$IPAddress
 	)
 
+	# Convert the IP address to its numeric representation for comparison.
 	$bytes = [System.Net.IPAddress]::Parse($IPAddress).GetAddressBytes()
 	[Array]::Reverse($bytes)
 	$value = [BitConverter]::ToUInt32($bytes, 0)

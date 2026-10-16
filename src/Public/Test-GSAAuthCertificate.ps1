@@ -34,6 +34,7 @@ function Test-GSAAuthCertificate
 
 	Write-Log "Checking for a GSA mTLS authentication certificate (subject ending in 'gsa.client')..." "INFO"
 
+	# Open the LocalMachine\My certificate store and look for GSA authentication certificates.
 	$store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
 	try
     {
@@ -52,6 +53,7 @@ function Test-GSAAuthCertificate
 		$store.Close()
 	}
 
+	# If no certificates were found, log a warning and provide a recommendation.
 	if ($certs.Count -eq 0)
     {
 		Write-Log "No GSA authentication certificate was found in the LocalMachine\My certificate store." "WARNING"
@@ -61,6 +63,7 @@ function Test-GSAAuthCertificate
 		return
 	}
 
+	# Iterate through each found certificate and validate its private key and expiration date.
 	$allValid = $true
 	foreach ($cert in $certs)
     {
@@ -79,6 +82,7 @@ function Test-GSAAuthCertificate
 		Write-Log "Certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint)) is present and valid until $($cert.NotAfter)." "SUCCESS"
 	}
 
+	# If all certificates are valid, log a success message.
 	if (-not $allValid)
     {
 		Write-Log "Recommended action: Use Repair-GSAAuthCertificate to back up and remove the invalid/expired certificate so the GSA client can re-enroll a new one." "WARNING"

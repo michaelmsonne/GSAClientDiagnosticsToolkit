@@ -19,18 +19,21 @@ function Export-GSAEdgeAddresses
 
 	try
     {
+		# Validate the input parameters before proceeding.
 		if (-not $fqdnList -or $fqdnList.Count -eq 0)
         {
 			Write-Log "No FQDNs provided to save." "ERROR"
 			return
 		}
 
+		# Validate the file path parameter before proceeding.
 		if (-not $filePath)
         {
 			Write-Log "File path is not specified." "ERROR"
 			return
 		}
 
+		# Ensure the directory for the file path exists, creating it if necessary.
 		$directory = Split-Path -Path $filePath -Parent
 		if (-not (Test-Path $directory))
         {

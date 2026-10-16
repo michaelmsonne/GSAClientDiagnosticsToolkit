@@ -9,9 +9,11 @@ function Test-IPorFQDN
 		[string]$FQDNorIP
 	)
 
+	# Define regular expressions for matching IPv4 addresses and FQDNs.
 	$ipRegex = '^(([0-9]{1,3}\.){3}[0-9]{1,3})$'
 	$fqdnRegex = '^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$'
 
+	# Check if the input string matches the IPv4 address pattern.
 	if ($FQDNorIP -match $ipRegex)
     {
 		foreach ($octet in ($FQDNorIP -split '\.'))
@@ -24,6 +26,7 @@ function Test-IPorFQDN
 		return 'IP'
 	}
 
+	# Check if the input string matches the FQDN pattern.
 	if ($FQDNorIP -match $fqdnRegex)
     {
 		return 'FQDN'

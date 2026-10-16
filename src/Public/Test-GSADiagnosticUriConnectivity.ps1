@@ -28,8 +28,10 @@ function Test-GSADiagnosticUriConnectivity
 
 	$allPassed = $true
 
+	# Iterate through each diagnostic URI and test its connectivity.
 	foreach ($uri in $DiagnosticUris)
     {
+		# Test connectivity to the current diagnostic URI.
 		try
         {
 			$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()

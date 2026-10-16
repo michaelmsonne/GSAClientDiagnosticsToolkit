@@ -71,6 +71,7 @@ function Test-GSAPrivateAccessApplicationSegment
 		return
 	}
 
+	# Begin checking the Private Access application status via Microsoft Graph.
 	Write-Log "Checking Private Access application status..." "INFO"
 	try
     {
@@ -93,6 +94,7 @@ function Test-GSAPrivateAccessApplicationSegment
 	}
 	$appObjectId = $sp.id
 
+	# Check whether the Private Access application is enabled.
 	if (-not $sp.accountEnabled)
     {
 		Write-Log "Private Access application (App ID: $AppId) is disabled." "ERROR"
@@ -103,6 +105,7 @@ function Test-GSAPrivateAccessApplicationSegment
 	}
 	Write-Log "Private Access application (App ID: $AppId) is enabled." "SUCCESS"
 
+	# Check whether the user is assigned to the Private Access application.
 	Write-Log "Checking Private Access application user assignment..." "INFO"
 	$assignedUsers = @($sp.appRoleAssignedTo) | Where-Object { $_.principalType -eq 'User' }
 	$assignedGroupIds = @($sp.appRoleAssignedTo) | Where-Object { $_.principalType -eq 'Group' } | ForEach-Object { $_.principalId }
@@ -117,6 +120,7 @@ function Test-GSAPrivateAccessApplicationSegment
 	}
 	Write-Log "'$UserPrincipalName' is assigned to the Private Access application (App ID: $AppId)." "SUCCESS"
 
+	# Check the application segment configuration for the specified FQDN/IP, port, and protocol.
 	Write-Log "Checking the application segment configuration for '${FQDNorIP}:${Port}/${Protocol}'..." "INFO"
 	try
     {
@@ -138,8 +142,10 @@ function Test-GSAPrivateAccessApplicationSegment
 		return
 	}
 
+	# Attempt to find a matching application segment for the specified FQDN/IP, port, and protocol.
 	$match = Get-GSAApplicationSegmentMatch -Segments $segments -FQDNorIP $FQDNorIP -InputType $inputType -Port $Port -Protocol $Protocol
 
+	# Verify that the address, port, and protocol match the application segment configuration.
 	if (-not $match.AddressMatched)
     {
 		Write-Log "'$FQDNorIP' is not configured in any application segment for App ID: $AppId." "ERROR"

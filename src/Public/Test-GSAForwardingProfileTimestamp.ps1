@@ -29,6 +29,7 @@ function Test-GSAForwardingProfileTimestamp
 	$valueName = "ForwardingProfileTimestamp"
 	$warnAgeHours = 2
 
+	# Begin checking the ForwardingProfileTimestamp registry value.
 	Write-Log "Checking ForwardingProfileTimestamp registry value..." "INFO"
 	$timestampValue = Get-ItemPropertyValue -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue
 
@@ -39,6 +40,7 @@ function Test-GSAForwardingProfileTimestamp
 		return
 	}
 
+	# Parse the timestamp value and calculate the age of the forwarding profile.
 	try
     {
 		$profileTime = [datetime]::Parse($timestampValue, [System.Globalization.CultureInfo]::InvariantCulture,

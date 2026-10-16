@@ -44,9 +44,11 @@ function Test-GSAForwardingProfileAssignment
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
     { $script:LogLevel = $LogLevel }
 
+	# Map the profile type to its human-readable name for logging purposes.
 	$profileNames = @{ m365 = "Microsoft Traffic"; private = "Private Access"; internet = "Internet Access" }
 	$profileName = $profileNames[$ProfileType]
 
+	# Determine the user principal name to check assignment for.
 	if (-not $UserPrincipalName)
     { $UserPrincipalName = Get-GSACurrentUserUPN }
 	if (-not $UserPrincipalName)
@@ -57,6 +59,7 @@ function Test-GSAForwardingProfileAssignment
 		return
 	}
 
+	# Check if the tenant is onboarded to Global Secure Access.
 	Write-Log "Checking the Global Secure Access activation status..." "INFO"
 	try
     {
@@ -79,6 +82,7 @@ function Test-GSAForwardingProfileAssignment
 	}
 	Write-Log "Global Secure Access is activated in the tenant." "SUCCESS"
 
+	# Check if the forwarding profile for the specified profile type is enabled.
 	Write-Log "Checking the $profileName forwarding profile..." "INFO"
 	try
     {
@@ -102,6 +106,7 @@ function Test-GSAForwardingProfileAssignment
 	}
 	Write-Log "$profileName forwarding profile is enabled." "SUCCESS"
 
+	# Check if the current user is assigned to the forwarding profile for the specified profile type.
 	Write-Log "Checking user assignment to the $profileName forwarding profile..." "INFO"
 	$servicePrincipalId = $forwardingProfile.servicePrincipal.id
 	try
@@ -116,9 +121,11 @@ function Test-GSAForwardingProfileAssignment
 		return
 	}
 
+	# Extract the assigned users and groups from the service principal's app role assignments.
 	$assignedUsers = @($sp.appRoleAssignedTo) | Where-Object { $_.principalType -eq 'User' }
 	$assignedGroupIds = @($sp.appRoleAssignedTo) | Where-Object { $_.principalType -eq 'Group' } | ForEach-Object { $_.principalId }
 
+	# Test if the current user is assigned to the forwarding profile, either directly or via group membership.
 	$assigned = Test-GSAAppRoleAssignment -AccessToken $AccessToken -UserPrincipalName $UserPrincipalName -AssignmentRequired ([bool]$sp.appRoleAssignmentRequired) -AssignedUsers $assignedUsers -AssignedGroupIds $assignedGroupIds
 	if (-not $assigned)
     {
@@ -128,6 +135,7 @@ function Test-GSAForwardingProfileAssignment
         { return $false }
 		return
 	}
+	# The user is successfully assigned to the forwarding profile.
 	Write-Log "'$UserPrincipalName' is assigned to the $profileName profile." "SUCCESS"
 
 	if ($PassThru)

@@ -45,6 +45,7 @@ function Test-GSAServiceStatus
 		@{ Name = 'GlobalSecureAccessDriver'; DisplayName = 'Driver Service' }
 	)
 
+	# Check the status of each required service and log the results.
 	foreach ($svc in $services)
     {
 		Write-Log "Checking $($svc.DisplayName) ($($svc.Name))..." "INFO"

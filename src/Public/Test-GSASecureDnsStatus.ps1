@@ -26,6 +26,7 @@ function Test-GSASecureDnsStatus
 
 	$allPassed = $true
 
+	# Define the browsers and their corresponding policy registry paths to check for DoH settings.
 	$browsers = @(
 		@{ Name = 'Microsoft Edge'; Paths = @('HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'HKCU:\SOFTWARE\Policies\Microsoft\Edge') }
 		@{ Name = 'Google Chrome'; Paths = @('HKLM:\SOFTWARE\Policies\Google\Chrome', 'HKCU:\SOFTWARE\Policies\Google\Chrome') }
@@ -33,6 +34,7 @@ function Test-GSASecureDnsStatus
 
 	Write-Log "Checking Secure DNS (DoH) policy settings - GSA requires DoH to be disabled..." "INFO"
 
+	# Iterate through each browser and check the DoH policy settings in the registry.
 	foreach ($browser in $browsers)
     {
 		$dohFound = $false

@@ -53,6 +53,8 @@ function Export-GSAAuthCertificate
 	}
 
 	$store = $null
+
+	# Open the LocalMachine\My certificate store and locate GSA authentication certificates.
 	try
 	{
 		$store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
@@ -72,12 +74,14 @@ function Export-GSAAuthCertificate
 		}
 	}
 
+	# Check if any GSA authentication certificates were found and handle the case where none are present.
 	if ($certs.Count -eq 0)
 	{
 		Write-Log "No GSA authentication certificate was found - nothing to export." "WARNING"
 		return
 	}
 
+	# Ensure the backup directory exists, creating it if necessary.
 	if (-not (Test-Path $BackupPath))
 	{
 		if ($PSCmdlet.ShouldProcess($BackupPath, 'Create backup directory'))
@@ -94,8 +98,10 @@ function Export-GSAAuthCertificate
 		}
 	}
 
+	# Initialize a list to keep track of the exported certificate files.
 	$exportedFiles = [System.Collections.Generic.List[string]]::new()
 
+	# Iterate over each GSA authentication certificate and attempt to export it.
 	foreach ($cert in $certs)
 	{
 		Write-Log "Found GSA authentication certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint))." "INFO"
@@ -119,6 +125,7 @@ function Export-GSAAuthCertificate
 			}
 		}
 
+		# If the certificate was not exported with its private key, attempt to export the public certificate.
 		if (-not $exported)
 		{
 			$backupFile = Join-Path -Path $BackupPath -ChildPath "$($cert.Thumbprint).cer"
@@ -138,6 +145,7 @@ function Export-GSAAuthCertificate
 			}
 		}
 
+		# If the certificate was successfully exported, add it to the list of exported files.
 		if ($exported)
 		{
 			[void]$exportedFiles.Add($backupFile)

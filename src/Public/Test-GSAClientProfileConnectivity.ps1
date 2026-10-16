@@ -46,12 +46,14 @@ function Test-GSAClientProfileConnectivity
 	$profileNames = @{ m365 = "Microsoft Traffic"; private = "Private Access"; internet = "Internet Access" }
 	$allPassed = $true
 
+	# Iterate through each specified profile type and test its connectivity.
 	foreach ($type in @($ProfileType))
     {
 		$profileName = $profileNames[$type]
 
 		Write-Log "Checking $profileName profile..." "INFO"
 
+		# Load the GSA client configuration from the registry.
 		$jsonContent = Get-JsonFromRegistry -ValueName $RegistryValueName
 		if (-not $jsonContent)
         {
@@ -60,6 +62,7 @@ function Test-GSAClientProfileConnectivity
 			continue
 		}
 
+		# Retrieve the channel configuration for the current profile type.
 		$channel = @($jsonContent.policy.channels) | Where-Object { $_.name -eq $type } | Select-Object -First 1
 		if (-not $channel)
         {
@@ -74,6 +77,7 @@ function Test-GSAClientProfileConnectivity
 		$secondaryEdge = $channel.edgesSettings.secondaryEdges | Select-Object -First 1
 		$diagnosticUri = $channel.diagnosticUri
 
+		# Check connectivity to the primary and secondary edges of the current profile.
 		Write-Log "Checking connectivity to $profileName edge..." "INFO"
 		$primaryReachable = $primaryEdge -and (Test-NetConnection -ComputerName $primaryEdge.edgeAddress -Port $primaryEdge.edgePort -InformationLevel Quiet -WarningAction SilentlyContinue)
 		if ($primaryReachable)

@@ -20,6 +20,7 @@ function Get-GSAApplicationSegmentMatch
 		ProtocolMatched = $false
 	}
 
+	# Filter the application segments based on the input type (FQDN or IP).
 	if ($InputType -eq 'FQDN')
     {
 		$candidates = @($Segments) | Where-Object { $_.destinationType -eq 'fqdn' }
@@ -29,6 +30,7 @@ function Get-GSAApplicationSegmentMatch
 		$candidates = @($Segments) | Where-Object { $_.destinationType -match '^ip' }
 	}
 
+	# Iterate through the filtered application segments to check for address, port, and protocol matches.
 	foreach ($segment in $candidates)
     {
 		$addressMatch = $false

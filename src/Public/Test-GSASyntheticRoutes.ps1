@@ -27,6 +27,7 @@ function Test-GSASyntheticRoutes
 
 	Write-Log "Checking for GSA synthetic IP routes (6.6.x.x) in the routing table..." "INFO"
 
+	# Query the Windows routing table for routes matching the GSA synthetic IP range (6.6.x.x).
 	try
     {
 		$gsaRoutes = Get-NetRoute -ErrorAction Stop | Where-Object { $_.DestinationPrefix -like "6.6.*" }
@@ -37,6 +38,7 @@ function Test-GSASyntheticRoutes
 		return $false
 	}
 
+	# Check if any GSA synthetic routes were found and log the results.
 	if ($gsaRoutes -and $gsaRoutes.Count -gt 0)
     {
 		Write-Log "Found $($gsaRoutes.Count) GSA synthetic route(s) - tunnel is active and routing traffic." "SUCCESS"

@@ -63,6 +63,7 @@ function Test-GSAEventLog
 
 	Write-Log "Scanning GSA event log '$logName' for Critical/Error/Warning events in the last $lookbackHours hour(s)..." "INFO"
 
+	# Attempt to retrieve and filter recent events from the GSA event log.
 	try
     {
 		$since = (Get-Date).AddHours(-$lookbackHours)
@@ -119,6 +120,7 @@ function Test-GSAEventLog
 			Write-Log "No events in the GSA event log for the last $lookbackHours hour(s)." "SUCCESS"
 			return $true
 		}
+		
 		# Log not accessible (e.g. not yet created on a new install) - treat as warning
 		Write-Log "Could not read GSA event log '$logName': $($_.Exception.Message)" "WARNING"
 		if ($PassThru) { return [PSCustomObject]@{ Passed = $true; Warnings = 1 } }

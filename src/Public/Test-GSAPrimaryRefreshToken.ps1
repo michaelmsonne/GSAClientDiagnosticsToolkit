@@ -25,6 +25,7 @@ function Test-GSAPrimaryRefreshToken
 
 	Write-Log "Checking Primary Refresh Token (PRT) status via dsregcmd..." "INFO"
 
+	# Attempt to retrieve the PRT status using dsregcmd.
 	try
     {
 		$dsregOutput = dsregcmd /status 2>&1

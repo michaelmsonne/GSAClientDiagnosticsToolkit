@@ -12,6 +12,7 @@ function Test-UDPPort
 
 	try
     {
+		# Initialize the UDP client and connect to the specified IP address and port.
 		$udpClient = [System.Net.Sockets.UdpClient]::new()
 		$udpClient.Connect($IPAddress, $Port)
 		Write-Log -Message "Testing UDP connectivity to $IPAddress on port $Port" -Level "INFO" -Color Cyan

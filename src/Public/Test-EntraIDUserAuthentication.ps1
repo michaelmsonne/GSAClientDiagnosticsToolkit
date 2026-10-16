@@ -11,8 +11,11 @@ function Test-EntraIDUserAuthentication
 	try
     {
 		Write-Log -Message "Attempting authentication to Entra ID" -Level "INFO"
+
+		# Attempt interactive authentication to Entra ID using MSAL.
 		$token = Get-MSALToken -ClientId "d3590ed6-52b3-4102-aeff-aad2292ab01c" -Scopes "https://graph.microsoft.com/.default"
 
+		# Check if the authentication token was successfully retrieved.
 		if ($token.AccessToken)
         {
 			Write-Log -Message "Authentication successful. Token retrieved." -Level "INFO"

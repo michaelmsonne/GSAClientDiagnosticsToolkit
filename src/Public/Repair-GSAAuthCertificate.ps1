@@ -45,6 +45,7 @@ function Repair-GSAAuthCertificate {
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
 	{ $script:LogLevel = $LogLevel }
 
+	# Ensure the script is running with elevated privileges (as Administrator) to access the LocalMachine certificate store and registry.
 	if (-not (Test-IsElevated)) {
 		Write-Log "This function must be run elevated (as Administrator) to access the LocalMachine certificate store and registry." "ERROR"
 		if ($PassThru)
@@ -52,6 +53,7 @@ function Repair-GSAAuthCertificate {
 		return
 	}
 
+	# Open the LocalMachine\My certificate store and locate GSA authentication certificates.
 	$store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
 	try {
 		$store.Open('ReadOnly')
@@ -67,6 +69,7 @@ function Repair-GSAAuthCertificate {
 		$store.Close()
 	}
 
+	# Check if any GSA authentication certificates were found; if none, exit early.
 	if ($certs.Count -eq 0) {
 		Write-Log "No GSA authentication certificate was found - nothing to repair." "WARNING"
 		if ($PassThru)
@@ -74,17 +77,20 @@ function Repair-GSAAuthCertificate {
 		return
 	}
 
+	# Ensure the backup directory exists; create it if it does not.
 	if (-not (Test-Path $BackupPath)) {
 		if ($PSCmdlet.ShouldProcess($BackupPath, 'Create backup directory')) {
 			New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
 		}
 	}
 
+	# Back up the GSA authentication certificates before making any changes.
 	Write-Log "Backing up the certificate(s) before making any changes..." "INFO"
 	$exportedFiles = @(Export-GSAAuthCertificate -BackupPath $BackupPath -PassThru -WhatIf:$WhatIfPreference -Confirm:$false)
 
 	$allSucceeded = $true
 
+	# Iterate through each GSA authentication certificate and attempt to repair it (delete and back up).
 	foreach ($cert in $certs) {
 		Write-Log "Found GSA authentication certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint))." "INFO"
 
@@ -113,6 +119,7 @@ function Repair-GSAAuthCertificate {
 			continue
 		}
 
+		# Attempt to delete the current GSA authentication certificate from the LocalMachine\My store.
 		try {
 			Remove-Item -Path "Cert:\LocalMachine\My\$($cert.Thumbprint)" -Force -ErrorAction Stop
 			Write-Log "Deleted certificate '$($cert.Thumbprint)' from LocalMachine\My." "SUCCESS"
@@ -124,6 +131,7 @@ function Repair-GSAAuthCertificate {
 		}
 	}
 
+	# After attempting to delete all certificates, proceed to clear the registry value and optionally restart the engine service.
 	Write-Log "Clearing the CertCommonName registry value so the GSA client re-enrolls a new certificate..." "INFO"
 	if ($PSCmdlet.ShouldProcess("$script:GSAFwdProfileRegistryPath\CertCommonName", "Remove registry value")) {
 		try {
@@ -135,6 +143,7 @@ function Repair-GSAAuthCertificate {
 		}
 	}
 
+	# If the user has requested a restart of the engine service, attempt to restart it; otherwise, provide a recommendation.
 	if ($RestartEngineService) {
 		if ($PSCmdlet.ShouldProcess("GlobalSecureAccessEngineService", "Restart")) {
 			try {

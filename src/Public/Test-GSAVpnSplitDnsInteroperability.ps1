@@ -50,6 +50,7 @@ function Test-GSAVpnSplitDnsInteroperability {
 
     Write-Log "Checking Cisco VPN + GSA split-DNS interoperability for suffix '$normalizedSuffix'..." "INFO"
 
+    # Check for active Cisco VPN adapters.
     $ciscoAdapters = @(
         Get-NetAdapter -ErrorAction SilentlyContinue |
         Where-Object {
@@ -60,6 +61,7 @@ function Test-GSAVpnSplitDnsInteroperability {
         }
     )
 
+    # If no active Cisco VPN adapters are found, the scenario is not applicable.
     if ($ciscoAdapters.Count -eq 0) {
         Write-Log "No active Cisco VPN adapter detected. Scenario is not currently applicable." "SUCCESS"
         if ($PassThru)
@@ -69,6 +71,7 @@ function Test-GSAVpnSplitDnsInteroperability {
 
     Write-Log "Detected active Cisco VPN adapter(s): $($ciscoAdapters.Name -join ', ')." "INFO"
 
+    # Retrieve the NRPT rules to check for split-DNS configuration.
     $nrptRules = @()
     try {
         $nrptRules = @(Get-DnsClientNrptRule -ErrorAction Stop)
@@ -98,6 +101,7 @@ function Test-GSAVpnSplitDnsInteroperability {
         }
     }
 
+    # If no NRPT rules match the DNS suffix, the scenario is not detected.
     if ($matchingNrptRules.Count -eq 0) {
         Write-Log "No NRPT rules apply to '$normalizedSuffix'. This specific scenario was not detected." "INFO"
         if ($PassThru)
@@ -105,6 +109,7 @@ function Test-GSAVpnSplitDnsInteroperability {
         return
     }
 
+    # At this point, there are matching NRPT rules for the DNS suffix.
     Write-Log "Found $($matchingNrptRules.Count) NRPT rule(s) matching '$normalizedSuffix'." "INFO"
     Write-Log "Testing DNS query for probe host '$probeFqdn'..." "INFO"
 

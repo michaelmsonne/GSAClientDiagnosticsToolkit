@@ -52,6 +52,7 @@ function Test-GSAPrivateAccessApplication
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
     { $script:LogLevel = $LogLevel }
 
+	# Begin checking the Private Access application configuration via Microsoft Graph.
 	Write-Log "Checking Private Access application configuration..." "INFO"
 	try
     {
@@ -72,8 +73,11 @@ function Test-GSAPrivateAccessApplication
         { return $false }
 		return
 	}
+
+	# Extract the display name of the application for logging purposes.
 	$displayName = $application.displayName
 
+	# Check whether the GSA client access is enabled for the application.
 	Write-Log "Checking access with Global Secure Access client configuration..." "INFO"
 	$isGSAEnabled = @($application.tags) | Where-Object { $_ -match 'IsAccessibleViaZTNAClient' -or $_ -match 'NetworkAccessQuickAccessApplication' }
 	if (-not $isGSAEnabled)

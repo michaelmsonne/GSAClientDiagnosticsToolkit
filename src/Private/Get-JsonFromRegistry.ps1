@@ -16,6 +16,8 @@ function Get-JsonFromRegistry
 			Write-Log -Message "No JSON data found at registry path: $script:GSAFwdProfileRegistryPath" -Level "ERROR"
 			return $null
 		}
+
+		# Convert the JSON string to a PowerShell object.
 		$jsonContent = $jsonString | ConvertFrom-Json
 		Write-Log -Message "Successfully read JSON data from registry path: $script:GSAFwdProfileRegistryPath" -Level "INFO"
 		return $jsonContent

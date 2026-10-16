@@ -92,6 +92,7 @@ function Test-GSAIntelligentLocalAccessConfiguration
 		return
 	}
 
+	# If not in Manual mode, proceed to retrieve and check Intelligent Local Access Private Network definitions via Microsoft Graph.
 	Write-Log "Retrieving Intelligent Local Access Private Network definitions via Microsoft Graph..." "INFO"
 	try
     {
@@ -105,6 +106,7 @@ function Test-GSAIntelligentLocalAccessConfiguration
 		return
 	}
 
+	# Extract the list of private networks from the Microsoft Graph response.
 	$privateNetworks = @($result.value)
 	if ($privateNetworks.Count -eq 0)
     {
@@ -114,6 +116,7 @@ function Test-GSAIntelligentLocalAccessConfiguration
 		return
 	}
 
+	# Retrieve and cache the display names of applications referenced by the private networks.
 	$appDisplayNames = @{}
 	try
     {
@@ -132,6 +135,7 @@ function Test-GSAIntelligentLocalAccessConfiguration
 
 	$allTestsPassed = $true
 
+	# Iterate through each private network and perform validation checks.
 	foreach ($network in $privateNetworks)
     {
 		$networkName = $network.name

@@ -68,23 +68,28 @@ function Invoke-GSAClientConnectivityCheck {
 	$BasePath = (Resolve-Path -Path $BasePath).ProviderPath
 	$script:LogFilePath = Join-Path -Path $BasePath -ChildPath $LogFileName
 
+	# Initialize the test result counters and storage.
 	$testsPassed = 0
 	$testsFailed = 0
 	$testsWithWarnings = 0
 	$testResults = @{}
 
+	# Log the start of the connectivity check.
 	Write-Log "========= GSA Client Connectivity Checker v. $script:ModuleVer Started ========="
 	Write-Log "Log file    : $script:LogFilePath"
 	Write-Log "Device Name : $env:COMPUTERNAME"
 	Write-Log "User Account: $(Get-GSACurrentUserUPN)"
 
+	# Retrieve the GSA endpoints from the registry.
 	$gsaEndpoints = Get-GSAEndpoints -RegistryValueName "ForwardingProfile"
 	if (-Not $gsaEndpoints)
 	{ return }
 
+	# Extract the main endpoint addresses and diagnostic URIs from the retrieved GSA endpoints.
 	$gsaMainEndpointAddrs = $gsaEndpoints.MainEndpoints
 	$DiagnosticUris = $gsaEndpoints.DiagnosticUris
 
+	# Define the set of connectivity tests to be executed by main function.
 	$tests = [ordered]@{
 		"GSA Service Status"               = { Test-GSAServiceStatus }
 		"Device Entra Status"              = { Test-DeviceEntraStatus }
@@ -106,6 +111,7 @@ function Invoke-GSAClientConnectivityCheck {
 		"GSA Event Log"                    = { Test-GSAEventLog -PassThru }
 	}
 
+	# Define the parameters for the connectivity tests that require them.
 	$testParams = [ordered]@{
 		"DNS Resolution"           = @{ param1 = $gsaMainEndpointAddrs }
 		"TLS Connectivity"         = @{ param1 = $gsaMainEndpointAddrs }
@@ -113,11 +119,13 @@ function Invoke-GSAClientConnectivityCheck {
 		"Diagnostics Connectivity" = @{ param1 = $DiagnosticUris }
 	}
 
+	# Execute each connectivity test in sequence, passing the required parameters if applicable.
 	foreach ($testName in $tests.Keys) {
 		Write-Log -Message "===== Executing: $testName =========" -Level "INFO"
 		$scriptBlock = $tests[$testName]
 		$params = $testParams[$testName]
 
+		# Initialize the test result variable for the current test.
 		$script:_testResult = $null
 		$result = if ($params) { & $scriptBlock @params } else { & $scriptBlock }
 		if ($null -eq $result -and $null -ne $script:_testResult)
@@ -128,6 +136,7 @@ function Invoke-GSAClientConnectivityCheck {
 		}
 		$testResults[$testName] = $result
 
+		# View the results type output
 		if ($result -is [PSCustomObject]) {
 			if ($result.Warnings -gt 0) {
 				Write-Log "===== $testName : WARNINGS =========" "WARNING"
@@ -154,8 +163,10 @@ function Invoke-GSAClientConnectivityCheck {
 		}
 	}
 
+	# Log the completion of the connectivity check.
 	Write-Log "========= GSA Client Connectivity Check Completed =========" "INFO"
 
+	# Prepare the summary table for the test results.
 	$summaryTable = @()
 	foreach ($testName in $testResults.Keys) {
 		$result = if ($testResults[$testName] -is [PSCustomObject]) {
@@ -196,6 +207,7 @@ function Invoke-GSAClientConnectivityCheck {
 	Write-Log ($rowFormat -f " ", "Test Name", "Result", "Warnings") "INFO" -NoPrefix -Color White
 	Write-Log $midBorder "INFO" -NoPrefix -Color DarkGray
 
+	# Iterate through each row in the summary table and log the test results with appropriate icons and colors.
 	foreach ($row in $summaryTable) {
 		$icon = if ($row.Result -eq 'FAILED') { 'X' } elseif ($row.Warnings -gt 0) { '!' } else { '*' }
 		$rowColor = if ($row.Result -eq 'FAILED') { 'Red' } elseif ($row.Warnings -gt 0) { 'Yellow' } else { 'Green' }
@@ -206,6 +218,7 @@ function Invoke-GSAClientConnectivityCheck {
 
 	Write-Log "Summary: $testsPassed tests passed, $testsFailed tests failed, $testsWithWarnings tests with warnings." "INFO"
 
+	# Provide a textual summary of the overall test results.
 	if ($testsFailed -eq 0 -and $testsWithWarnings -eq 0) {
 		Write-Log "All tests passed successfully!" "SUCCESS"
 	}

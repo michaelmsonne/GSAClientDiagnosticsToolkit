@@ -23,6 +23,7 @@ function Get-GSAPrivateAccessRuleMatch
 		AppId           = $null
 	}
 
+	# Iterate through the Private Access rules to check for address, port, and protocol matches.
 	foreach ($rule in $Rules)
     {
 		$addressMatch = $false

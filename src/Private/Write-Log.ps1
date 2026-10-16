@@ -18,16 +18,22 @@ function Write-Log
 		[switch]$NoPrefix
 	)
 
+	# Determine the index of the current log level and the message's log level for filtering purposes.
 	$levels = @("ERROR", "WARNING", "INFO", "DEBUG")
+
+	# Get the numeric index of the current log level and the message's log level.
 	$currentIndex = $levels.IndexOf($script:LogLevel.ToUpper())
 	$messageIndex = $levels.IndexOf($Level.ToUpper())
 
+	# Acquire the global lock to ensure thread-safe logging.
 	[System.Threading.Monitor]::Enter($script:LogLockObject)
 	try
     {
+		# Generate the timestamp and construct the log message with or without the prefix.
 		$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 		$logMessage = if ($NoPrefix) { $Message } else { "[$timestamp] [$Level] $Message" }
 
+		# Check if the message should be logged based on the current log level and the message's log level.
 		if ($messageIndex -le $currentIndex -or $Level -eq "SUCCESS")
         {
 			$consoleColor = if ($PSBoundParameters.ContainsKey('Color')) {
@@ -47,6 +53,7 @@ function Write-Log
 			Write-Host $logMessage -ForegroundColor $consoleColor
 		}
 
+		# Write the log message to the log file if a log file path is specified.
 		if ($script:LogFilePath)
         {
 			$fileStream = [System.IO.File]::Open($script:LogFilePath, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)

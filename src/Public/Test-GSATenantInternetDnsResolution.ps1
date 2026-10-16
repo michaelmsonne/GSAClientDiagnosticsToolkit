@@ -28,6 +28,7 @@ function Test-GSATenantInternetDnsResolution {
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
 	{ $script:LogLevel = $LogLevel }
 
+	# Helper function to extract IP addresses from DNS records.
 	function Get-DnsIPAddresses {
 		param (
 			[object[]]$Records
@@ -46,6 +47,7 @@ function Test-GSATenantInternetDnsResolution {
 		)
 	}
 
+	# Helper function to retrieve lines from the local hosts file that match a given FQDN.
 	function Get-HostsFileLinesForFqdn {
 		param (
 			[string]$Fqdn
@@ -90,6 +92,7 @@ function Test-GSATenantInternetDnsResolution {
 
 	Write-Log "Checking tenant Internet forwarding DNS hostnames for local override issues..." "INFO"
 
+	# Iterate over each tenant FQDN and check for local hosts file overrides.
 	$profileJson = Get-JsonFromRegistry -ValueName $RegistryValueName
 	if (-Not $profileJson -or -Not $profileJson.policy -or [string]::IsNullOrWhiteSpace($profileJson.policy.tenantId)) {
 		Write-Log "TenantId was not found in '$RegistryValueName' registry JSON. Cannot validate tenant Internet DNS hostnames." "ERROR"
@@ -97,16 +100,19 @@ function Test-GSATenantInternetDnsResolution {
 		return
 	}
 
+	# Extract the tenant ID from the registry JSON.
 	$tenantId = "$($profileJson.policy.tenantId)".Trim()
 	$tenantFqdns = @(
 		"$tenantId.internet.client.globalsecureaccess.microsoft.com",
 		"$tenantId.internet-backup.client.globalsecureaccess.microsoft.com"
 	)
 
+	# Define the synthetic IP range used by the GSA for local DNS resolution.
 	$syntheticRangeStart = 101056512 # 6.6.0.0
 	$syntheticRangeEnd = 101122047   # 6.6.255.255
 	$allPassed = $true
 
+	# Iterate over each tenant FQDN and perform DNS resolution checks.
 	foreach ($tenantFqdn in $tenantFqdns) {
 		Write-Log "Validating tenant hostname '$tenantFqdn'..." "INFO"
 
@@ -120,6 +126,7 @@ function Test-GSATenantInternetDnsResolution {
 			continue
 		}
 
+		# Compare the real DNS records with the system DNS records to detect any discrepancies.
 		$systemRecords = $null
 		try {
 			$systemRecords = @(Resolve-DnsName -Name $tenantFqdn -ErrorAction Stop)
@@ -130,6 +137,7 @@ function Test-GSATenantInternetDnsResolution {
 			continue
 		}
 
+		# Extract the IP addresses from the real and system DNS records for comparison.
 		$realIPs = @(Get-DnsIPAddresses -Records $realRecords)
 		$systemIPs = @(Get-DnsIPAddresses -Records $systemRecords)
 		if ($realIPs.Count -eq 0) {
@@ -138,6 +146,7 @@ function Test-GSATenantInternetDnsResolution {
 			continue
 		}
 
+		# Log the resolved IP addresses for both direct and system DNS lookups.
 		Write-Log "Direct DNS (NoHostsFile): $($realIPs -join ', ')" "INFO"
 		if ($systemIPs.Count -gt 0) {
 			Write-Log "System DNS: $($systemIPs -join ', ')" "INFO"
@@ -148,6 +157,7 @@ function Test-GSATenantInternetDnsResolution {
 			continue
 		}
 
+		# Extract the CNAME/alias targets from the system DNS records.
 		$cnameRecords = @(
 			$systemRecords |
 			Where-Object -FilterScript {
@@ -162,6 +172,7 @@ function Test-GSATenantInternetDnsResolution {
 			Write-Log "CNAME/alias targets: $($cnameRecords -join ' -> ')" "DEBUG"
 		}
 
+		# Check for local hosts file overrides for the tenant FQDN.
 		$hostsFileLines = @(Get-HostsFileLinesForFqdn -Fqdn $tenantFqdn)
 		if ($hostsFileLines.Count -gt 0) {
 			Write-Log "Hosts-file override found for '$tenantFqdn'." "ERROR"
@@ -172,6 +183,7 @@ function Test-GSATenantInternetDnsResolution {
 			$allPassed = $false
 		}
 
+		# Compare the real DNS IP addresses with the system DNS IP addresses to detect discrepancies.
 		$realIpSet = @($realIPs | ForEach-Object { "$_".ToLowerInvariant() } | Sort-Object -Unique)
 		$systemIpSet = @($systemIPs | ForEach-Object { "$_".ToLowerInvariant() } | Sort-Object -Unique)
 		$dnsDiff = @(Compare-Object -ReferenceObject $realIpSet -DifferenceObject $systemIpSet -CaseSensitive:$false)
@@ -194,6 +206,7 @@ function Test-GSATenantInternetDnsResolution {
 			Write-Log "System DNS returned expected synthetic GSA address(es): $($syntheticSystemIPv4 -join ', ')." "SUCCESS"
 		}
 
+		# Check for private IPv4 addresses in the system DNS results, which should not be present for synthetic GSA addresses.
 		$privateSystemIPv4 = @($systemIPs | Where-Object -FilterScript { Test-GSAIsPrivateIPv4 -IPAddress $_ })
 		if ($privateSystemIPv4.Count -gt 0) {
 			Write-Log "System DNS for '$tenantFqdn' includes private IPv4 address(es): $($privateSystemIPv4 -join ', ')." "ERROR"

@@ -29,6 +29,7 @@ function Test-GSAIPv6Status
 
 	Write-Log "Checking IPv6 binding on active physical network adapters - GSA does not support IPv6..." "INFO"
 
+	# Retrieve the list of active physical network adapters.
 	try
     {
 		# Virtual = $false excludes loopback / Hyper-V / VPN virtual adapters

@@ -38,15 +38,19 @@ function Test-EntraIDConnectivity
 
 	$allTestsPassed = $true
 
+	# Iterate through each specified endpoint and test connectivity.
 	foreach ($url in $Endpoints)
     {
 		try
         {
 			Write-Log -Message "Testing connectivity to $url ..." -Level "INFO"
 
+			# Establish a TCP connection and initiate an SSL/TLS handshake to test connectivity.
 			$uri = [System.Uri]::new($url)
 			$tcpClient = [System.Net.Sockets.TcpClient]::new($uri.Host, 443)
 			$sslStream = [System.Net.Security.SslStream]::new($tcpClient.GetStream(), $false, { $true })
+
+			# Tests of endpoint TLS/HTTPS connectivity.
 			try
             {
 				$sslStream.AuthenticateAsClient($uri.Host)
@@ -77,6 +81,7 @@ function Test-EntraIDConnectivity
 				$tcpClient.Close()
 			}
 
+			# Perform an HTTP request to the endpoint to verify connectivity.
 			$response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec $Timeout
 			if ($response.StatusCode -eq 200)
             {

@@ -10,6 +10,7 @@ function Test-GSAPortInRange
 		[int]$Port
 	)
 
+	# Iterate through each port range and check if the given port falls within any of them.
 	foreach ($range in $Ports)
 	{
 		if ($range -and $Port -ge $range.start -and $Port -le $range.end)

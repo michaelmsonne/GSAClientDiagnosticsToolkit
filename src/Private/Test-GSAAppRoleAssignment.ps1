@@ -17,6 +17,7 @@ function Test-GSAAppRoleAssignment
 	if (-not $AssignmentRequired)
     { return $true }
 
+	# Attempt to resolve the user via Microsoft Graph to obtain their object ID.
 	try
     {
 		$user = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/v1.0/users/$UserPrincipalName"
@@ -32,16 +33,19 @@ function Test-GSAAppRoleAssignment
 		return $false
 	}
 
+	# Check if the user is directly assigned to the app role.
 	if (@($AssignedUsers) | Where-Object { $_.principalId -eq $user.id })
     {
 		return $true
 	}
 
+	# If there are no assigned groups, the user cannot be indirectly assigned via group membership.
 	if (-not $AssignedGroupIds -or @($AssignedGroupIds).Count -eq 0)
     {
 		return $false
 	}
 
+	# Check if the user is indirectly assigned to the app role via group membership.
 	try
     {
 		$body = @{ groupIds = @($AssignedGroupIds) }

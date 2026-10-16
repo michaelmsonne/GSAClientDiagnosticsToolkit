@@ -20,9 +20,11 @@ function Invoke-GSAGraphRequest
 		Connect-GSAMgGraph -Scopes $Scopes
 	}
 
+	# Set the maximum number of retries and the initial retry interval for handling HTTP 429 throttling.
 	$maxRetries = 5
 	$retryIntervalSeconds = 2
 
+	# Attempt the Microsoft Graph request with retries for handling HTTP 429 throttling.
 	for ($attempt = 0; $attempt -lt $maxRetries; $attempt++)
     {
 		try

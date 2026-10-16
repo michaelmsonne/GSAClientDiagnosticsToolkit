@@ -44,6 +44,7 @@ function Test-GSAPrivateAccessTunnel
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
     { $script:LogLevel = $LogLevel }
 
+	# Determine whether the input is an FQDN or an IPv4 address.
 	$inputType = Test-IPorFQDN -FQDNorIP $FQDNorIP
 	if (-not $inputType)
     {
@@ -52,7 +53,7 @@ function Test-GSAPrivateAccessTunnel
         { return $false }
 		return
 	}
-
+	# If the input is not valid, log an error and exit.
 	if ($Protocol -eq 'UDP')
     {
 		Write-Log "UDP tunnel connectivity cannot be verified with a TCP-based probe." "WARNING"
@@ -63,6 +64,7 @@ function Test-GSAPrivateAccessTunnel
 
 	Write-Log "Checking Private Access tunnel connectivity to ${FQDNorIP}:${Port}..." "INFO"
 
+	# Attempt to establish a TCP connection to the target FQDN or IP address and port.
 	try
     {
 		$tcpClient = [System.Net.Sockets.TcpClient]::new($FQDNorIP, $Port)
@@ -76,6 +78,7 @@ function Test-GSAPrivateAccessTunnel
 		return
 	}
 
+	# Retrieve the synthetic GSA address assigned to the established tunnel connection.
 	try
     {
 		$syntheticAddress = $tcpClient.Client.RemoteEndPoint.Address.ToString()
@@ -87,6 +90,7 @@ function Test-GSAPrivateAccessTunnel
 
 	Write-Log "Tunnel connection established. Synthetic address: $syntheticAddress" "SUCCESS"
 
+	# Verify that the synthetic address corresponds to the expected GSA range for FQDN inputs.
 	if ($inputType -eq 'FQDN')
     {
 		if ($syntheticAddress -notlike '6.6.*')

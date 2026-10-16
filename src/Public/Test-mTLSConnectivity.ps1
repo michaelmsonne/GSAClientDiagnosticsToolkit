@@ -30,10 +30,12 @@ function Test-mTLSConnectivity
 	if ($PSBoundParameters.ContainsKey('LogLevel'))
     { $script:LogLevel = $LogLevel }
 
+	# Initialize test result tracking variables.
 	$allTestsPassed = $true
 	$warningsLogged = $false
 	$runningElevated = Test-IsElevated
 
+	# Check if the script is running with elevated privileges.
 	if (-not $runningElevated)
     {
 		Write-Log "This script is not running elevated" "WARNING"
@@ -65,6 +67,7 @@ function Test-mTLSConnectivity
 		Write-Log "Found $($mtlsCertificates.Count) mTLS-capable GSA client certificate(s)." "SUCCESS"
 	}
 
+	# Iterate over each FQDN in the list and attempt mTLS connections.
 	foreach ($fqdn in $fqdnList)
     {
 		Write-Log "Attempting mTLS connection to: $fqdn on port $port" "INFO"

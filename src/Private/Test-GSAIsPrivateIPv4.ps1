@@ -21,6 +21,7 @@ function Test-GSAIsPrivateIPv4
 	if ($bytes.Count -ne 4)
     { return $false }
 
+	# Determine if the IP address falls within a private or loopback range based on the first byte.
 	switch ($bytes[0])
     {
 		10 { return $true }

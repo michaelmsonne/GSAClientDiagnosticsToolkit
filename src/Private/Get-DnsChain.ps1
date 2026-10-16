@@ -22,6 +22,7 @@ function Get-DnsChain {
 
 	$chain = @()
 
+	# Attempt to resolve the FQDN to retrieve its DNS records.
 	try {
 		$records = Resolve-DnsName -Name $fqdn -ErrorAction Stop
 	}
