@@ -2,6 +2,8 @@
 
 <p align="center">
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/michaelmsonne/GSAClientDiagnosticsToolkit?include_prereleases&logo=github"></a>
+  <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery" src="https://img.shields.io/powershellgallery/v/GSAClientDiagnosticsToolkit?include_prereleases&label=PowerShell%20Gallery&logo=powershell"></a>
+  <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/powershellgallery/dt/GSAClientDiagnosticsToolkit?label=gallery%20downloads"></a>
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img src="https://img.shields.io/github/downloads/michaelmsonne/GSAClientDiagnosticsToolkit/total.svg" alt="Total Downloads"></a>
   <img src="https://visitor-badge.laobi.icu/badge?page_id=michaelmsonne.GSAClientDiagnosticsToolkit.README" alt="Visitors">
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
@@ -17,7 +19,7 @@
    <a href="https://www.buymeacoffee.com/sonnes" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 30px !important;width: 117px !important;"></a>
 </p>
 
-A PowerShell module that runs connectivity, proxy, health probe, and mTLS diagnostic checks for the **Microsoft Global Secure Access (GSA) Client**.
+A PowerShell troubleshooting and diagnostics module for the **Microsoft Entra Global Secure Access (GSA) Windows client** (Entra Internet Access, Entra Private Access and Microsoft 365 traffic). It runs connectivity, proxy, DNS, TLS/mTLS, forwarding profile, Entra device/PRT, certificate and health probe checks to quickly find out why GSA isn't working on a device.
 
 Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7499807681470464000/)
 
@@ -101,19 +103,30 @@ Outline of the repository's file contents, to help you navigate the codebase, te
 
 ## Installation
 
-### Option A - Clone and import locally
+### Option A - Install from the PowerShell Gallery (recommended)
+
+```powershell
+Install-Module -Name GSAClientDiagnosticsToolkit -Scope CurrentUser
+
+# Pre-release versions
+Install-Module -Name GSAClientDiagnosticsToolkit -Scope CurrentUser -AllowPrerelease
+```
+
+Then run `Invoke-GSAClientConnectivityCheck`. Module page: <https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit>
+
+### Option B - Clone and import locally
 
 ```powershell
 git clone https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit.git
-Import-Module .\GSAClientDiagnosticsToolkit\GSAClientDiagnosticsToolkit.psd1
+Import-Module .\GSAClientDiagnosticsToolkit\src\GSAClientDiagnosticsToolkit.psd1
 ```
 
-### Option B - Copy the folder to a module path
+### Option C - Copy the folder to a module path
 
-Copy the `GSAClientDiagnosticsToolkit` folder to one of your `$env:PSModulePath` directories, for example:
+Copy the `GSAClientDiagnosticsToolkit` folder (the contents of `src`) to one of your `$env:PSModulePath` directories, for example:
 
 ```powershell
-Copy-Item -Recurse .\GSAClientDiagnosticsToolkit `
+Copy-Item -Recurse .\GSAClientDiagnosticsToolkit\src `
     "$env:USERPROFILE\Documents\PowerShell\Modules\GSAClientDiagnosticsToolkit"
 ```
 
