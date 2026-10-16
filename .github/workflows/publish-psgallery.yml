@@ -102,13 +102,13 @@ jobs:
             [System.IO.File]::WriteAllText($notesFile, $notes, (New-Object System.Text.UTF8Encoding($false)))
             "RELEASE_NOTES_FILE=$notesFile" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
             Write-Host "Release notes source: $source ($($notes.Length) characters)"
+            Write-Host "::group::Release notes ($source)"
             # Disable workflow-command processing while echoing user-controlled text
             $stopToken = [guid]::NewGuid().ToString('N')
             Write-Host "::stop-commands::$stopToken"
-            Write-Host "::group::Release notes ($source)"
             Write-Host $notes
-            Write-Host "::endgroup::"
             Write-Host "::$stopToken::"
+            Write-Host "::endgroup::"
             "### Release notes ($source)`n`n$notes" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           }
           else {
