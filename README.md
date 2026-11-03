@@ -545,7 +545,28 @@ Checks whether [home network support](https://learn.microsoft.com/en-us/entra/gl
 Test-GSAHomeNetworkSupport [-RegistryValueName <string>] [-PassThru] [-LogLevel <string>]
 ```
 
+![Test-GSAHomeNetworkSupport - example output](docs/images/screenshot-gsa-GSAHomeNetworkSupport-status.png)
+
 With `-PassThru` it returns `$false` when the Private Access channel is missing, the `localNetwork` setting is absent (unsupported client) or the setting is disabled. The per-user **Prefer Local Network** toggle isn't stored in the profile and can't be verified.
+
+<details>
+<summary>Sample output</summary>
+
+```text
+PS> Test-GSAHomeNetworkSupport -LogLevel INFO
+[2026-11-03 22:14:38] [INFO] Checking Private Access home network support (Allow local subnet bypass)...
+[2026-11-03 22:14:38] [INFO] Successfully read JSON data from registry path: HKLM:\SOFTWARE\Microsoft\Global Secure Access Client
+[2026-11-03 22:14:38] [SUCCESS] Home network support is enabled in the Private Access forwarding profile (Allow local subnet bypass).
+[2026-11-03 22:14:38] [INFO] Calculating directly connected RFC1918 IPv4 subnets on active adapters...
+[2026-11-03 22:14:39] [INFO] Directly connected local subnet on 'vEthernet (Default Switch)': 172.19.32.0/20
+[2026-11-03 22:14:39] [INFO] Directly connected local subnet on 'VMware Network Adapter VMnet8': 192.168.26.0/24
+[2026-11-03 22:14:39] [INFO] Directly connected local subnet on 'VMware Network Adapter VMnet1': 192.168.88.0/24
+[2026-11-03 22:14:39] [INFO] Directly connected local subnet on 'Ethernet 2': 192.168.100.0/24
+[2026-11-03 22:14:39] [SUCCESS] No Private Access IP rule overlaps the directly connected local subnet(s).
+[2026-11-03 22:14:39] [SUCCESS] Test passed: Home network support is enabled.
+```
+
+</details>
 
 ---
 
