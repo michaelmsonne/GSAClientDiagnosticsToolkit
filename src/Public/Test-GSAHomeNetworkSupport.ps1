@@ -74,6 +74,7 @@ function Test-GSAHomeNetworkSupport {
 		return
 	}
 
+	# Ensure the localNetwork property is an object with the expected structure.
 	Write-Log "Private Access channel found: name='$($channel.name)', id='$($channel.id)', channelProfileName='$($channel.channelProfileName)', localNetwork=$($channel.localNetwork | ConvertTo-Json -Compress)." "DEBUG"
 	if ($null -eq $channel.localNetwork -or $null -eq $channel.localNetwork.isLocalNetworkFeatureEnabled) {
 		Write-Log "The Private Access profile received by the client doesn't contain the home network support (localNetwork) setting." "WARNING"
@@ -83,6 +84,7 @@ function Test-GSAHomeNetworkSupport {
 		return
 	}
 
+	# Check if the local network feature is enabled.
 	if (-not [bool]$channel.localNetwork.isLocalNetworkFeatureEnabled) {
 		Write-Log "Home network support is NOT enabled in the Private Access forwarding profile this client received (Allow local subnet bypass is off)." "WARNING"
 		Write-Log "Recommended action: If users need local network access while Private Access is connected, enable 'Allow local subnet bypass' on the Private Access traffic forwarding profile in Entra > Global Secure Access > Connect > Traffic forwarding (v2 experience). Then refresh the client profile (delete the ForwardingProfileTimestamp registry value and restart GlobalSecureAccessForwardingProfileService) and turn on 'Prefer Local Network' in the client settings." "WARNING"
@@ -102,12 +104,15 @@ function Test-GSAHomeNetworkSupport {
 		([System.Net.IPAddress]::new($b)).IPAddressToString
 	}
 	try {
+		# Enumerate all network adapters and identify the active ones.
 		$allAdapters = @(Get-NetAdapter -ErrorAction Stop)
 		$activeAdapters = @($allAdapters | Where-Object { $_.Status -eq 'Up' })
 		Write-Log "Found $($allAdapters.Count) network adapter(s), $($activeAdapters.Count) active: $(($allAdapters | ForEach-Object { "$($_.Name) [ifIndex=$($_.ifIndex), status=$($_.Status)]" }) -join '; ')." "DEBUG"
 		foreach ($adapter in $activeAdapters) {
+			# Get all IPv4 addresses assigned to the current adapter.
 			$addresses = @(Get-NetIPAddress -InterfaceIndex $adapter.ifIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue)
 			Write-Log "Adapter '$($adapter.Name)' has $($addresses.Count) IPv4 address(es): $(($addresses | ForEach-Object { "$($_.IPAddress)/$($_.PrefixLength)" }) -join ', ')." "DEBUG"
+			# Process each IPv4 address to determine its corresponding local subnet.
 			foreach ($address in $addresses) {
 				$ip = $address.IPAddress
 				$prefix = [int]$address.PrefixLength
@@ -124,6 +129,8 @@ function Test-GSAHomeNetworkSupport {
 				$endValue = $startValue -bor ($maskValue -bxor [uint64]4294967295)
 				$startBytes = [BitConverter]::GetBytes([uint32]$startValue)
 				[Array]::Reverse($startBytes)
+
+				# Convert the start value to bytes for creating the subnet IP address string.
 				Write-Log "Adapter '$($adapter.Name)' $ip/$prefix -> mask $(& $toDotted $maskValue), subnet range $(& $toDotted $startValue) - $(& $toDotted $endValue) (numeric $startValue - $endValue)." "DEBUG"
 				$localSubnets += [PSCustomObject]@{
 					Adapter = $adapter.Name
@@ -157,6 +164,8 @@ function Test-GSAHomeNetworkSupport {
 	Write-Log "Private Access channel has $(@($allPrivateRules).Count) rule(s); $(@($privateRules).Count) with action 'Tunnel' are evaluated for overlap (actions: $((@($allPrivateRules) | Group-Object action | ForEach-Object { "$($_.Name)=$($_.Count)" }) -join ', '))." "DEBUG"
 	$overlapFound = $false
 	$unparsedRanges = 0
+
+	# Evaluate each local subnet against the Private Access IP rules to detect overlaps.
 	foreach ($localSubnet in $localSubnets) {
 		Write-Log "Evaluating Private Access IP rules against local subnet $($localSubnet.Subnet) on '$($localSubnet.Adapter)'..." "DEBUG"
 		$overlapping = @()
