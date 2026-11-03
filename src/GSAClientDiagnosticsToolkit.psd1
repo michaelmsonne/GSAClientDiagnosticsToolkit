@@ -58,6 +58,7 @@
         'Test-GSAPrivateAccessApplicationSegment',
         'Test-GSAPrivateAccessApplication',
         'Test-GSAIntelligentLocalAccessConfiguration',
+        'Test-GSAHomeNetworkSupport',
         'Test-GSAAuthCertificate',
         'Export-GSAAuthCertificate',
         'Repair-GSAAuthCertificate'

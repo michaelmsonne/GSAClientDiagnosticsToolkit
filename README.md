@@ -537,6 +537,18 @@ Test-GSAIPv6Status [-LogLevel <string>]
 
 ---
 
+### `Test-GSAHomeNetworkSupport`
+
+Checks whether [home network support](https://learn.microsoft.com/en-us/entra/global-secure-access/how-to-configure-home-network-support) (**Allow local subnet bypass** on the Private Access traffic forwarding profile) is enabled for this client, and flags local subnets that overlap Private Access destinations. Local/offline: it reads the forwarding profile the client received, no Graph call.
+
+```powershell
+Test-GSAHomeNetworkSupport [-RegistryValueName <string>] [-PassThru] [-LogLevel <string>]
+```
+
+With `-PassThru` it returns `$false` when the Private Access channel is missing, the `localNetwork` setting is absent (unsupported client) or the setting is disabled. The per-user **Prefer Local Network** toggle isn't stored in the profile and can't be verified.
+
+---
+
 ### `Test-DnsResolution`
 
 Resolves each FQDN in the provided list and logs the results.
