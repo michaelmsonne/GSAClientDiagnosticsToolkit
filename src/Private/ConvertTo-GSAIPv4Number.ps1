@@ -6,37 +6,34 @@
 # anything that can't be parsed as an IPv4 address.
 # Example: ConvertTo-GSAIPv4Number -Value ([PSCustomObject]@{ f = 4; v = '192.168.1.1' })   # returns 3232235777
 #
-function ConvertTo-GSAIPv4Number
-{
+function ConvertTo-GSAIPv4Number {
 	param (
 		[object]$Value
 	)
 
 	if ($null -eq $Value)
-    { return $null }
+	{ return $null }
 
-	if ($Value -is [ValueType] -and $Value -isnot [bool])
-    {
+	if ($Value -is [ValueType] -and $Value -isnot [bool]) {
 		try
-        { return [uint64]$Value }
+		{ return [uint64]$Value }
 		catch
-        { return $null }
+		{ return $null }
 	}
 
 	if ($Value -is [string])
-    { $address = $Value }
-	elseif ($Value.PSObject.Properties.Match('v').Count -gt 0)
-    {
+	{ $address = $Value }
+	elseif ($Value.PSObject.Properties.Match('v').Count -gt 0) {
 		if ($Value.PSObject.Properties.Match('f').Count -gt 0 -and [int]$Value.f -ne 4)
-        { return $null }
+		{ return $null }
 		$address = [string]$Value.v
 	}
 	else
-    { return $null }
+	{ return $null }
 
 	$parsed = $null
 	if (-not [System.Net.IPAddress]::TryParse($address, [ref]$parsed) -or $parsed.AddressFamily -ne [System.Net.Sockets.AddressFamily]::InterNetwork)
-    { return $null }
+	{ return $null }
 
 	$bytes = $parsed.GetAddressBytes()
 	[Array]::Reverse($bytes)
