@@ -45,11 +45,26 @@ Describe 'Write-Log' {
         }
     }
 
-    It 'writes every message to the log file once a log file path is set' {
+    It 'writes messages at or below the current LogLevel to the log file' {
         InModuleScope GSAClientDiagnosticsToolkit {
+            Mock Write-Host {}
             $script:LogFilePath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString() + '.log')
+            $script:LogLevel = 'DEBUG'
             Write-Log -Message 'file message' -Level 'DEBUG'
             Get-Content $script:LogFilePath -Raw | Should -Match 'file message'
+        }
+    }
+
+    It 'does not write levels more verbose than the current LogLevel to the log file, but still writes SUCCESS' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            Mock Write-Host {}
+            $script:LogFilePath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString() + '.log')
+            $script:LogLevel = 'INFO'
+            Write-Log -Message 'hidden debug message' -Level 'DEBUG'
+            Write-Log -Message 'visible success message' -Level 'SUCCESS'
+            $content = Get-Content $script:LogFilePath -Raw
+            $content | Should -Not -Match 'hidden debug message'
+            $content | Should -Match 'visible success message'
         }
     }
 

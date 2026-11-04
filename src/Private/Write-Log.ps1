@@ -34,6 +34,7 @@ function Write-Log
 		$logMessage = if ($NoPrefix) { $Message } else { "[$timestamp] [$Level] $Message" }
 
 		# Check if the message should be logged based on the current log level and the message's log level.
+		# The same filter applies to the console and the log file, so the file mirrors what the console shows.
 		if ($messageIndex -le $currentIndex -or $Level -eq "SUCCESS")
         {
 			$consoleColor = if ($PSBoundParameters.ContainsKey('Color')) {
@@ -51,21 +52,21 @@ function Write-Log
 				}
 			}
 			Write-Host $logMessage -ForegroundColor $consoleColor
-		}
 
-		# Write the log message to the log file if a log file path is specified.
-		if ($script:LogFilePath)
-        {
-			$fileStream = [System.IO.File]::Open($script:LogFilePath, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
-			$streamWriter = New-Object System.IO.StreamWriter($fileStream)
-			try
+			# Write the log message to the log file if a log file path is specified.
+			if ($script:LogFilePath)
             {
-				$streamWriter.WriteLine($logMessage)
-			}
-			finally
-            {
-				$streamWriter.Close()
-				$fileStream.Close()
+				$fileStream = [System.IO.File]::Open($script:LogFilePath, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
+				$streamWriter = New-Object System.IO.StreamWriter($fileStream)
+				try
+                {
+					$streamWriter.WriteLine($logMessage)
+				}
+				finally
+                {
+					$streamWriter.Close()
+					$fileStream.Close()
+				}
 			}
 		}
 	}
