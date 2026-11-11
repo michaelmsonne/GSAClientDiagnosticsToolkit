@@ -624,6 +624,9 @@ PS> Test-GSATenantInternetDnsResolution
 
 </details>
 
+<!-- TODO: Add screenshot -->
+![Test-GSATenantInternetDnsResolution - example output](docs/images/screenshot-gsa-tenant-dns-resolution.png)
+
 ---
 
 ### `Test-TLSConnection`
@@ -935,6 +938,7 @@ PS> Test-GSAVpnSplitDnsInteroperability -DnsSuffix mydomain.com
 <!-- TODO: Add screenshot -->
 ![Test-GSAVpnSplitDnsInteroperability - example output](docs/images/screenshot-gsa-vpn-split-dns-interoperability.png)
 
+No split tunnel found
 ---
 
 ### `Test-GSAPrivateAccessRule`
