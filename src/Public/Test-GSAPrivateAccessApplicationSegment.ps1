@@ -92,8 +92,6 @@ function Test-GSAPrivateAccessApplicationSegment
         { return $false }
 		return
 	}
-	$appObjectId = $sp.id
-
 	# Check whether the Private Access application is enabled.
 	if (-not $sp.accountEnabled)
     {
@@ -124,7 +122,17 @@ function Test-GSAPrivateAccessApplicationSegment
 	Write-Log "Checking the application segment configuration for '${FQDNorIP}:${Port}/${Protocol}'..." "INFO"
 	try
     {
-		$segmentsResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/applications/$appObjectId/onPremisesPublishing/segmentsConfiguration/microsoft.graph.ipSegmentConfiguration/applicationSegments"
+		# The segments live on the application object, whose ID differs from the service principal's ID.
+		$appResult = Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/applications?`$select=id,appId&`$filter=appId eq '$AppId'"
+		$appObjectId = @($appResult.value)[0].id
+		if (-not $appObjectId)
+        {
+			Write-Log "No application object found with App ID '$AppId'." "ERROR"
+			if ($PassThru)
+            { return $false }
+			return
+		}
+		$segmentsResult =  Invoke-GSAGraphRequest -AccessToken $AccessToken -Uri "https://graph.microsoft.com/beta/applications/$appObjectId/onPremisesPublishing/segmentsConfiguration/microsoft.graph.ipSegmentConfiguration/applicationSegments"
 	}
 	catch
     {

@@ -28,7 +28,8 @@ Describe 'Test-GSAPrivateAccessApplicationSegment' {
             Mock Invoke-GSAGraphRequest {
                 param($Uri)
                 if ($Uri -match 'servicePrincipals') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ id = 'sp-1'; accountEnabled = $true; appRoleAssignmentRequired = $false; appRoleAssignedTo = @() }) } }
-                if ($Uri -match 'applicationSegments') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = 'fileserver.contoso.com'; ports = @('445-445'); protocol = 'tcp' }) } }
+                if ($Uri -match '/applications\?') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ id = 'app-obj-1'; appId = 'app-1' }) } }
+                if ($Uri -match 'applications/app-obj-1/.*applicationSegments') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = 'fileserver.contoso.com'; ports = @('445-445'); protocol = 'tcp' }) } }
             }
             Test-GSAPrivateAccessApplicationSegment -AccessToken 'token' -AppId 'app-1' -FQDNorIP 'fileserver.contoso.com' -Port 445 -Protocol TCP -PassThru | Should -Be $true
         }
@@ -40,7 +41,8 @@ Describe 'Test-GSAPrivateAccessApplicationSegment' {
             Mock Invoke-GSAGraphRequest {
                 param($Uri)
                 if ($Uri -match 'servicePrincipals') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ id = 'sp-1'; accountEnabled = $true; appRoleAssignmentRequired = $false; appRoleAssignedTo = @() }) } }
-                if ($Uri -match 'applicationSegments') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = 'other.contoso.com'; ports = @('445-445'); protocol = 'tcp' }) } }
+                if ($Uri -match '/applications\?') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ id = 'app-obj-1'; appId = 'app-1' }) } }
+                if ($Uri -match 'applications/app-obj-1/.*applicationSegments') { return [PSCustomObject]@{ value = @([PSCustomObject]@{ destinationType = 'fqdn'; destinationHost = 'other.contoso.com'; ports = @('445-445'); protocol = 'tcp' }) } }
             }
             Test-GSAPrivateAccessApplicationSegment -AccessToken 'token' -AppId 'app-1' -FQDNorIP 'fileserver.contoso.com' -Port 445 -Protocol TCP -PassThru | Should -Be $false
         }
