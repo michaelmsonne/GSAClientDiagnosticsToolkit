@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file. Dates reflect the commit history in this repository.
 
-## [Unreleased] - xx-xx-xxxx
+## [1.0.0] - 11-11-2026
 
 ### Added
 
