@@ -1,15 +1,12 @@
 ﻿#======================================================================================================================
-# THIS CODE-SAMPLE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT
-# LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# THIS CODE SAMPLE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #
-# This sample is not supported under any standard support program or service. The code sample is provided
-# AS IS without warranty of any kind. Microsoft further disclaims all implied warranties including, without limitation,
-# any implied warranties of merchantability or of fitness for a particular purpose. The entire risk arising out of the
-# use or performance of the sample and documentation remains with you. In no event shall the author, its contributors, or
-# anyone else involved in the creation, production, or delivery of the script be liable for any damages whatsoever
-# (including, without limitation, damages for loss of business profits, business interruption, loss of business
-# information, or other pecuniary loss) arising out of the use of or inability to use the sample or documentation,
-# even if Microsoft has been advised of the possibility of such damages.
+# This sample is not supported under any standard support program or service. You assume all risk arising from its use
+# or performance, and from the use of its documentation. In no event shall the author, contributors, or anyone involved
+# in creating, producing, or delivering this sample be liable for any damages (including lost profits, business
+# interruption, loss of business information, or other pecuniary loss) arising from its use or inability to use it,
+# even if advised of the possibility of such damages.
 #======================================================================================================================
 
 #region Module State - shared across all Private and Public functions
