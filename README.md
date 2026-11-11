@@ -296,7 +296,6 @@ Export-GSAEdgeAddresses -fqdnList <string[]> -filePath <string>
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Export-GSAEdgeAddresses - example output](docs/images/screenshot-save-edge-addresses.png)
 
 ---
@@ -330,7 +329,6 @@ Services checked: `GlobalSecureAccessTunnelingService`, `GlobalSecureAccessClien
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAServiceStatus - example output](docs/images/screenshot-gsa-service-status.png)
 
 ---
@@ -355,7 +353,6 @@ Test-DeviceEntraStatus [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-DeviceEntraStatus - example output](docs/images/screenshot-device-entra-status.png)
 
 ---
@@ -378,7 +375,6 @@ Test-GSAPrimaryRefreshToken [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAPrimaryRefreshToken - example output](docs/images/screenshot-gsa-primary-refresh-token.png)
 
 ---
@@ -405,7 +401,6 @@ Test-GSAForwardingProfileRegistry [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAForwardingProfileRegistry - example output](docs/images/screenshot-gsa-forwarding-profile-registry.png)
 
 ---
@@ -428,7 +423,6 @@ Test-GSAForwardingProfileTimestamp [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAForwardingProfileTimestamp - example output](docs/images/screenshot-gsa-forwarding-profile-timestamp.png)
 
 ---
@@ -461,7 +455,6 @@ Test-InternetConnectivity [-Websites <string[]>] [-DnsServers <string[]>] [-Time
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-InternetConnectivity - example output](docs/images/screenshot-internet-connectivity.png)
 
 ---
@@ -487,7 +480,6 @@ Test-ProxyDetection [-TestUrlHttp <string>] [-TestUrlHttps <string>] [-TimeoutSe
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-ProxyDetection - example output](docs/images/screenshot-proxy-detection.png)
 
 ---
@@ -511,7 +503,6 @@ Test-GSASecureDnsStatus [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSASecureDnsStatus - example output](docs/images/screenshot-gsa-secure-dns-status.png)
 
 ---
@@ -535,7 +526,6 @@ Test-GSAIPv6Status [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAIPv6Status - example output](docs/images/screenshot-gsa-ipv6-status.png)
 
 ---
@@ -593,7 +583,6 @@ PS> Test-DnsResolution -fqdnList fileserver.contoso.com
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-DnsResolution - example output](docs/images/screenshot-dns-resolution.png)
 
 ---
@@ -627,7 +616,6 @@ PS> Test-GSATenantInternetDnsResolution
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSATenantInternetDnsResolution - example output](docs/images/screenshot-gsa-tenant-dns-resolution.png)
 
 ---
@@ -652,7 +640,6 @@ PS> Test-TLSConnection -fqdnList edge1.mec.gsaservice.net
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-TLSConnection - example output](docs/images/screenshot-tls-connection.png)
 
 ---
@@ -680,7 +667,6 @@ PS> Test-mTLSConnectivity -fqdnList edge1.mec.gsaservice.net
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-mTLSConnectivity - example output](docs/images/screenshot-mtls-connection.png)
 
 ---
@@ -707,7 +693,6 @@ Test-GSAAuthCertificate [-PassThru] [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAAuthCertificate - example output](docs/images/screenshot-auth-certificate.png)
 
 ---
@@ -736,7 +721,6 @@ PS> Export-GSAAuthCertificate -BackupPath C:\Temp\GSACertBackup
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Export-GSAAuthCertificate - example output](docs/images/screenshot-export-auth-certificate.png)
 
 ---
@@ -773,7 +757,6 @@ What if: Performing the operation "Remove registry value" on target "HKLM:\SOFTW
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Repair-GSAAuthCertificate - example output](docs/images/screenshot-repair-auth-certificate.png)
 
 ---
@@ -803,7 +786,6 @@ Test-EntraIDConnectivity [-Endpoints <string[]>] [-Timeout <int>] [-LogLevel <st
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-EntraIDConnectivity - example output](docs/images/screenshot-entra-id-connectivity.png)
 
 ---
@@ -850,7 +832,6 @@ PS> Test-GSADiagnosticUriConnectivity -DiagnosticUris https://edgediagnostic.glo
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSADiagnosticUriConnectivity - example output](docs/images/screenshot-diagnostic-uris.png)
 
 ---
@@ -896,7 +877,6 @@ Test-GSAPrivateDnsResolver [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAPrivateDnsResolver - example output](docs/images/screenshot-gsa-private-dns-resolver.png)
 
 ---
@@ -938,7 +918,6 @@ PS> Test-GSAVpnSplitDnsInteroperability -DnsSuffix mydomain.com
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAVpnSplitDnsInteroperability - example output](docs/images/screenshot-gsa-vpn-split-dns-interoperability.png)
 
 No split tunnel found
@@ -981,7 +960,6 @@ PS> Test-GSAPrivateAccessRule -FQDNorIP homevault.home.sonnes.cloud -Port 444 -P
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAPrivateAccessRule - example output](docs/images/screenshot-private-access-rule.png)
 
 ---
@@ -1007,7 +985,6 @@ PS> Test-GSAPrivateAccessTunnel -FQDNorIP fileserver.contoso.com -Port 445 -Prot
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAPrivateAccessTunnel - example output](docs/images/screenshot-private-access-tunnel.png)
 
 ---
@@ -1040,7 +1017,6 @@ Test-GSAClientProfileConnectivity [-ProfileType <m365|private|internet>[,...]] [
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAClientProfileConnectivity - example output](docs/images/screenshot-gsa-client-profile-connectivity.png)
 
 ---
@@ -1076,7 +1052,6 @@ Test-GSAForwardingProfileAssignment [-AccessToken <string>] -ProfileType <m365|p
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAForwardingProfileAssignment - example output](docs/images/screenshot-gsa-forwarding-profile-assignment.png)
 
 ---
@@ -1113,7 +1088,6 @@ PS> Test-GSAPrivateAccessApplicationSegment -AppId 5c3b2f7c-64fa-4d4f-aa39-1807c
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAPrivateAccessApplicationSegment - example output](docs/images/screenshot-private-access-application-segment.png)
 
 ---
@@ -1149,7 +1123,6 @@ PS> Test-GSAPrivateAccessApplication -AppId 5c3b2f7c-64fa-4d4f-aa39-1807c82db702
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAPrivateAccessApplication - example output](docs/images/screenshot-private-access-application.png)
 
 ---
@@ -1208,9 +1181,7 @@ PS> Test-GSAIntelligentLocalAccessConfiguration -FQDN unifi.home.sonnes.cloud
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAIntelligentLocalAccessConfiguration - example output](docs/images/screenshot-gsa-ila-configuration.png)
-
 
 ---
 
@@ -1232,7 +1203,6 @@ Test-GSAEventLog [-LogLevel <string>]
 
 </details>
 
-<!-- TODO: Add screenshot -->
 ![Test-GSAEventLog - example output](docs/images/screenshot-gsa-event-log.png)
 
 ---
