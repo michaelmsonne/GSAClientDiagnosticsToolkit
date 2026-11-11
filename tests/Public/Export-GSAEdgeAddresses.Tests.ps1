@@ -26,6 +26,20 @@ Describe 'Export-GSAEdgeAddresses' {
         Test-Path $targetFile | Should -Be $false
     }
 
+    It 'uses the GSA client endpoints and a default file path when called without parameters' {
+        Mock -ModuleName GSAClientDiagnosticsToolkit Get-GSAEndpoints {
+            [PSCustomObject]@{ MainEndpoints = @('edge1.example.com', 'edge2.example.com') }
+        }
+        Push-Location $TestDrive
+        try {
+            Export-GSAEdgeAddresses
+            Get-Content (Join-Path $TestDrive 'GSAEdgeAddresses.txt') | Should -Be @('edge1.example.com', 'edge2.example.com')
+        }
+        finally {
+            Pop-Location
+        }
+    }
+
     It 'does not throw when no file path is specified' {
         { Export-GSAEdgeAddresses -fqdnList @('edge1.example.com') -filePath $null } | Should -Not -Throw
     }

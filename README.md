@@ -278,9 +278,10 @@ Debug logs:
 
 ### `Export-GSAEdgeAddresses`
 
-Saves a list of edge address FQDNs to a file.
+Saves a list of edge address FQDNs to a file. If `-fqdnList` is omitted, the edge addresses are read from the local GSA client forwarding profile; if `-filePath` is omitted, `GSAEdgeAddresses.txt` in the current directory is used.
 
 ```powershell
+Export-GSAEdgeAddresses
 Export-GSAEdgeAddresses -fqdnList <string[]> -filePath <string>
 ```
 
@@ -288,6 +289,8 @@ Export-GSAEdgeAddresses -fqdnList <string[]> -filePath <string>
 <summary>Sample output</summary>
 
 ```text
+[2026-08-20 18:01:59] [INFO] Successfully read JSON data from registry path: HKLM:\SOFTWARE\Microsoft\Global Secure Access Client
+[2026-08-20 18:02:00] [INFO] Extracted 4 channel entries with endpoint data.
 [2026-08-20 18:02:00] [SUCCESS] Edge addresses saved to: C:\Temp\edges.txt
 ```
 
