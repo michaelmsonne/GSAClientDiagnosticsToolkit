@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/michaelmsonne/GSAClientDiagnosticsToolkit?include_prereleases&logo=github"></a>
   <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery" src="https://img.shields.io/powershellgallery/v/GSAClientDiagnosticsToolkit?include_prereleases&label=PowerShell%20Gallery&logo=powershell"></a>
-  <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/powershellgallery/dt/GSAClientDiagnosticsToolkit?label=gallery%20downloads"></a>
+  <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fwww.powershellgallery.com%2Fapi%2Fv2%2FPackages()%3F%24filter%3DId%2520eq%2520%2527GSAClientDiagnosticsToolkit%2527%2520and%2520IsAbsoluteLatestVersion%26%24top%3D1&query=//*%5Blocal-name()%3D%27VersionDownloadCount%27%5D&label=gallery%20downloads"></a>
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img src="https://img.shields.io/github/downloads/michaelmsonne/GSAClientDiagnosticsToolkit/total.svg" alt="Total Downloads"></a>
   <img src="https://visitor-badge.laobi.icu/badge?page_id=michaelmsonne.GSAClientDiagnosticsToolkit.README" alt="Visitors">
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
