@@ -21,7 +21,7 @@
 
 A PowerShell troubleshooting and diagnostics module for the **Microsoft Entra Global Secure Access (GSA) Windows client** (Entra Internet Access, Entra Private Access and Microsoft 365 traffic). It runs connectivity, proxy, DNS, TLS/mTLS, forwarding profile, Entra device/PRT, certificate and health probe checks to quickly find out why GSA isn't working on a device.
 
-Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7499807681470464000/)
+Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7499807681470464000/), and https://www.linkedin.com/posts/michaelmsonne_microsoft-globalsecureaccess-gsa-ugcPost-7516902502106333184-zVeK/
 
 > [!IMPORTANT]
 > Requires **PowerShell 5.1 or later**. Some checks must be run on a machine with the **Global Secure Access (GSA) Client** installed.
