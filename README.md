@@ -886,8 +886,10 @@ Test-GSAPrivateDnsResolver [-LogLevel <string>]
 
 Detects a documented GSA known limitation: Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` override the local NRPT rules the GSA client configures for private DNS, breaking Private Access DNS resolution. This also catches the legacy case where an *empty* NRPT rule list was left behind in `registry.pol` after rules were configured and deleted on an older version of Windows - an empty list still overrides the client's local rules. This is a fully local/offline check (registry only). By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
 
+Pass `-FindSourceGpo` to also search for the source GPO when a conflict is found: the domain's SYSVOL Policies path is auto-detected from this device's domain membership and shown for confirmation (press Enter to accept it, or type a different path) before recursively searching `registry.pol` files under it for `dnspolicyconfig`.
+
 ```powershell
-Test-GSAGroupPolicyNrptConflict [-PassThru] [-LogLevel <string>]
+Test-GSAGroupPolicyNrptConflict [-FindSourceGpo] [-PassThru] [-LogLevel <string>]
 ```
 
 <details>
@@ -898,6 +900,21 @@ PS> Test-GSAGroupPolicyNrptConflict
 [2026-11-12 21:00:00] [INFO] Checking for Group Policy-applied NRPT rules at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' that can override GSA's local private DNS NRPT rules...
 [2026-11-12 21:00:00] [ERROR] Group Policy-applied NRPT configuration exists at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' with 1 rule(s). These Group Policy NRPT rules override the GSA client's local NRPT rules, and private DNS will not work while this GPO is applied.
 [2026-11-12 21:00:00] [WARNING] Recommended action: Run 'gpresult /h GPReport.html' on this device (or search registry.pol files in SYSVOL for 'dnspolicyconfig') to find the source GPO. If the NRPT section is empty, create/apply/delete a fictive rule to clear the legacy artifact. If it contains real rules, confirm whether they're still required - they're incompatible with GSA private DNS while applied to a device running the GSA client.
+```
+
+</details>
+
+<details>
+<summary>Sample output (-FindSourceGpo)</summary>
+
+```text
+PS> Test-GSAGroupPolicyNrptConflict -FindSourceGpo
+...
+[2026-11-12 21:00:00] [INFO] Auto-detected SYSVOL Policies path: \\contoso.com\SYSVOL\contoso.com\Policies
+Press Enter to use this path, or type a different SYSVOL Policies path (e.g. \\dc1.contoso.com\sysvol\contoso.com\Policies):
+[2026-11-12 21:00:01] [INFO] Searching for GPOs with NRPT configuration under '\\contoso.com\SYSVOL\contoso.com\Policies' (this may take a while)...
+[2026-11-12 21:00:05] [WARNING] Found 1 GPO(s) with NRPT configuration (each path's GUID folder identifies the GPO):
+\\contoso.com\SYSVOL\contoso.com\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\Machine\registry.pol
 ```
 
 </details>

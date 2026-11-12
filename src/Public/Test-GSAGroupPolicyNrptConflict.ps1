@@ -20,6 +20,12 @@ function Test-GSAGroupPolicyNrptConflict {
 	This check looks for the registry key HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig,
 	which only exists when Group Policy has applied NRPT rules to the device. This is a fully
 	local/offline check (registry only).
+.PARAMETER FindSourceGpo
+	When a conflict is found, also searches the domain's SYSVOL Policies share for registry.pol
+	files referencing 'dnspolicyconfig' to help locate the source GPO. The SYSVOL path is
+	auto-detected from this device's domain membership and shown for confirmation - press Enter
+	to accept it or type a different path - before the (potentially slow) recursive search runs.
+	Requires domain connectivity/permissions to read SYSVOL; has no effect when no conflict is found.
 .PARAMETER PassThru
 	Return the $true/$false test result. By default nothing is returned - only logged.
 .PARAMETER LogLevel
@@ -28,11 +34,14 @@ function Test-GSAGroupPolicyNrptConflict {
 	System.Boolean when -PassThru is specified. No output is returned by default.
 .EXAMPLE
 	Test-GSAGroupPolicyNrptConflict
+.EXAMPLE
+	Test-GSAGroupPolicyNrptConflict -FindSourceGpo
 .LINK
 	https://learn.microsoft.com/en-us/entra/global-secure-access/reference-current-known-limitations?tabs=windows-client#name-resolution-policy-table-rules-in-group-policy-not-supported
 #>
 	[CmdletBinding()]
 	param (
+		[switch]$FindSourceGpo,
 		[switch]$PassThru,
 		[ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
 		[string]$LogLevel
@@ -63,6 +72,9 @@ function Test-GSAGroupPolicyNrptConflict {
 	}
 
 	Write-Log "Recommended action: Run 'gpresult /h GPReport.html' on this device (or search registry.pol files in SYSVOL for 'dnspolicyconfig') to find the source GPO. If the NRPT section is empty, create/apply/delete a fictive rule to clear the legacy artifact. If it contains real rules, confirm whether they're still required - they're incompatible with GSA private DNS while applied to a device running the GSA client." "WARNING"
+
+	if ($FindSourceGpo)
+	{ Find-GSAGroupPolicyNrptSourceGpo }
 
 	if ($PassThru)
 	{ return $false }
