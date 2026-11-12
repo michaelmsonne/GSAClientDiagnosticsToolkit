@@ -2,7 +2,15 @@
 
 All notable changes to this project are documented in this file. Dates reflect the commit history in this repository.
 
-## [1.0.0] - 11-11-2026
+## [1.0.0-beta2] - Unreleased
+
+### Added
+- `Test-GSAGroupPolicyNrptConflict` - detects the documented GSA known limitation where Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` (including a legacy empty rule list) override the GSA client's local NRPT rules and break Private Access private DNS resolution. See [Known Limitations for Global Secure Access](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-current-known-limitations?tabs=windows-client#name-resolution-policy-table-rules-in-group-policy-not-supported).
+
+### Fixed
+- Default log file location failing with `UnauthorizedAccessException` when the module is imported from a non-writable current directory (e.g. `C:\Windows\system32` in a default PowerShell session). The default log path (module-level default and `Invoke-GSAClientConnectivityCheck -BasePath`) now defaults to `$env:TEMP` instead of the current working directory.
+
+## [1.0.0-beta1] - 11-11-2026
 
 ### Added
 

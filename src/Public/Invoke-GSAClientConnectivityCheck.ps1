@@ -26,7 +26,8 @@ function Invoke-GSAClientConnectivityCheck {
 	   15. DiagnosticUri connectivity
 	   16. GSA synthetic routes
 	   17. GSA private DNS resolver
-	   18. GSA event log
+	   18. GSA Group Policy NRPT conflict detection
+	   19. GSA event log
 
 .PARAMETER LogLevel
 	Verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG, SUCCESS.
@@ -110,6 +111,7 @@ function Invoke-GSAClientConnectivityCheck {
 		"Diagnostics Connectivity"         = { param($param1) Test-GSADiagnosticUriConnectivity -DiagnosticUris $param1 }
 		"GSA Synthetic Routes"             = { Test-GSASyntheticRoutes -PassThru }
 		"GSA Private DNS Resolver"         = { Test-GSAPrivateDnsResolver }
+		"GSA Group Policy NRPT Conflict"   = { Test-GSAGroupPolicyNrptConflict -PassThru }
 		"GSA Event Log"                    = { Test-GSAEventLog -PassThru }
 	}
 

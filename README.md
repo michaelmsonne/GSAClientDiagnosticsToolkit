@@ -60,6 +60,7 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - Secure DNS and IPv6 status
 - Tenant Internet DNS Resolution detection (hosts-file and direct DNS comparison)
 - Synthetic routes and private DNS resolver
+- Group Policy NRPT conflict detection for the documented GSA private DNS override known limitation
 - Cisco VPN split-DNS interoperability check for GSA NRPT/private DNS REFUSED scenarios
 - Entra ID reachability
 - GSA diagnostic URI connectivity
@@ -878,6 +879,30 @@ Test-GSAPrivateDnsResolver [-LogLevel <string>]
 </details>
 
 ![Test-GSAPrivateDnsResolver - example output](docs/images/screenshot-gsa-private-dns-resolver.png)
+
+---
+
+### `Test-GSAGroupPolicyNrptConflict`
+
+Detects a documented GSA known limitation: Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` override the local NRPT rules the GSA client configures for private DNS, breaking Private Access DNS resolution. This also catches the legacy case where an *empty* NRPT rule list was left behind in `registry.pol` after rules were configured and deleted on an older version of Windows - an empty list still overrides the client's local rules. This is a fully local/offline check (registry only). By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
+
+```powershell
+Test-GSAGroupPolicyNrptConflict [-PassThru] [-LogLevel <string>]
+```
+
+<details>
+<summary>Sample output (conflict detected)</summary>
+
+```text
+PS> Test-GSAGroupPolicyNrptConflict
+[2026-11-12 21:00:00] [INFO] Checking for Group Policy-applied NRPT rules at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' that can override GSA's local private DNS NRPT rules...
+[2026-11-12 21:00:00] [ERROR] Group Policy-applied NRPT configuration exists at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' with 1 rule(s). These Group Policy NRPT rules override the GSA client's local NRPT rules, and private DNS will not work while this GPO is applied.
+[2026-11-12 21:00:00] [WARNING] Recommended action: Run 'gpresult /h GPReport.html' on this device (or search registry.pol files in SYSVOL for 'dnspolicyconfig') to find the source GPO. If the NRPT section is empty, create/apply/delete a fictive rule to clear the legacy artifact. If it contains real rules, confirm whether they're still required - they're incompatible with GSA private DNS while applied to a device running the GSA client.
+```
+
+</details>
+
+See [Known Limitations for Global Secure Access](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-current-known-limitations?tabs=windows-client#name-resolution-policy-table-rules-in-group-policy-not-supported).
 
 ---
 
