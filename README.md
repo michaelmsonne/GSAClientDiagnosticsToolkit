@@ -115,6 +115,37 @@ Install-Module -Name GSAClientDiagnosticsToolkit -Scope CurrentUser -AllowPrerel
 
 Then run `Invoke-GSAClientConnectivityCheck`. Module page: <https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit>
 
+<details>
+<summary>Troubleshooting: <code>Install-Module : A parameter cannot be found that matches parameter name 'AllowPrerelease'</code></summary>
+
+This happens when the built-in, outdated `PowerShellGet 1.0.0.1` module (which doesn't support `-AllowPrerelease`) is the only version loaded, instead of a newer one.
+
+1. Check which version is loaded:
+
+   ```powershell
+   Get-Module PowerShellGet -ListAvailable | Select-Object Name, Version
+   ```
+
+   If the only version listed is `1.0.0.1`, that's the cause.
+
+2. Enable TLS 1.2 and install a newer `PowerShellGet`:
+
+   ```powershell
+   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+   Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser
+   Install-Module -Name PowerShellGet -Force -AllowClobber -Scope CurrentUser
+   ```
+
+3. Close every PowerShell window and open a new one. If you skip this, the old module stays loaded and the same error comes back.
+
+4. Run the install again:
+
+   ```powershell
+   Install-Module -Name GSAClientDiagnosticsToolkit -Scope CurrentUser -AllowPrerelease
+   ```
+
+</details>
+
 ### Option B - Clone and import locally
 
 ```powershell
