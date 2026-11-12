@@ -32,7 +32,9 @@ function Invoke-GSAClientConnectivityCheck {
 	Verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG, SUCCESS.
 
 .PARAMETER BasePath
-	Directory for the log file. Defaults to the current working directory.
+	Directory for the log file. Defaults to the user's temp folder ($env:TEMP), since the current
+	working directory (e.g. C:\Windows\system32 for a default elevated PowerShell session) may not
+	be writable.
 
 .PARAMETER LogFileName
 	Name of the log file. Defaults to GSAClientDiagnosticsToolkit.log.
@@ -47,7 +49,7 @@ function Invoke-GSAClientConnectivityCheck {
 	param (
 		[ValidateSet("ERROR", "WARNING", "INFO", "DEBUG", "SUCCESS")]
 		[string]$LogLevel = "INFO",
-		[string]$BasePath = (Get-Location),
+		[string]$BasePath = $env:TEMP,
 		[string]$LogFileName = "GSAClientDiagnosticsToolkit.log"
 	)
 

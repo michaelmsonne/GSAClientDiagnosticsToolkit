@@ -14,8 +14,10 @@
 $script:ModuleVer                 = "1.0.0"
 $script:GSAFwdProfileRegistryPath = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
 $script:LogLevel                  = "INFO"
-# Default log path so any function (not just Invoke-GSAClientConnectivityCheck) writes to a file
-$script:LogFilePath               = Join-Path -Path $PWD.ProviderPath -ChildPath "GSAClientDiagnosticsToolkit.log"
+# Default log path so any function (not just Invoke-GSAClientConnectivityCheck) writes to a file.
+# Use the user's temp folder rather than the current working directory, since the current directory
+# (e.g. C:\Windows\system32 for a default elevated PowerShell session) may not be writable.
+$script:LogFilePath               = Join-Path -Path $env:TEMP -ChildPath "GSAClientDiagnosticsToolkit.log"
 $script:LogLockObject             = New-Object System.Object
 
 #endregion

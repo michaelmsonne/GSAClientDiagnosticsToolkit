@@ -182,7 +182,7 @@ Invoke-GSAClientConnectivityCheck [-LogLevel <string>] [-BasePath <string>] [-Lo
 | Parameter | Default | Description |
 |---|---|---|
 | `LogLevel` | `INFO` | Verbosity: `ERROR`, `WARNING`, `INFO`, `DEBUG`, `SUCCESS` |
-| `BasePath` | Current directory | Directory where the log file is written |
+| `BasePath` | `$env:TEMP` | Directory where the log file is written |
 | `LogFileName` | `GSAClientDiagnosticsToolkit.log` | Name of the log file |
 
 <details>
