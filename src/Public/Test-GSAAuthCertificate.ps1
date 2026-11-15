@@ -13,6 +13,10 @@ function Test-GSAAuthCertificate
 	subject ends in 'gsa.client' in the LocalMachine\My store and verifies it has a private key and
 	hasn't expired. This test only applies to tenants with mTLS enabled for Global Secure Access - if
 	mTLS isn't enabled, no certificate is expected to exist.
+	Also cross-checks against HKLM:\SOFTWARE\Microsoft\Global Secure Access Client\CertCommonName
+	(confirmed via Process Monitor to hold the exact Common Name the client expects, e.g.
+	'<tenantId>.tenant.gsa.client') when present - flags a mismatch if none of the found
+	certificates' subject exactly matches it, which indicates a stale/wrong certificate is present.
 .PARAMETER PassThru
 	Return the $true/$false test result. By default nothing is returned - only logged.
 .PARAMETER LogLevel
@@ -33,6 +37,12 @@ function Test-GSAAuthCertificate
     { $script:LogLevel = $LogLevel }
 
 	Write-Log "Checking for a GSA mTLS authentication certificate (subject ending in 'gsa.client')..." "INFO"
+
+	# The client records the exact Common Name it expects in the registry; use it, when present, to
+	# confirm the certificate found isn't stale/left over from a previous tenant enrollment.
+	$expectedCn = Get-ItemPropertyValue -Path $script:GSAFwdProfileRegistryPath -Name "CertCommonName" -ErrorAction SilentlyContinue
+	if ($expectedCn)
+    { Write-Log "Client expects certificate Common Name: '$expectedCn' (from CertCommonName registry value)." "DEBUG" }
 
 	# Open the LocalMachine\My certificate store and look for GSA authentication certificates.
 	$store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', 'LocalMachine')
@@ -82,10 +92,17 @@ function Test-GSAAuthCertificate
 		Write-Log "Certificate '$($cert.Subject)' (Thumbprint: $($cert.Thumbprint)) is present and valid until $($cert.NotAfter)." "SUCCESS"
 	}
 
+	# If the client records an expected Common Name, confirm at least one certificate matches it exactly.
+	if ($expectedCn -and -not ($certs | Where-Object { $_.Subject -eq "CN=$expectedCn" }))
+    {
+		Write-Log "None of the found certificate(s) match the Common Name the client expects ('$expectedCn'). The installed certificate is likely stale (e.g. left over from a previous tenant enrollment)." "ERROR"
+		$allValid = $false
+	}
+
 	# If all certificates are valid, log a success message.
 	if (-not $allValid)
     {
-		Write-Log "Recommended action: Use Repair-GSAAuthCertificate to back up and remove the invalid/expired certificate so the GSA client can re-enroll a new one." "WARNING"
+		Write-Log "Recommended action: Use Repair-GSAAuthCertificate to back up and remove the invalid/expired/mismatched certificate so the GSA client can re-enroll a new one." "WARNING"
 		if ($PassThru)
         { return $false }
 		return

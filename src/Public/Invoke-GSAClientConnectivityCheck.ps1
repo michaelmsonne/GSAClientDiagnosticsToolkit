@@ -24,10 +24,11 @@ function Invoke-GSAClientConnectivityCheck {
 	   13. TLS connectivity to each FQDN
 	   14. mTLS connectivity to each FQDN
 	   15. DiagnosticUri connectivity
-	   16. GSA synthetic routes
-	   17. GSA private DNS resolver
-	   18. GSA Group Policy NRPT conflict detection
-	   19. GSA event log
+	   16. GSA edge diagnostics status (client's own cached per-channel health result)
+	   17. GSA synthetic routes
+	   18. GSA private DNS resolver
+	   19. GSA Group Policy NRPT conflict detection
+	   20. GSA event log
 
 .PARAMETER LogLevel
 	Verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG, SUCCESS.
@@ -109,6 +110,7 @@ function Invoke-GSAClientConnectivityCheck {
 		"TLS Connectivity"                 = { param($param1) Test-TLSConnection -fqdnList $param1 }
 		"mTLS Connectivity"                = { param($param1) Test-mTLSConnectivity -fqdnList $param1 -PassThru }
 		"Diagnostics Connectivity"         = { param($param1) Test-GSADiagnosticUriConnectivity -DiagnosticUris $param1 }
+		"GSA Edge Diagnostics Status"      = { Test-GSAEdgeDiagnosticsStatus -PassThru }
 		"GSA Synthetic Routes"             = { Test-GSASyntheticRoutes -PassThru }
 		"GSA Private DNS Resolver"         = { Test-GSAPrivateDnsResolver -PassThru }
 		"GSA Group Policy NRPT Conflict"   = { Test-GSAGroupPolicyNrptConflict -PassThru }

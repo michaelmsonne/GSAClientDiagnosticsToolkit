@@ -707,6 +707,8 @@ PS> Test-mTLSConnectivity -fqdnList edge1.mec.gsaservice.net
 
 Checks whether a valid GSA mTLS authentication certificate (subject ending in `gsa.client`) exists in the LocalMachine\My certificate store and hasn't expired. Mirrors the client's built-in "Authentication certificate exists"/"Authentication certificate is valid" Health check tests. This test only applies to tenants with mTLS enabled - if mTLS isn't enabled, no certificate is expected.
 
+Also cross-checks against the `CertCommonName` registry value (`HKLM:\SOFTWARE\Microsoft\Global Secure Access Client`, confirmed via Process Monitor to hold the exact Common Name the client expects, e.g. `<tenantId>.tenant.gsa.client`) when present - flags a mismatch if none of the found certificates' subject exactly matches it, which indicates a stale/wrong certificate is installed.
+
 ```powershell
 Test-GSAAuthCertificate [-PassThru] [-LogLevel <string>]
 ```
@@ -865,6 +867,36 @@ PS> Test-GSADiagnosticUriConnectivity -DiagnosticUris https://edgediagnostic.glo
 </details>
 
 ![Test-GSADiagnosticUriConnectivity - example output](docs/images/screenshot-diagnostic-uris.png)
+
+---
+
+### `Test-GSAEdgeDiagnosticsStatus`
+
+Reads the GSA client's own cached per-channel edge-diagnostics health result from `HKLM:\SOFTWARE\Microsoft\Global Secure Access Client\State\EdsResults` - a pipe-delimited string (`<UTC timestamp>|<SessionContext>|Entra:<code>|M365:<code>|Private:<code>|Internet:<code>`) confirmed via Process Monitor to be kept continuously up to date by `GlobalSecureAccessClient.exe`/`GlobalSecureAccessClientManagerService.exe` from their own internal edge-diagnostics probes - the same `*.edgediagnostic.globalsecureaccess.microsoft.com` checks the Advanced Diagnostics tool and tray icon surface. A channel code of `0` means the client itself considers that channel healthy. This is a fast, local/offline check (registry only) that complements `Test-GSADiagnosticUriConnectivity`'s active probes by reporting what the client's always-running background health-check loop has already determined; a stale timestamp (older than `-StaleAfterMinutes`) is flagged as a warning since it may mean that loop is stalled.
+
+```powershell
+Test-GSAEdgeDiagnosticsStatus [-StaleAfterMinutes <int>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `StaleAfterMinutes` | `15` | Age, in minutes, after which the cached result's timestamp is flagged as stale |
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-11-15 21:13:01] [INFO] Checking the GSA client's cached edge-diagnostics channel status (EdsResults)...
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'Entra': healthy (code 0).
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'M365': healthy (code 0).
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'Private': healthy (code 0).
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'Internet': healthy (code 0).
+[2026-11-15 21:13:01] [INFO] EdsResults was last updated 0 minute(s) ago (session context: User).
+[2026-11-15 21:13:01] [SUCCESS] All GSA forwarding-profile channels are reported healthy by the client's own edge diagnostics.
+```
+
+</details>
 
 ---
 

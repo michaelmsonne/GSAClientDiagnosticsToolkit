@@ -61,6 +61,7 @@
         'Test-GSAIntelligentLocalAccessConfiguration',
         'Test-GSAHomeNetworkSupport',
         'Test-GSAAuthCertificate',
+        'Test-GSAEdgeDiagnosticsStatus',
         'Export-GSAAuthCertificate',
         'Repair-GSAAuthCertificate'
     )
