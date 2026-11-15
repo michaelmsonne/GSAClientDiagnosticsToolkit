@@ -57,10 +57,28 @@ function Test-GSAPrivateDnsResolver
 	try
     {
 		$nrptRules = @(Get-DnsClientNrptRule -ErrorAction Stop)
-		$privateDnsConfigured = [bool]($nrptRules | Where-Object {
+		if ($script:LogLevel -eq "DEBUG")
+        {
+			Write-Log "  Found $($nrptRules.Count) local NRPT rule(s):" "DEBUG"
+			foreach ($rule in $nrptRules)
+            {
+				Write-Log "    Namespace: $(@($rule.Namespace) -join ', ') | NameServers: $(@($rule.NameServers) -join ', ')" "DEBUG"
+			}
+		}
+
+		$matchingRules = @($nrptRules | Where-Object {
 			($_.NameServers -contains '6.6.255.254') -or
 			($_.Namespace -match '(?i)globalsecureaccess\.local$')
 		})
+		$privateDnsConfigured = [bool]$matchingRules.Count
+
+		if ($privateDnsConfigured -and $script:LogLevel -eq "DEBUG")
+        {
+			foreach ($rule in $matchingRules)
+            {
+				Write-Log "  Matched Private DNS NRPT rule - Namespace: $(@($rule.Namespace) -join ', ') | NameServers: $(@($rule.NameServers) -join ', ')" "DEBUG"
+			}
+		}
 	}
 	catch
     {
@@ -80,8 +98,15 @@ function Test-GSAPrivateDnsResolver
 	try
     {
 		# Any response (including NXDOMAIN) confirms the resolver is reachable through the tunnel
-		[void](Resolve-DnsName -Name "connectivity.check.gsa.internal" -Server 6.6.255.254 -TcpOnly -ErrorAction Stop)
+		$dnsResult = Resolve-DnsName -Name "connectivity.check.gsa.internal" -Server 6.6.255.254 -TcpOnly -ErrorAction Stop
 		Write-Log "GSA Private DNS resolver (6.6.255.254) responded - Private Access tunnel is active." "SUCCESS"
+		if ($script:LogLevel -eq "DEBUG")
+        {
+			foreach ($record in @($dnsResult))
+            {
+				Write-Log "  Response record - Type: $($record.Type), Name: $($record.Name), Section: $($record.Section)" "DEBUG"
+			}
+		}
 		if ($PassThru)
 		{ return $true }
 		return
@@ -89,6 +114,7 @@ function Test-GSAPrivateDnsResolver
 	catch
     {
 		$errorMsg = $_.Exception.Message
+		Write-Log "Resolve-DnsName error: $errorMsg" "DEBUG"
 		# DNS error codes like NXDOMAIN / SERVFAIL still mean the server responded
 		if ($errorMsg -match "DNS name does not exist|NXDOMAIN|server failure|SERVFAIL|query refused")
         {

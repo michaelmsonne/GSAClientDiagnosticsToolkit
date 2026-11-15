@@ -75,4 +75,19 @@ Describe 'Test-GSAPrivateDnsResolver' {
             Should -Invoke Resolve-DnsName -Times 1
         }
     }
+
+    It 'emits DEBUG log entries (including scalar Namespace/NameServers values) when -LogLevel DEBUG is set' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            # Namespace/NameServers as plain scalar strings (not arrays) to verify the -join logic
+            # doesn't split them into individual characters.
+            Mock Get-DnsClientNrptRule { @([PSCustomObject]@{ Namespace = '.contoso.local'; NameServers = '6.6.255.254' }) }
+            Mock Resolve-DnsName { [PSCustomObject]@{ Type = 'A'; Name = 'connectivity.check.gsa.internal'; Section = 'Answer' } }
+            Mock Write-Log {}
+
+            Test-GSAPrivateDnsResolver -LogLevel DEBUG -PassThru | Should -Be $true
+
+            Should -Invoke Write-Log -ParameterFilter { $Level -eq 'DEBUG' -and $Message -like '*Matched Private DNS NRPT rule*contoso.local*6.6.255.254*' }
+            Should -Invoke Write-Log -ParameterFilter { $Level -eq 'DEBUG' -and $Message -like '*Response record*' }
+        }
+    }
 }
