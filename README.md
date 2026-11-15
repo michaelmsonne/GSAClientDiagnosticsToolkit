@@ -518,7 +518,7 @@ Test-ProxyDetection [-TestUrlHttp <string>] [-TestUrlHttps <string>] [-TimeoutSe
 
 ### `Test-GSASecureDnsStatus`
 
-Checks whether the GSA Secure DNS feature is enabled and active.
+Checks whether Secure DNS (DNS-over-HTTPS) is enforced via policy in Microsoft Edge, Google Chrome, or Mozilla Firefox - GSA requires DoH to be disabled so it can intercept DNS queries at the WFP layer.
 
 ```powershell
 Test-GSASecureDnsStatus [-LogLevel <string>]
@@ -531,6 +531,7 @@ Test-GSASecureDnsStatus [-LogLevel <string>]
 [2026-08-20 16:58:00] [INFO] Checking Secure DNS (DoH) policy settings - GSA requires DoH to be disabled...
 [2026-08-20 16:58:00] [SUCCESS] Microsoft Edge: Secure DNS (DoH) is not enforced or is set to 'off'.
 [2026-08-20 16:58:00] [SUCCESS] Google Chrome: Secure DNS (DoH) is not enforced or is set to 'off'.
+[2026-08-20 16:58:00] [SUCCESS] Mozilla Firefox: Secure DNS (DoH) is not enforced or is set to 'off'.
 ```
 
 </details>

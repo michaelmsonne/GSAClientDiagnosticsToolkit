@@ -10,6 +10,7 @@ All notable changes to this project are documented in this file. Dates reflect t
 
 ### Changed
 - `Test-GSAAuthCertificate` now also cross-checks the installed certificate against the exact `CertCommonName` registry value (`HKLM:\SOFTWARE\Microsoft\Global Secure Access Client`, discovered via Process Monitor analysis to hold the Common Name the client expects) when present, flagging a mismatch as a stale/wrong certificate instead of only matching on the `gsa.client` subject suffix.
+- `Test-GSASecureDnsStatus` now also checks Mozilla Firefox's `DNSOverHTTPS\Enabled` GPO registry value (`HKLM:\SOFTWARE\Policies\Mozilla\Firefox\DNSOverHTTPS`), in addition to the existing Edge/Chrome `DnsOverHttpsMode` checks, matching the three browsers documented in the client's built-in Health check ([Secure DNS disabled in browsers](https://learn.microsoft.com/entra/global-secure-access/troubleshoot-global-secure-access-client-diagnostics-health-check#secure-dns-disabled-in-browsers-microsoft-edge-chrome-firefox)).
 
 ### Fixed
 - Default log file location failing with `UnauthorizedAccessException` when the module is imported from a non-writable current directory (e.g. `C:\Windows\system32` in a default PowerShell session). The default log path (module-level default and `Invoke-GSAClientConnectivityCheck -BasePath`) now defaults to `$env:TEMP` instead of the current working directory.
