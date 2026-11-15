@@ -2,13 +2,14 @@
 
 All notable changes to this project are documented in this file. Dates reflect the commit history in this repository.
 
-## [1.0.0-beta2] - Unreleased
+## [1.0.1] - Unreleased
 
 ### Added
-- `Test-GSAGroupPolicyNrptConflict` - detects the documented GSA known limitation where Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` (including a legacy empty rule list) override the GSA client's local NRPT rules and break Private Access private DNS resolution. Supports an optional `-FindSourceGpo` switch that auto-detects the domain's SYSVOL Policies path (asking for confirmation/override) and searches `registry.pol` files under it for `dnspolicyconfig` to help locate the source GPO. See [Known Limitations for Global Secure Access](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-current-known-limitations?tabs=windows-client#name-resolution-policy-table-rules-in-group-policy-not-supported).
+- `Test-GSAGroupPolicyNrptConflict` - detects the documented GSA known limitation where Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` (including a legacy empty rule list) override the GSA client's local NRPT rules and break Private Access private DNS resolution. Supports an optional `-FindSourceGpo` switch that auto-detects the domain's SYSVOL Policies path (asking for confirmation/override) and searches `registry.pol` files under it for `dnspolicyconfig` to help locate the source GPO. See [Known Limitations for Global Secure Access](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-current-known-limitations?tabs=windows-client#name-resolution-policy-table-rules-in-group-policy-not-supported). **IMPORTANT**: Require line of sight to the Domain Controller!
 
 ### Fixed
 - Default log file location failing with `UnauthorizedAccessException` when the module is imported from a non-writable current directory (e.g. `C:\Windows\system32` in a default PowerShell session). The default log path (module-level default and `Invoke-GSAClientConnectivityCheck -BasePath`) now defaults to `$env:TEMP` instead of the current working directory.
+- `Test-GSAPrivateDnsResolver` reporting a false failure for tenants that only use Enterprise Applications (per-app access) without Quick Access/Private DNS, since the GSA synthetic resolver (`6.6.255.254`) is only provisioned via a local NRPT rule - when Private DNS (a Quick Access feature) is enabled. The check now looks for that NRPT rule first and reports "not applicable" instead of an error when it's absent. `Test-GSAPrivateDnsResolver` also now follows the same `-PassThru` convention as the other checks (nothing is returned by default; pass `-PassThru` for the `$true`/`$false` result). (#1)
 
 ## [1.0.0-beta1] - 11-11-2026
 

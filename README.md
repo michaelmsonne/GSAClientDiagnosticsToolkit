@@ -895,16 +895,26 @@ Test-GSASyntheticRoutes [-LogLevel <string>]
 
 Tests whether the GSA Private DNS Resolver is active and responding.
 
+Private DNS is a [Quick Access](https://learn.microsoft.com/entra/global-secure-access/how-to-configure-quick-access) feature: it's only provisioned when Private DNS is enabled on the Quick Access app, and only then does the GSA client add a local NRPT rule pointing at the synthetic resolver (`6.6.255.254`). This check first looks for that NRPT rule; if none is found (for example, a tenant that only uses Enterprise Applications/per-app access without Quick Access), it reports the check as not applicable instead of a false failure. If the NRPT rule exists but the resolver doesn't respond, that's reported as a real failure. By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
+
 ```powershell
-Test-GSAPrivateDnsResolver [-LogLevel <string>]
+Test-GSAPrivateDnsResolver [-PassThru] [-LogLevel <string>]
 ```
 
 <details>
 <summary>Sample output</summary>
 
 ```text
+[2026-08-20 17:08:00] [INFO] Checking whether Private DNS (a Quick Access feature) is configured on this device...
 [2026-08-20 17:08:00] [INFO] Querying GSA Private DNS resolver (6.6.255.254) via TCP...
 [2026-08-20 17:08:00] [SUCCESS] GSA Private DNS resolver (6.6.255.254) responded - Private Access tunnel is active.
+```
+
+Not applicable (no Quick Access / Private DNS configured on this device):
+
+```text
+[2026-08-20 17:08:00] [INFO] Checking whether Private DNS (a Quick Access feature) is configured on this device...
+[2026-08-20 17:08:00] [SUCCESS] No local NRPT rule targets the GSA Private DNS resolver (6.6.255.254). Private DNS is a Quick Access feature and is not configured on this device - skipping as not applicable (this is expected for tenants using only Enterprise Applications).
 ```
 
 </details>
@@ -918,6 +928,8 @@ Test-GSAPrivateDnsResolver [-LogLevel <string>]
 Detects a documented GSA known limitation: Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` override the local NRPT rules the GSA client configures for private DNS, breaking Private Access DNS resolution. This also catches the legacy case where an *empty* NRPT rule list was left behind in `registry.pol` after rules were configured and deleted on an older version of Windows - an empty list still overrides the client's local rules. This is a fully local/offline check (registry only). By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
 
 Pass `-FindSourceGpo` to also search for the source GPO when a conflict is found: the domain's SYSVOL Policies path is auto-detected from this device's domain membership and shown for confirmation (press Enter to accept it, or type a different path) before recursively searching `registry.pol` files under it for `dnspolicyconfig`.
+
+**IMPORTANT**: Require line of sight to the Domain Controller!
 
 ```powershell
 Test-GSAGroupPolicyNrptConflict [-FindSourceGpo] [-PassThru] [-LogLevel <string>]
