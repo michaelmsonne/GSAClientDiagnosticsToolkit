@@ -39,6 +39,7 @@
         'Test-GSASecureDnsStatus',
         'Test-GSAIPv6Status',
         'Test-GSASyntheticRoutes',
+        'Test-GSAHyperVExternalSwitch',
         'Test-GSAPrivateDnsResolver',
         'Test-GSAGroupPolicyNrptConflict',
         'Test-GSAVpnSplitDnsInteroperability',

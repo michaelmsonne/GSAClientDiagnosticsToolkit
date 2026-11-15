@@ -18,17 +18,18 @@ function Invoke-GSAClientConnectivityCheck {
 		7. Proxy detection (transparent/authenticating proxy via HTTP headers/407 response)
 		8. GSA Secure DNS status
 		9. GSA IPv6 status
-	   10. DNS resolution for each FQDN
-	   11. Tenant Internet DNS Resolution detection
-	   12. Entra ID connectivity
-	   13. TLS connectivity to each FQDN
-	   14. mTLS connectivity to each FQDN
-	   15. DiagnosticUri connectivity
-	   16. GSA edge diagnostics status (client's own cached per-channel health result)
-	   17. GSA synthetic routes
-	   18. GSA private DNS resolver
-	   19. GSA Group Policy NRPT conflict detection
-	   20. GSA event log
+	   10. GSA Hyper-V external virtual switch detection
+	   11. DNS resolution for each FQDN
+	   12. Tenant Internet DNS Resolution detection
+	   13. Entra ID connectivity
+	   14. TLS connectivity to each FQDN
+	   15. mTLS connectivity to each FQDN
+	   16. DiagnosticUri connectivity
+	   17. GSA edge diagnostics status (client's own cached per-channel health result)
+	   18. GSA synthetic routes
+	   19. GSA private DNS resolver
+	   20. GSA Group Policy NRPT conflict detection
+	   21. GSA event log
 
 .PARAMETER LogLevel
 	Verbosity of logging output. Valid values: ERROR, WARNING, INFO, DEBUG, SUCCESS.
@@ -104,6 +105,7 @@ function Invoke-GSAClientConnectivityCheck {
 		"Proxy Detection"                  = { Test-ProxyDetection -PassThru }
 		"GSA Secure DNS Status"            = { Test-GSASecureDnsStatus }
 		"GSA IPv6 Status"                  = { Test-GSAIPv6Status -PassThru }
+		"GSA Hyper-V External Switch"      = { Test-GSAHyperVExternalSwitch -PassThru }
 		"DNS Resolution"                   = { param($param1) Test-DnsResolution -fqdnList $param1 }
 		"Tenant Internet DNS Resolution"     = { Test-GSATenantInternetDnsResolution }
 		"Entra ID Connectivity"            = { Test-EntraIDConnectivity }
