@@ -22,6 +22,7 @@ function Test-GSAHyperVExternalSwitch
 	Return the $true/$false test result. By default nothing is returned - only logged.
 .PARAMETER LogLevel
 	Sets the minimum log level written by the module. Valid values are ERROR, WARNING, INFO, DEBUG, and SUCCESS.
+	DEBUG includes the query, result count, switch properties, and query error details.
 .OUTPUTS
 	System.Boolean when -PassThru is specified. No output is returned by default.
 .EXAMPLE
@@ -44,10 +45,22 @@ function Test-GSAHyperVExternalSwitch
 	$externalSwitches = @()
 	try
     {
+		if ($script:LogLevel -eq "DEBUG")
+		{
+			Write-Log "Querying Hyper-V external switches: Get-VMSwitch -SwitchType External -ErrorAction Stop" "DEBUG"
+		}
 		$externalSwitches = @(Get-VMSwitch -SwitchType External -ErrorAction Stop)
+		if ($script:LogLevel -eq "DEBUG")
+		{
+			Write-Log "Hyper-V query returned $($externalSwitches.Count) external virtual switch(es)." "DEBUG"
+		}
 	}
 	catch
     {
+		if ($script:LogLevel -eq "DEBUG")
+		{
+			Write-Log "Hyper-V query failed: ErrorId='$($_.FullyQualifiedErrorId)'; Category='$($_.CategoryInfo.Category)'; Exception='$($_.Exception.GetType().FullName)'; Message='$($_.Exception.Message)'." "DEBUG"
+		}
 		Write-Log "Hyper-V isn't installed/available on this host ($($_.Exception.Message)). This check is not applicable." "SUCCESS"
 		if ($PassThru)
 		{ return $true }
@@ -64,6 +77,10 @@ function Test-GSAHyperVExternalSwitch
 
 	foreach ($vmSwitch in $externalSwitches)
     {
+		if ($script:LogLevel -eq "DEBUG")
+		{
+			Write-Log "Hyper-V switch details: Name='$($vmSwitch.Name)'; Id='$($vmSwitch.Id)'; SwitchType='$($vmSwitch.SwitchType)'; NetAdapterInterfaceDescription='$($vmSwitch.NetAdapterInterfaceDescription)'; AllowManagementOS='$($vmSwitch.AllowManagementOS)'." "DEBUG"
+		}
 		Write-Log "Hyper-V external virtual switch detected: '$($vmSwitch.Name)' (bound to '$($vmSwitch.NetAdapterInterfaceDescription)')." "WARNING"
 	}
 	Write-Log "Recommended action: the GSA Windows client doesn't currently support host machines with a Hyper-V external virtual switch. If this host also runs the GSA client, consider removing the external switch (an internal/private switch is supported), or install the GSA client inside the VM(s) instead to tunnel their own traffic." "WARNING"
