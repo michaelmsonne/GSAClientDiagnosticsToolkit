@@ -86,8 +86,8 @@ Describe 'Test-GSAPrivateDnsResolver' {
 
             Test-GSAPrivateDnsResolver -LogLevel DEBUG -PassThru | Should -Be $true
 
-            Should -Invoke Write-Log -ParameterFilter { $Level -eq 'DEBUG' -and $Message -like '*Matched Private DNS NRPT rule*contoso.local*6.6.255.254*' }
-            Should -Invoke Write-Log -ParameterFilter { $Level -eq 'DEBUG' -and $Message -like '*Response record*' }
+            Should -Invoke Write-Log -ParameterFilter { $Level -eq 'DEBUG' -and $Message -like "*Namespace: '.contoso.local'*" -and $Message -like '*NameServers: 6.6.255.254*' -and $Message -match '\[MATCH\]' }
+            Should -Invoke Write-Log -ParameterFilter { $Level -eq 'DEBUG' -and $Message -like '*Type: A, Name: connectivity.check.gsa.internal, Section: Answer*' }
         }
     }
 }

@@ -57,26 +57,24 @@ function Test-GSAPrivateDnsResolver
 	try
     {
 		$nrptRules = @(Get-DnsClientNrptRule -ErrorAction Stop)
-		if ($script:LogLevel -eq "DEBUG")
-        {
-			Write-Log "  Found $($nrptRules.Count) local NRPT rule(s):" "DEBUG"
-			foreach ($rule in $nrptRules)
-            {
-				Write-Log "    Namespace: $(@($rule.Namespace) -join ', ') | NameServers: $(@($rule.NameServers) -join ', ')" "DEBUG"
-			}
-		}
-
 		$matchingRules = @($nrptRules | Where-Object {
 			($_.NameServers -contains '6.6.255.254') -or
 			($_.Namespace -match '(?i)globalsecureaccess\.local$')
 		})
 		$privateDnsConfigured = [bool]$matchingRules.Count
 
-		if ($privateDnsConfigured -and $script:LogLevel -eq "DEBUG")
+		if ($script:LogLevel -eq "DEBUG")
         {
-			foreach ($rule in $matchingRules)
+			Write-Log "  Found $($nrptRules.Count) local NRPT rule(s) (matches for the GSA Private DNS resolver are marked [MATCH]):" "DEBUG"
+			foreach ($rule in $nrptRules)
             {
-				Write-Log "  Matched Private DNS NRPT rule - Namespace: $(@($rule.Namespace) -join ', ') | NameServers: $(@($rule.NameServers) -join ', ')" "DEBUG"
+				$namespace = (@($rule.Namespace) -join ', ')
+				$nameServers = (@($rule.NameServers) -join ', ')
+				if ([string]::IsNullOrWhiteSpace($nameServers))
+                { $nameServers = '(none)' }
+				$isMatch = ($rule.NameServers -contains '6.6.255.254') -or ($rule.Namespace -match '(?i)globalsecureaccess\.local$')
+				$matchTag = if ($isMatch) { ' [MATCH]' } else { '' }
+				Write-Log "    - Namespace: '$namespace', NameServers: $nameServers$matchTag" "DEBUG"
 			}
 		}
 	}
@@ -104,7 +102,7 @@ function Test-GSAPrivateDnsResolver
         {
 			foreach ($record in @($dnsResult))
             {
-				Write-Log "  Response record - Type: $($record.Type), Name: $($record.Name), Section: $($record.Section)" "DEBUG"
+				Write-Log "    - Type: $($record.Type), Name: $($record.Name), Section: $($record.Section)" "DEBUG"
 			}
 		}
 		if ($PassThru)
@@ -114,11 +112,11 @@ function Test-GSAPrivateDnsResolver
 	catch
     {
 		$errorMsg = $_.Exception.Message
-		Write-Log "Resolve-DnsName error: $errorMsg" "DEBUG"
 		# DNS error codes like NXDOMAIN / SERVFAIL still mean the server responded
 		if ($errorMsg -match "DNS name does not exist|NXDOMAIN|server failure|SERVFAIL|query refused")
         {
 			Write-Log "GSA Private DNS resolver (6.6.255.254) responded - tunnel is active." "SUCCESS"
+			Write-Log "    DNS error returned (expected for a non-existent probe name): $errorMsg" "DEBUG"
 			if ($PassThru)
 			{ return $true }
 			return
