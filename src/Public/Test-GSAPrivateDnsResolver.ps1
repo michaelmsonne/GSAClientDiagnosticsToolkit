@@ -92,7 +92,7 @@ function Test-GSAPrivateDnsResolver
 		# DNS error codes like NXDOMAIN / SERVFAIL still mean the server responded
 		if ($errorMsg -match "DNS name does not exist|NXDOMAIN|server failure|SERVFAIL|query refused")
         {
-			Write-Log "GSA Private DNS resolver (6.6.255.254) responded (DNS error expected for test name) - tunnel is active." "SUCCESS"
+			Write-Log "GSA Private DNS resolver (6.6.255.254) responded - tunnel is active." "SUCCESS"
 			if ($PassThru)
 			{ return $true }
 			return
