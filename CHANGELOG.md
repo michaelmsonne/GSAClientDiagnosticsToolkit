@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file. Dates reflect the commit history in this repository.
 
-## [1.0.1] - Unreleased
+## [1.0.1] - 16-11-2026
 
 ### Added
 - `Test-GSAHyperVExternalSwitch` - detects Hyper-V external virtual switches on the host, mirroring the GSA client's built-in "No Hyper-V external virtual switch detected" Health check. Warns about this unsupported host configuration and recommends using an internal/private switch or installing the GSA client inside the VM(s) instead. Reports a warning without failing the check; skips as not applicable when Hyper-V is unavailable. Included in the full `Invoke-GSAClientConnectivityCheck` suite, with Pester tests covering detection, warning results, and unavailable Hyper-V. See [No Hyper-V external virtual switch detected](https://learn.microsoft.com/entra/global-secure-access/troubleshoot-global-secure-access-client-diagnostics-health-check#no-hyper-v-external-virtual-switch-detected).
