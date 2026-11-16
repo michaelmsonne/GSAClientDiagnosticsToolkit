@@ -962,6 +962,8 @@ Detects a documented GSA known limitation: Group Policy-applied Name Resolution 
 
 Pass `-FindSourceGpo` to also search for the source GPO when a conflict is found: the domain's SYSVOL Policies path is auto-detected from this device's domain membership and shown for confirmation (press Enter to accept it, or type a different path) before recursively searching `registry.pol` files under it for `dnspolicyconfig`.
 
+**Caution:** SYSVOL matches are candidate source GPOs only. The search does not determine whether they apply to the target computer. Verify applicability using `gpresult /h GPReport.html` or Resultant Set of Policy before changing any matched GPO. The NRPT setting can also come from **Local Group Policy**, which is not searched in SYSVOL; inspect `gpedit.msc` under **Computer Configuration > Windows Settings > Name Resolution Policy**.
+
 **IMPORTANT**: Require line of sight to the Domain Controller!
 
 ```powershell
@@ -976,6 +978,7 @@ PS> Test-GSAGroupPolicyNrptConflict
 [2026-11-12 21:00:00] [INFO] Checking for Group Policy-applied NRPT rules at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' that can override GSA's local private DNS NRPT rules...
 [2026-11-12 21:00:00] [ERROR] Group Policy-applied NRPT configuration exists at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' with 1 rule(s). These Group Policy NRPT rules override the GSA client's local NRPT rules, and private DNS will not work while this GPO is applied.
 [2026-11-12 21:00:00] [WARNING] Recommended action: Run 'gpresult /h GPReport.html' on this device (or search registry.pol files in SYSVOL for 'dnspolicyconfig') to find the source GPO. If the NRPT section is empty, create/apply/delete a fictive rule to clear the legacy artifact. If it contains real rules, confirm whether they're still required - they're incompatible with GSA private DNS while applied to a device running the GSA client.
+[2026-11-12 21:00:00] [WARNING] The NRPT setting can come from domain Group Policy or Local Group Policy. Check Local Group Policy in 'gpedit.msc' under Computer Configuration > Windows Settings > Name Resolution Policy. SYSVOL matches alone do not prove a GPO applies to this computer; verify applicability with gpresult or Resultant Set of Policy before changing any GPO.
 ```
 
 </details>
@@ -989,7 +992,8 @@ PS> Test-GSAGroupPolicyNrptConflict -FindSourceGpo
 [2026-11-12 21:00:00] [INFO] Auto-detected SYSVOL Policies path: \\contoso.com\SYSVOL\contoso.com\Policies
 Press Enter to use this path, or type a different SYSVOL Policies path (e.g. \\dc1.contoso.com\sysvol\contoso.com\Policies):
 [2026-11-12 21:00:01] [INFO] Searching for GPOs with NRPT configuration under '\\contoso.com\SYSVOL\contoso.com\Policies' (this may take a while)...
-[2026-11-12 21:00:05] [WARNING] Found 1 GPO(s) with NRPT configuration (each path's GUID folder identifies the GPO):
+[2026-11-12 21:00:01] [WARNING] SYSVOL matches are candidate source GPOs only; this search does not verify whether they apply to this computer. Confirm applicability with 'gpresult /h GPReport.html' or Resultant Set of Policy before changing any GPO. Local Group Policy can also configure NRPT and is not included in this SYSVOL search.
+[2026-11-12 21:00:05] [WARNING] Found 1 candidate GPO registry.pol file(s) with NRPT configuration (each path's GUID folder identifies the GPO; applicability to this computer is not verified):
 \\contoso.com\SYSVOL\contoso.com\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\Machine\registry.pol
 ```
 

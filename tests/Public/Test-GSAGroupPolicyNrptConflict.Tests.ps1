@@ -19,7 +19,12 @@ Describe 'Test-GSAGroupPolicyNrptConflict' {
         InModuleScope GSAClientDiagnosticsToolkit {
             Mock Test-Path { $true }
             Mock Get-ChildItem { @() }
+            Mock Write-Log {}
             Test-GSAGroupPolicyNrptConflict -PassThru | Should -Be $false
+            Should -Invoke Write-Log -Times 1 -Exactly -ParameterFilter {
+                $Level -eq 'WARNING' -and $Message -like '*gpedit.msc*' -and
+                $Message -like '*verify applicability*before changing any GPO*'
+            }
         }
     }
 
@@ -57,9 +62,17 @@ Describe 'Test-GSAGroupPolicyNrptConflict' {
                 @([PSCustomObject]@{ FullName = '\\contoso.com\SYSVOL\contoso.com\Policies\{guid}\Machine\registry.pol' })
             } -ParameterFilter { $Recurse }
             Mock Get-Content { @('some', 'dnspolicyconfig', 'data') }
+            Mock Write-Log {}
 
             Test-GSAGroupPolicyNrptConflict -FindSourceGpo -PassThru | Should -Be $false
             Should -Invoke Get-ChildItem -ParameterFilter { $Recurse } -Times 1
+            Should -Invoke Write-Log -Times 1 -Exactly -ParameterFilter {
+                $Level -eq 'WARNING' -and $Message -like '*candidate source GPOs only*' -and
+                $Message -like '*Local Group Policy*not included*'
+            }
+            Should -Invoke Write-Log -Times 1 -Exactly -ParameterFilter {
+                $Level -eq 'WARNING' -and $Message -like 'Found 1 candidate*applicability to this computer is not verified*'
+            }
         }
     }
 

@@ -17,6 +17,7 @@ function Test-GSAGroupPolicyNrptConflict {
 	local NRPT rules and private DNS stops working. This also applies to an empty NRPT rule list
 	left behind in the registry.pol file when rules were configured and deleted on an older
 	version of Windows - an empty list still overrides the local NRPT rules.
+	The policy configuration can come from domain Group Policy or Local Group Policy.
 	This check looks for the registry key HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig,
 	which only exists when Group Policy has applied NRPT rules to the device. This is a fully
 	local/offline check (registry only).
@@ -26,6 +27,9 @@ function Test-GSAGroupPolicyNrptConflict {
 	auto-detected from this device's domain membership and shown for confirmation - press Enter
 	to accept it or type a different path - before the (potentially slow) recursive search runs.
 	Requires domain connectivity/permissions to read SYSVOL; has no effect when no conflict is found.
+	Matches are candidates only: this search does not check whether a GPO applies to this computer
+	and does not search Local Group Policy. Verify applicability with gpresult or Resultant Set
+	of Policy before changing a matched GPO, and inspect Local Group Policy as a possible source.
 .PARAMETER PassThru
 	Return the $true/$false test result. By default nothing is returned - only logged.
 .PARAMETER LogLevel
@@ -72,6 +76,7 @@ function Test-GSAGroupPolicyNrptConflict {
 	}
 
 	Write-Log "Recommended action: Run 'gpresult /h GPReport.html' on this device (or search registry.pol files in SYSVOL for 'dnspolicyconfig') to find the source GPO. If the NRPT section is empty, create/apply/delete a fictive rule to clear the legacy artifact. If it contains real rules, confirm whether they're still required - they're incompatible with GSA private DNS while applied to a device running the GSA client." "WARNING"
+	Write-Log "The NRPT setting can come from domain Group Policy or Local Group Policy. Check Local Group Policy in 'gpedit.msc' under Computer Configuration > Windows Settings > Name Resolution Policy. SYSVOL matches alone do not prove a GPO applies to this computer; verify applicability with gpresult or Resultant Set of Policy before changing any GPO." "WARNING"
 
 	if ($FindSourceGpo)
 	{ Find-GSAGroupPolicyNrptSourceGpo }
