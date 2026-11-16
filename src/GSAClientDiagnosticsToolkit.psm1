@@ -11,7 +11,7 @@
 
 #region Module State - shared across all Private and Public functions
 
-$script:ModuleVer                 = "1.0.0"
+$script:ModuleVer                 = "1.0.1"
 $script:GSAFwdProfileRegistryPath = "HKLM:\SOFTWARE\Microsoft\Global Secure Access Client"
 $script:LogLevel                  = "INFO"
 # Default log path so any function (not just Invoke-GSAClientConnectivityCheck) writes to a file.
