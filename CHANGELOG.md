@@ -2,7 +2,23 @@
 
 All notable changes to this project are documented in this file. Dates reflect the commit history in this repository.
 
-## [1.0.0] - 11-11-2026
+## [1.0.1] - 16-11-2026
+
+### Added
+- `Test-GSAHyperVExternalSwitch` - detects Hyper-V external virtual switches on the host, mirroring the GSA client's built-in "No Hyper-V external virtual switch detected" Health check. Warns about this unsupported host configuration and recommends using an internal/private switch or installing the GSA client inside the VM(s) instead. Reports a warning without failing the check; skips as not applicable when Hyper-V is unavailable. Included in the full `Invoke-GSAClientConnectivityCheck` suite, with Pester tests covering detection, warning results, and unavailable Hyper-V. See [No Hyper-V external virtual switch detected](https://learn.microsoft.com/entra/global-secure-access/troubleshoot-global-secure-access-client-diagnostics-health-check#no-hyper-v-external-virtual-switch-detected).
+- `Test-GSAGroupPolicyNrptConflict` - detects the documented GSA known limitation where Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` (including a legacy empty rule list) override the GSA client's local NRPT rules and break Private Access private DNS resolution. Supports an optional `-FindSourceGpo` switch that auto-detects the domain's SYSVOL Policies path (asking for confirmation/override) and searches `registry.pol` files under it for `dnspolicyconfig` to help locate the source GPO. See [Known Limitations for Global Secure Access](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-current-known-limitations?tabs=windows-client#name-resolution-policy-table-rules-in-group-policy-not-supported). **IMPORTANT**: Require line of sight to the Domain Controller!
+Warns also that SYSVOL matches are candidate source GPOs whose applicability must be verified before making changes, and that NRPT settings can also originate from Local Group Policy, which the SYSVOL search does not inspect.
+- `Test-GSAEdgeDiagnosticsStatus` - reads the GSA client's own cached per-channel edge-diagnostics health result from `HKLM:\SOFTWARE\Microsoft\Global Secure Access Client\State\EdsResults` (discovered via Process Monitor analysis), a pipe-delimited string the client keeps continuously up to date from its internal `*.edgediagnostic.globalsecureaccess.microsoft.com` probes - the same checks the built-in Advanced Diagnostics tool and tray icon surface. Reports per-channel (Entra/M365/Private/Internet) health and flags a stale cached result via `-StaleAfterMinutes` (default 15). Included in the full `Invoke-GSAClientConnectivityCheck` suite.
+
+### Changed
+- `Test-GSAAuthCertificate` now also cross-checks the installed certificate against the exact `CertCommonName` registry value (`HKLM:\SOFTWARE\Microsoft\Global Secure Access Client`, discovered via Process Monitor analysis to hold the Common Name the client expects) when present, flagging a mismatch as a stale/wrong certificate instead of only matching on the `gsa.client` subject suffix.
+- `Test-GSASecureDnsStatus` now also checks Mozilla Firefox's `DNSOverHTTPS\Enabled` GPO registry value (`HKLM:\SOFTWARE\Policies\Mozilla\Firefox\DNSOverHTTPS`), in addition to the existing Edge/Chrome `DnsOverHttpsMode` checks, matching the three browsers documented in the client's built-in Health check ([Secure DNS disabled in browsers](https://learn.microsoft.com/entra/global-secure-access/troubleshoot-global-secure-access-client-diagnostics-health-check#secure-dns-disabled-in-browsers-microsoft-edge-chrome-firefox)).
+
+### Fixed
+- Default log file location failing with `UnauthorizedAccessException` when the module is imported from a non-writable current directory (e.g. `C:\Windows\system32` in a default PowerShell session). The default log path (module-level default and `Invoke-GSAClientConnectivityCheck -BasePath`) now defaults to `$env:TEMP` instead of the current working directory.
+- `Test-GSAPrivateDnsResolver` reporting a false failure for tenants that only use Enterprise Applications (per-app access) without Quick Access/Private DNS, since the GSA synthetic resolver (`6.6.255.254`) is only provisioned via a local NRPT rule - when Private DNS (a Quick Access feature) is enabled. The check now looks for that NRPT rule first and reports "not applicable" instead of an error when it's absent. `Test-GSAPrivateDnsResolver` also now follows the same `-PassThru` convention as the other checks (nothing is returned by default; pass `-PassThru` for the `$true`/`$false` result), and logs matched/found NRPT rules and the DNS response details at `-LogLevel DEBUG`. (#1)
+
+## [1.0.0-beta1] - 11-11-2026
 
 ### Added
 

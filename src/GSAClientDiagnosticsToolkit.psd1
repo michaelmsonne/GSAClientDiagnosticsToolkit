@@ -3,7 +3,7 @@
 #
 @{
     # Module identity
-    ModuleVersion     = '1.0.0'
+    ModuleVersion     = '1.0.1'
     GUID              = 'a3f7c2b1-4d89-4e6a-b012-5f8c9d3e7a21'
     Author            = 'Michael Morten Sonne'
     CompanyName       = 'blog.sonnes.cloud'
@@ -39,7 +39,9 @@
         'Test-GSASecureDnsStatus',
         'Test-GSAIPv6Status',
         'Test-GSASyntheticRoutes',
+        'Test-GSAHyperVExternalSwitch',
         'Test-GSAPrivateDnsResolver',
+        'Test-GSAGroupPolicyNrptConflict',
         'Test-GSAVpnSplitDnsInteroperability',
         'Test-GSAEventLog',
         'Test-InternetConnectivity',
@@ -60,6 +62,7 @@
         'Test-GSAIntelligentLocalAccessConfiguration',
         'Test-GSAHomeNetworkSupport',
         'Test-GSAAuthCertificate',
+        'Test-GSAEdgeDiagnosticsStatus',
         'Export-GSAAuthCertificate',
         'Repair-GSAAuthCertificate'
     )

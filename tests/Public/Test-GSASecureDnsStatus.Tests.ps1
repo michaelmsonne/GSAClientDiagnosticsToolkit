@@ -21,4 +21,14 @@ Describe 'Test-GSASecureDnsStatus' {
             Test-GSASecureDnsStatus | Should -Be $true
         }
     }
+
+    It 'detects Firefox DNSOverHTTPS\Enabled=1 (warning-only check)' {
+        InModuleScope GSAClientDiagnosticsToolkit {
+            Mock Get-ItemProperty { $null } -ParameterFilter { $Path -notmatch 'Firefox' }
+            Mock Get-ItemProperty { [PSCustomObject]@{ Enabled = 1 } } -ParameterFilter { $Path -match 'Firefox' }
+            Mock Write-Log {}
+            Test-GSASecureDnsStatus | Should -Be $true
+            Should -Invoke Write-Log -ParameterFilter { $Level -eq 'WARNING' -and $Message -like 'Mozilla Firefox:*' }
+        }
+    }
 }

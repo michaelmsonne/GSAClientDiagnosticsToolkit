@@ -3,8 +3,8 @@
 <p align="center">
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/michaelmsonne/GSAClientDiagnosticsToolkit?include_prereleases&logo=github"></a>
   <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery" src="https://img.shields.io/powershellgallery/v/GSAClientDiagnosticsToolkit?include_prereleases&label=PowerShell%20Gallery&logo=powershell"></a>
-  <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/powershellgallery/dt/GSAClientDiagnosticsToolkit?label=gallery%20downloads"></a>
-  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img src="https://img.shields.io/github/downloads/michaelmsonne/GSAClientDiagnosticsToolkit/total.svg" alt="Total Downloads"></a>
+  <a href="https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit"><img alt="PowerShell Gallery downloads" src="https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fwww.powershellgallery.com%2Fapi%2Fv2%2FPackages()%3F%24filter%3DId%2520eq%2520%2527GSAClientDiagnosticsToolkit%2527%2520and%2520IsAbsoluteLatestVersion%26%24top%3D1&query=//*%5Blocal-name()%3D%27VersionDownloadCount%27%5D&label=gallery%20downloads"></a>
+  <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit"><img src="https://img.shields.io/github/downloads/michaelmsonne/GSAClientDiagnosticsToolkit/total.svg" alt="GitHub Downloads"></a>
   <img src="https://visitor-badge.laobi.icu/badge?page_id=michaelmsonne.GSAClientDiagnosticsToolkit.README" alt="Visitors">
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
   <a href="https://github.com/michaelmsonne/GSAClientDiagnosticsToolkit/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/michaelmsonne/GSAClientDiagnosticsToolkit"></a>
@@ -21,7 +21,7 @@
 
 A PowerShell troubleshooting and diagnostics module for the **Microsoft Entra Global Secure Access (GSA) Windows client** (Entra Internet Access, Entra Private Access and Microsoft 365 traffic). It runs connectivity, proxy, DNS, TLS/mTLS, forwarding profile, Entra device/PRT, certificate and health probe checks to quickly find out why GSA isn't working on a device.
 
-Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7499807681470464000/)
+Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7499807681470464000/), and https://www.linkedin.com/posts/michaelmsonne_microsoft-globalsecureaccess-gsa-ugcPost-7516902502106333184-zVeK/
 
 > [!IMPORTANT]
 > Requires **PowerShell 5.1 or later**. Some checks must be run on a machine with the **Global Secure Access (GSA) Client** installed.
@@ -60,6 +60,7 @@ Showed a small teaser here to the community at 30 Aug. 2026: [LinkedIn](https://
 - Secure DNS and IPv6 status
 - Tenant Internet DNS Resolution detection (hosts-file and direct DNS comparison)
 - Synthetic routes and private DNS resolver
+- Group Policy NRPT conflict detection for the documented GSA private DNS override known limitation
 - Cisco VPN split-DNS interoperability check for GSA NRPT/private DNS REFUSED scenarios
 - Entra ID reachability
 - GSA diagnostic URI connectivity
@@ -113,6 +114,37 @@ Install-Module -Name GSAClientDiagnosticsToolkit -Scope CurrentUser -AllowPrerel
 ```
 
 Then run `Invoke-GSAClientConnectivityCheck`. Module page: <https://www.powershellgallery.com/packages/GSAClientDiagnosticsToolkit>
+
+<details>
+<summary>Troubleshooting: <code>Install-Module : A parameter cannot be found that matches parameter name 'AllowPrerelease'</code></summary>
+
+This happens when the built-in, outdated `PowerShellGet 1.0.0.1` module (which doesn't support `-AllowPrerelease`) is the only version loaded, instead of a newer one.
+
+1. Check which version is loaded:
+
+   ```powershell
+   Get-Module PowerShellGet -ListAvailable | Select-Object Name, Version
+   ```
+
+   If the only version listed is `1.0.0.1`, that's the cause.
+
+2. Enable TLS 1.2 and install a newer `PowerShellGet`:
+
+   ```powershell
+   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+   Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser
+   Install-Module -Name PowerShellGet -Force -AllowClobber -Scope CurrentUser
+   ```
+
+3. Close every PowerShell window and open a new one. If you skip this, the old module stays loaded and the same error comes back.
+
+4. Run the install again:
+
+   ```powershell
+   Install-Module -Name GSAClientDiagnosticsToolkit -Scope CurrentUser -AllowPrerelease
+   ```
+
+</details>
 
 ### Option B - Clone and import locally
 
@@ -182,7 +214,7 @@ Invoke-GSAClientConnectivityCheck [-LogLevel <string>] [-BasePath <string>] [-Lo
 | Parameter | Default | Description |
 |---|---|---|
 | `LogLevel` | `INFO` | Verbosity: `ERROR`, `WARNING`, `INFO`, `DEBUG`, `SUCCESS` |
-| `BasePath` | Current directory | Directory where the log file is written |
+| `BasePath` | `$env:TEMP` | Directory where the log file is written |
 | `LogFileName` | `GSAClientDiagnosticsToolkit.log` | Name of the log file |
 
 <details>
@@ -486,7 +518,7 @@ Test-ProxyDetection [-TestUrlHttp <string>] [-TestUrlHttps <string>] [-TimeoutSe
 
 ### `Test-GSASecureDnsStatus`
 
-Checks whether the GSA Secure DNS feature is enabled and active.
+Checks whether Secure DNS (DNS-over-HTTPS) is enforced via policy in Microsoft Edge, Google Chrome, or Mozilla Firefox - GSA requires DoH to be disabled so it can intercept DNS queries at the WFP layer.
 
 ```powershell
 Test-GSASecureDnsStatus [-LogLevel <string>]
@@ -499,6 +531,7 @@ Test-GSASecureDnsStatus [-LogLevel <string>]
 [2026-08-20 16:58:00] [INFO] Checking Secure DNS (DoH) policy settings - GSA requires DoH to be disabled...
 [2026-08-20 16:58:00] [SUCCESS] Microsoft Edge: Secure DNS (DoH) is not enforced or is set to 'off'.
 [2026-08-20 16:58:00] [SUCCESS] Google Chrome: Secure DNS (DoH) is not enforced or is set to 'off'.
+[2026-08-20 16:58:00] [SUCCESS] Mozilla Firefox: Secure DNS (DoH) is not enforced or is set to 'off'.
 ```
 
 </details>
@@ -675,6 +708,8 @@ PS> Test-mTLSConnectivity -fqdnList edge1.mec.gsaservice.net
 
 Checks whether a valid GSA mTLS authentication certificate (subject ending in `gsa.client`) exists in the LocalMachine\My certificate store and hasn't expired. Mirrors the client's built-in "Authentication certificate exists"/"Authentication certificate is valid" Health check tests. This test only applies to tenants with mTLS enabled - if mTLS isn't enabled, no certificate is expected.
 
+Also cross-checks against the `CertCommonName` registry value (`HKLM:\SOFTWARE\Microsoft\Global Secure Access Client`, confirmed via Process Monitor to hold the exact Common Name the client expects, e.g. `<tenantId>.tenant.gsa.client`) when present - flags a mismatch if none of the found certificates' subject exactly matches it, which indicates a stale/wrong certificate is installed.
+
 ```powershell
 Test-GSAAuthCertificate [-PassThru] [-LogLevel <string>]
 ```
@@ -836,6 +871,36 @@ PS> Test-GSADiagnosticUriConnectivity -DiagnosticUris https://edgediagnostic.glo
 
 ---
 
+### `Test-GSAEdgeDiagnosticsStatus`
+
+Reads the GSA client's own cached per-channel edge-diagnostics health result from `HKLM:\SOFTWARE\Microsoft\Global Secure Access Client\State\EdsResults` - a pipe-delimited string (`<UTC timestamp>|<SessionContext>|Entra:<code>|M365:<code>|Private:<code>|Internet:<code>`) confirmed via Process Monitor to be kept continuously up to date by `GlobalSecureAccessClient.exe`/`GlobalSecureAccessClientManagerService.exe` from their own internal edge-diagnostics probes - the same `*.edgediagnostic.globalsecureaccess.microsoft.com` checks the Advanced Diagnostics tool and tray icon surface. A channel code of `0` means the client itself considers that channel healthy. This is a fast, local/offline check (registry only) that complements `Test-GSADiagnosticUriConnectivity`'s active probes by reporting what the client's always-running background health-check loop has already determined; a stale timestamp (older than `-StaleAfterMinutes`) is flagged as a warning since it may mean that loop is stalled.
+
+```powershell
+Test-GSAEdgeDiagnosticsStatus [-StaleAfterMinutes <int>] [-PassThru] [-LogLevel <string>]
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `StaleAfterMinutes` | `15` | Age, in minutes, after which the cached result's timestamp is flagged as stale |
+| `PassThru` | Off | Return the `$true`/`$false` test result instead of just logging it |
+
+<details>
+<summary>Sample output</summary>
+
+```text
+[2026-11-15 21:13:01] [INFO] Checking the GSA client's cached edge-diagnostics channel status (EdsResults)...
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'Entra': healthy (code 0).
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'M365': healthy (code 0).
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'Private': healthy (code 0).
+[2026-11-15 21:13:01] [SUCCESS]   Channel 'Internet': healthy (code 0).
+[2026-11-15 21:13:01] [INFO] EdsResults was last updated 0 minute(s) ago (session context: User).
+[2026-11-15 21:13:01] [SUCCESS] All GSA forwarding-profile channels are reported healthy by the client's own edge diagnostics.
+```
+
+</details>
+
+---
+
 ### `Test-GSASyntheticRoutes`
 
 Verifies that expected synthetic routes injected by the GSA tunnel are present in the routing table.
@@ -863,21 +928,78 @@ Test-GSASyntheticRoutes [-LogLevel <string>]
 
 Tests whether the GSA Private DNS Resolver is active and responding.
 
+Private DNS is a [Quick Access](https://learn.microsoft.com/entra/global-secure-access/how-to-configure-quick-access) feature: it's only provisioned when Private DNS is enabled on the Quick Access app, and only then does the GSA client add a local NRPT rule pointing at the synthetic resolver (`6.6.255.254`). This check first looks for that NRPT rule; if none is found (for example, a tenant that only uses Enterprise Applications/per-app access without Quick Access), it reports the check as not applicable instead of a false failure. If the NRPT rule exists but the resolver doesn't respond, that's reported as a real failure. By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
+
 ```powershell
-Test-GSAPrivateDnsResolver [-LogLevel <string>]
+Test-GSAPrivateDnsResolver [-PassThru] [-LogLevel <string>]
 ```
 
 <details>
 <summary>Sample output</summary>
 
 ```text
+[2026-08-20 17:08:00] [INFO] Checking whether Private DNS (a Quick Access feature) is configured on this device...
 [2026-08-20 17:08:00] [INFO] Querying GSA Private DNS resolver (6.6.255.254) via TCP...
 [2026-08-20 17:08:00] [SUCCESS] GSA Private DNS resolver (6.6.255.254) responded - Private Access tunnel is active.
+```
+
+Not applicable (no Quick Access / Private DNS configured on this device):
+
+```text
+[2026-08-20 17:08:00] [INFO] Checking whether Private DNS (a Quick Access feature) is configured on this device...
+[2026-08-20 17:08:00] [SUCCESS] No local NRPT rule targets the GSA Private DNS resolver (6.6.255.254). Private DNS is a Quick Access feature and is not configured on this device - skipping as not applicable (this is expected for tenants using only Enterprise Applications).
 ```
 
 </details>
 
 ![Test-GSAPrivateDnsResolver - example output](docs/images/screenshot-gsa-private-dns-resolver.png)
+
+---
+
+### `Test-GSAGroupPolicyNrptConflict`
+
+Detects a documented GSA known limitation: Group Policy-applied Name Resolution Policy Table (NRPT) rules at `HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig` override the local NRPT rules the GSA client configures for private DNS, breaking Private Access DNS resolution. This also catches the legacy case where an *empty* NRPT rule list was left behind in `registry.pol` after rules were configured and deleted on an older version of Windows - an empty list still overrides the client's local rules. This is a fully local/offline check (registry only). By default nothing is returned (only logged); pass `-PassThru` to get the `$true`/`$false` result back for scripting.
+
+Pass `-FindSourceGpo` to also search for the source GPO when a conflict is found: the domain's SYSVOL Policies path is auto-detected from this device's domain membership and shown for confirmation (press Enter to accept it, or type a different path) before recursively searching `registry.pol` files under it for `dnspolicyconfig`.
+
+**Caution:** SYSVOL matches are candidate source GPOs only. The search does not determine whether they apply to the target computer. Verify applicability using `gpresult /h GPReport.html` or Resultant Set of Policy before changing any matched GPO. The NRPT setting can also come from **Local Group Policy**, which is not searched in SYSVOL; inspect `gpedit.msc` under **Computer Configuration > Windows Settings > Name Resolution Policy**.
+
+**IMPORTANT**: Require line of sight to the Domain Controller!
+
+```powershell
+Test-GSAGroupPolicyNrptConflict [-FindSourceGpo] [-PassThru] [-LogLevel <string>]
+```
+
+<details>
+<summary>Sample output (conflict detected)</summary>
+
+```text
+PS> Test-GSAGroupPolicyNrptConflict
+[2026-11-12 21:00:00] [INFO] Checking for Group Policy-applied NRPT rules at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' that can override GSA's local private DNS NRPT rules...
+[2026-11-12 21:00:00] [ERROR] Group Policy-applied NRPT configuration exists at 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig' with 1 rule(s). These Group Policy NRPT rules override the GSA client's local NRPT rules, and private DNS will not work while this GPO is applied.
+[2026-11-12 21:00:00] [WARNING] Recommended action: Run 'gpresult /h GPReport.html' on this device (or search registry.pol files in SYSVOL for 'dnspolicyconfig') to find the source GPO. If the NRPT section is empty, create/apply/delete a fictive rule to clear the legacy artifact. If it contains real rules, confirm whether they're still required - they're incompatible with GSA private DNS while applied to a device running the GSA client.
+[2026-11-12 21:00:00] [WARNING] The NRPT setting can come from domain Group Policy or Local Group Policy. Check Local Group Policy in 'gpedit.msc' under Computer Configuration > Windows Settings > Name Resolution Policy. SYSVOL matches alone do not prove a GPO applies to this computer; verify applicability with gpresult or Resultant Set of Policy before changing any GPO.
+```
+
+</details>
+
+<details>
+<summary>Sample output (-FindSourceGpo)</summary>
+
+```text
+PS> Test-GSAGroupPolicyNrptConflict -FindSourceGpo
+...
+[2026-11-12 21:00:00] [INFO] Auto-detected SYSVOL Policies path: \\contoso.com\SYSVOL\contoso.com\Policies
+Press Enter to use this path, or type a different SYSVOL Policies path (e.g. \\dc1.contoso.com\sysvol\contoso.com\Policies):
+[2026-11-12 21:00:01] [INFO] Searching for GPOs with NRPT configuration under '\\contoso.com\SYSVOL\contoso.com\Policies' (this may take a while)...
+[2026-11-12 21:00:01] [WARNING] SYSVOL matches are candidate source GPOs only; this search does not verify whether they apply to this computer. Confirm applicability with 'gpresult /h GPReport.html' or Resultant Set of Policy before changing any GPO. Local Group Policy can also configure NRPT and is not included in this SYSVOL search.
+[2026-11-12 21:00:05] [WARNING] Found 1 candidate GPO registry.pol file(s) with NRPT configuration (each path's GUID folder identifies the GPO; applicability to this computer is not verified):
+\\contoso.com\SYSVOL\contoso.com\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\Machine\registry.pol
+```
+
+</details>
+
+See [Known Limitations for Global Secure Access](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-current-known-limitations?tabs=windows-client#name-resolution-policy-table-rules-in-group-policy-not-supported).
 
 ---
 
